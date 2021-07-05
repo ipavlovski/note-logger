@@ -1,0 +1,18 @@
+version: "3.9"
+
+services: 
+    ts-template:
+        image: registry.digitalocean.com/gpl-containers/ts-template:${tag}
+        build: .
+        container_name: ts-template
+        env_file: .env
+        ports: 
+            - 9906:9906
+
+    mariadb:
+        image: mariadb:10.5
+        container_name: mariadb
+        environment: 
+            - MARIADB_ROOT_PASSWORD=qwert
+        ports: 
+            - 33066:3306

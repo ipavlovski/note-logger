@@ -1,0 +1,21 @@
+{
+    // how are ts-node overrides actually used?
+    "ts-node": {
+        "include": ["./index.ts"]
+    },
+    "compilerOptions": {
+        "module": "CommonJS",
+        "target": "ES2020",
+        "outDir": "dist",
+        "sourceMap": true,
+        "esModuleInterop": true,
+        "types": ["node", "jest"],
+        "moduleResolution": "node",
+        "lib": ["ES2020"],
+        "noImplicitAny": true,
+        "baseUrl": ".",
+        // "allowSyntheticDefaultImports": true,
+    },
+    "exclude": ["node_modules"],
+    "include": ["src/**/*.ts"]
+}

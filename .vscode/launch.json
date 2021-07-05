@@ -1,0 +1,51 @@
+{
+    "version": "0.2.0",
+    "configurations": [
+        {
+            "name": "Current TS File",
+            "type": "node",
+            "request": "launch",
+            "args": ["${relativeFile}"],
+            "runtimeArgs": [
+                "--nolazy", 
+                "-r", "${workspaceRoot}/node_modules/ts-node/register",
+                "-r", "${workspaceRoot}/node_modules/module-alias/register"
+            ],
+            "skipFiles": ["<node_internals>/**"],
+            "sourceMaps": true,
+            "cwd": "${workspaceRoot}",
+            "protocol": "inspector",
+            "envFile": "${workspaceFolder}/.env",
+        },
+        {
+            "name": "Debug Jest Tests",
+            "type": "pwa-node",
+            "request": "launch",
+            "runtimeArgs": [
+                "--inspect-brk",
+                "${workspaceRoot}/node_modules/.bin/jest",
+                "--runInBand",
+                "--detectOpenHandles",
+                "--coverage",
+                "false",
+                "-i",
+                "--watch",
+                "--bail",
+                "--silent",
+                "false"
+            ],
+            "skipFiles": ["<node_internals>/**"],
+            "envFile": "${workspaceFolder}/.env",
+            // "outputCapture": "console",
+            // "console": "internalConsole",
+            // "internalConsoleOptions": "openOnSessionStart",
+            // "outputCapture": "std",
+            // "console": "integratedTerminal",
+            // "internalConsoleOptions": "",
+            "console": "integratedTerminal",
+            "internalConsoleOptions": "openOnSessionStart",
+            "resolveSourceMapLocations": ["${workspaceFolder}/**", "!**/node_modules/**"]
+        }
+
+    ]
+}
