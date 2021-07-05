@@ -1,0 +1,10 @@
+TODOs:
+  ☐ check output HTML
+    ☐ syntax highlighting
+    ☐ headers
+    ☐ image embed
+  ☐ custom CSS
+  ☐ bootup sequence to parse all headlines and associated metadata
+  ☐ dynamic content splitting based on files and subfiles
+  ☐ custom syntax for image-listing
+  ☐ regex for file path and input
