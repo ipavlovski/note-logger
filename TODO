@@ -1,10 +1,18 @@
 TODOs:
-  ☐ check output HTML
-    ☐ syntax highlighting
-    ☐ headers
-    ☐ image embed
-  ☐ custom CSS
-  ☐ bootup sequence to parse all headlines and associated metadata
-  ☐ dynamic content splitting based on files and subfiles
-  ☐ custom syntax for image-listing
-  ☐ regex for file path and input
+  ☐ bootup sequence to parse 
+  ☐ custom syntax for image-listing and parsing headlines
+  ☐ embed html/ts into markdown (optionally show the code)
+  ☐ syntax image embed
+
+  ✔ SPA page structure (TOC on left, main on right, header, footer)
+    on-click action to insert received HTML content into div element    
+  ✔ syntax highlighting
+    basic highlighting works
+  ✔ syntax headers and lists
+    header are lists are renderede properly
+  ✔ custom CSS
+    changed color of h1 to blue
+  ✔ basic server functionality
+    the server runs fine, can receive and lgo messages
+  ✔ regex for file path and input
+    using shell-js and js-regex
