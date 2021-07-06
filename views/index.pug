@@ -1,0 +1,14 @@
+extends layout
+
+block content
+  h1= title
+  p Welcome to #{title}
+  button(type='button' onclick='play()') CLICK ME
+  div#id1
+  script.
+    async function play() { 
+      const data = await fetch('/parse/1').then(val => val.json())
+      document.getElementById("id1").innerHTML = data
+      console.log(data)
+    }
+  
