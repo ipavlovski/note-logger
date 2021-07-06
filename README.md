@@ -1,3 +1,11 @@
+# BASIC PRINCIPLES
+
+HEADER
+- TIL
+- ABOUT/RESUME
+- PROJECTS (only local-access)
+- BLOG
+
 
 DYNAMIC INSTEAD OF STATIC
 - on bootup, create a tree/TOC of all articles

@@ -1,9 +1,15 @@
 TODOs:
   ☐ bootup sequence to parse 
-  ☐ custom syntax for image-listing and parsing headlines
-  ☐ embed html/ts into markdown (optionally show the code)
-  ☐ syntax image embed
-
+  ☐ Embed html/ts into markdown (optionally show the code) - e.g. D3
+  ☐ Gif/Video embed (and gallery)
+  ☐ Photoswipe image embed
+  ☐ Generate mp4/gifs
+  ☐ Extensions: kbd, html5, kbd, front-mater, code-blocks
+    https://www.npmjs.com/package/markdown-it-html5-media
+    https://www.npmjs.com/package/markdown-it-kbd
+    https://www.npmjs.com/package/markdown-it-front-matter
+    https://www.npmjs.com/package/@gerhobbelt/markdown-it-front-matter
+    https://www.npmjs.com/package/markdown-it-named-code-blocks
   ✔ SPA page structure (TOC on left, main on right, header, footer)
     on-click action to insert received HTML content into div element    
   ✔ syntax highlighting
