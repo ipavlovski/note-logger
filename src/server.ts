@@ -1,21 +1,45 @@
-import express from 'express'
-import morgan from 'morgan'
-import createError from 'http-errors'
+// // The server contains access to
 
-const server = express()
+// import lodash, { ObjectChain } from 'lodash'
 
-// server.set('views', `${__dirname}/views`)
-server.set('views', `views`)
-server.set('view engine', 'pug')
+// import { Low, JSONFile } from 'lowdb'
+// type Entry = { posts: string[] }
+// new JSONFile<Entry>('/tmp/scratch/db-1.json')
 
-server.use(morgan('dev'))
-server.use(express.json())
-server.use(express.urlencoded({ extended: false }))
-server.use(express.static(`public`))
 
-// catch 404 and forward to error handler
-// server.use(function (req, res, next) {
-//     next(createError(404))
-// })
+// async function tmp(): Promise<string> {
+//     return "lol"
+// }
+// await tmp()
 
-export { server }
+
+// declare interface Chainable<T> {
+//     value(): T  // This methods is available for any T.
+
+//     // This method is only available for array types, where T matches V[].
+//     map<U, V>(this: Chainable<V[]>, mapFn: (v: V) => U): Chainable<U[]>
+
+//     posts: string[] 
+// }
+
+
+
+
+// const adapter = new JSONFile<Entry>('/tmp/scratch/db-1.json' as string)
+// const db = new Low<Entry>(adapter)
+
+// // TypeScript error 🎉
+// db.data.posts.push(1)
+// db.data.posts.push("123")
+
+
+
+// // // Note: db.data needs to be initialized before lodash.chain is called.
+// // db.chain = lodash.chain(db.data)
+
+// // // Instead of db.data, you can now use db.chain if you want to use the powerful API that lodash provides
+// // const post = db.chain
+// //     .get('posts')
+// //     .find({ id: 1 })
+// //     .value() // Important: value() needs to be called to execute chain
+

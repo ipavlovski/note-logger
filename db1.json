@@ -1,0 +1,2231 @@
+{
+  "db": [
+    {
+      "id": "8d12546c-3ddd-43db-89be-e40452e6a3f6",
+      "meta": {
+        "header": "Bash-0",
+        "category": [
+          "cat2",
+          "subcat3"
+        ],
+        "tags": [
+          "tag2"
+        ]
+      },
+      "date": {
+        "created": "2021-12-03T20:10:23.877Z",
+        "updated": null,
+        "archived": null
+      },
+      "data": {},
+      "content": {
+        "md": "\n### BASH script - #0\n\n```bash\n#! /bin/bash\n\n## some other interesting classes:\n## Thunar: 'File Manager'\n\n## shortcut-1 is type: primary/secondary\n## shortcut-2 is key: z/x/c/v\n## an example of a shortcut: primary-x\nshortcut=\"${1}-${2}\"\n\n## space refers to the active space\nworkspace=$(wmctrl -d | grep \"*\" | cut -d\" \" -f1)\n\n\n## example: wm_open_window Chromium\nfunction wm_open_window() {\n        local app=\"$1\"\n        local space=\"$2\"\n\n        match=$(wmctrl -xl | grep -E \"^.{12}${space}.*${app}\")\n\n        if [[ ! -z \"$match\" ]]; then\n                wmctrl -i -R \"${match:0:10}\"\n        else\n                notify-send \"wm-open\" \"No window open for ${app}\"\n        fi\n}\n```\n",
+        "html": null
+      }
+    },
+    {
+      "id": "c4bb0ae1-71d4-4807-ae2f-3cc2bedcd1ae",
+      "meta": {
+        "header": "Bash-1",
+        "category": [
+          "cat2",
+          "subcat2"
+        ],
+        "tags": [
+          "tag3"
+        ]
+      },
+      "date": {
+        "created": "2021-12-05T19:43:08.557Z",
+        "updated": null,
+        "archived": null
+      },
+      "data": {},
+      "content": {
+        "md": "\n### BASH script - #1\n\n```bash\n#! /bin/bash\n\n## some other interesting classes:\n## Thunar: 'File Manager'\n\n## shortcut-1 is type: primary/secondary\n## shortcut-2 is key: z/x/c/v\n## an example of a shortcut: primary-x\nshortcut=\"${1}-${2}\"\n\n## space refers to the active space\nworkspace=$(wmctrl -d | grep \"*\" | cut -d\" \" -f1)\n\n\n## example: wm_open_window Chromium\nfunction wm_open_window() {\n        local app=\"$1\"\n        local space=\"$2\"\n\n        match=$(wmctrl -xl | grep -E \"^.{12}${space}.*${app}\")\n\n        if [[ ! -z \"$match\" ]]; then\n                wmctrl -i -R \"${match:0:10}\"\n        else\n                notify-send \"wm-open\" \"No window open for ${app}\"\n        fi\n}\n```\n",
+        "html": null
+      }
+    },
+    {
+      "id": "8fca90d3-452b-4544-8324-265a392499cc",
+      "meta": {
+        "header": "Bash-2",
+        "category": [
+          "cat1"
+        ],
+        "tags": [
+          "tag5"
+        ]
+      },
+      "date": {
+        "created": "2021-12-04T05:02:24.964Z",
+        "updated": null,
+        "archived": null
+      },
+      "data": {},
+      "content": {
+        "md": "\n### BASH script - #2\n\n```bash\n#! /bin/bash\n\n## some other interesting classes:\n## Thunar: 'File Manager'\n\n## shortcut-1 is type: primary/secondary\n## shortcut-2 is key: z/x/c/v\n## an example of a shortcut: primary-x\nshortcut=\"${1}-${2}\"\n\n## space refers to the active space\nworkspace=$(wmctrl -d | grep \"*\" | cut -d\" \" -f1)\n\n\n## example: wm_open_window Chromium\nfunction wm_open_window() {\n        local app=\"$1\"\n        local space=\"$2\"\n\n        match=$(wmctrl -xl | grep -E \"^.{12}${space}.*${app}\")\n\n        if [[ ! -z \"$match\" ]]; then\n                wmctrl -i -R \"${match:0:10}\"\n        else\n                notify-send \"wm-open\" \"No window open for ${app}\"\n        fi\n}\n```\n",
+        "html": null
+      }
+    },
+    {
+      "id": "7b3cc96b-185c-479a-aefa-dd617b485e57",
+      "meta": {
+        "header": "Bash-3",
+        "category": [
+          "cat1",
+          "subcat2"
+        ],
+        "tags": []
+      },
+      "date": {
+        "created": "2021-12-09T10:56:18.794Z",
+        "updated": null,
+        "archived": null
+      },
+      "data": {},
+      "content": {
+        "md": "\n### BASH script - #3\n\n```bash\n#! /bin/bash\n\n## some other interesting classes:\n## Thunar: 'File Manager'\n\n## shortcut-1 is type: primary/secondary\n## shortcut-2 is key: z/x/c/v\n## an example of a shortcut: primary-x\nshortcut=\"${1}-${2}\"\n\n## space refers to the active space\nworkspace=$(wmctrl -d | grep \"*\" | cut -d\" \" -f1)\n\n\n## example: wm_open_window Chromium\nfunction wm_open_window() {\n        local app=\"$1\"\n        local space=\"$2\"\n\n        match=$(wmctrl -xl | grep -E \"^.{12}${space}.*${app}\")\n\n        if [[ ! -z \"$match\" ]]; then\n                wmctrl -i -R \"${match:0:10}\"\n        else\n                notify-send \"wm-open\" \"No window open for ${app}\"\n        fi\n}\n```\n",
+        "html": null
+      }
+    },
+    {
+      "id": "91051b5b-f422-423d-a850-a165330b7f93",
+      "meta": {
+        "header": "Bash-4",
+        "category": [
+          "cat1"
+        ],
+        "tags": [
+          "tag1"
+        ]
+      },
+      "date": {
+        "created": "2021-12-09T14:46:46.952Z",
+        "updated": null,
+        "archived": null
+      },
+      "data": {},
+      "content": {
+        "md": "\n### BASH script - #4\n\n```bash\n#! /bin/bash\n\n## some other interesting classes:\n## Thunar: 'File Manager'\n\n## shortcut-1 is type: primary/secondary\n## shortcut-2 is key: z/x/c/v\n## an example of a shortcut: primary-x\nshortcut=\"${1}-${2}\"\n\n## space refers to the active space\nworkspace=$(wmctrl -d | grep \"*\" | cut -d\" \" -f1)\n\n\n## example: wm_open_window Chromium\nfunction wm_open_window() {\n        local app=\"$1\"\n        local space=\"$2\"\n\n        match=$(wmctrl -xl | grep -E \"^.{12}${space}.*${app}\")\n\n        if [[ ! -z \"$match\" ]]; then\n                wmctrl -i -R \"${match:0:10}\"\n        else\n                notify-send \"wm-open\" \"No window open for ${app}\"\n        fi\n}\n```\n",
+        "html": null
+      }
+    },
+    {
+      "id": "02fefde3-e98e-45ad-a647-842011b793bb",
+      "meta": {
+        "header": "Bash-5",
+        "category": [
+          "cat2",
+          "subcat1"
+        ],
+        "tags": []
+      },
+      "date": {
+        "created": "2021-12-05T17:24:11.405Z",
+        "updated": null,
+        "archived": null
+      },
+      "data": {},
+      "content": {
+        "md": "\n### BASH script - #5\n\n```bash\n#! /bin/bash\n\n## some other interesting classes:\n## Thunar: 'File Manager'\n\n## shortcut-1 is type: primary/secondary\n## shortcut-2 is key: z/x/c/v\n## an example of a shortcut: primary-x\nshortcut=\"${1}-${2}\"\n\n## space refers to the active space\nworkspace=$(wmctrl -d | grep \"*\" | cut -d\" \" -f1)\n\n\n## example: wm_open_window Chromium\nfunction wm_open_window() {\n        local app=\"$1\"\n        local space=\"$2\"\n\n        match=$(wmctrl -xl | grep -E \"^.{12}${space}.*${app}\")\n\n        if [[ ! -z \"$match\" ]]; then\n                wmctrl -i -R \"${match:0:10}\"\n        else\n                notify-send \"wm-open\" \"No window open for ${app}\"\n        fi\n}\n```\n",
+        "html": null
+      }
+    },
+    {
+      "id": "13b9bab2-bf0f-47fd-98ef-193cd7fa3bcf",
+      "meta": {
+        "header": "Bash-6",
+        "category": [
+          "cat1",
+          "subcat1"
+        ],
+        "tags": [
+          "tag5"
+        ]
+      },
+      "date": {
+        "created": "2021-12-04T19:46:01.341Z",
+        "updated": null,
+        "archived": null
+      },
+      "data": {},
+      "content": {
+        "md": "\n### BASH script - #6\n\n```bash\n#! /bin/bash\n\n## some other interesting classes:\n## Thunar: 'File Manager'\n\n## shortcut-1 is type: primary/secondary\n## shortcut-2 is key: z/x/c/v\n## an example of a shortcut: primary-x\nshortcut=\"${1}-${2}\"\n\n## space refers to the active space\nworkspace=$(wmctrl -d | grep \"*\" | cut -d\" \" -f1)\n\n\n## example: wm_open_window Chromium\nfunction wm_open_window() {\n        local app=\"$1\"\n        local space=\"$2\"\n\n        match=$(wmctrl -xl | grep -E \"^.{12}${space}.*${app}\")\n\n        if [[ ! -z \"$match\" ]]; then\n                wmctrl -i -R \"${match:0:10}\"\n        else\n                notify-send \"wm-open\" \"No window open for ${app}\"\n        fi\n}\n```\n",
+        "html": null
+      }
+    },
+    {
+      "id": "57193e3a-ba61-486b-9f28-2d18a0ed64d9",
+      "meta": {
+        "header": "Bash-7",
+        "category": [
+          "cat1"
+        ],
+        "tags": [
+          "tag2"
+        ]
+      },
+      "date": {
+        "created": "2021-12-08T00:17:50.447Z",
+        "updated": null,
+        "archived": null
+      },
+      "data": {},
+      "content": {
+        "md": "\n### BASH script - #7\n\n```bash\n#! /bin/bash\n\n## some other interesting classes:\n## Thunar: 'File Manager'\n\n## shortcut-1 is type: primary/secondary\n## shortcut-2 is key: z/x/c/v\n## an example of a shortcut: primary-x\nshortcut=\"${1}-${2}\"\n\n## space refers to the active space\nworkspace=$(wmctrl -d | grep \"*\" | cut -d\" \" -f1)\n\n\n## example: wm_open_window Chromium\nfunction wm_open_window() {\n        local app=\"$1\"\n        local space=\"$2\"\n\n        match=$(wmctrl -xl | grep -E \"^.{12}${space}.*${app}\")\n\n        if [[ ! -z \"$match\" ]]; then\n                wmctrl -i -R \"${match:0:10}\"\n        else\n                notify-send \"wm-open\" \"No window open for ${app}\"\n        fi\n}\n```\n",
+        "html": null
+      }
+    },
+    {
+      "id": "3968f6f4-bf46-4574-9a64-6492a5083aab",
+      "meta": {
+        "header": "Bash-8",
+        "category": [
+          "cat1",
+          "subcat1"
+        ],
+        "tags": [
+          "tag5"
+        ]
+      },
+      "date": {
+        "created": "2021-12-09T08:25:31.260Z",
+        "updated": null,
+        "archived": null
+      },
+      "data": {},
+      "content": {
+        "md": "\n### BASH script - #8\n\n```bash\n#! /bin/bash\n\n## some other interesting classes:\n## Thunar: 'File Manager'\n\n## shortcut-1 is type: primary/secondary\n## shortcut-2 is key: z/x/c/v\n## an example of a shortcut: primary-x\nshortcut=\"${1}-${2}\"\n\n## space refers to the active space\nworkspace=$(wmctrl -d | grep \"*\" | cut -d\" \" -f1)\n\n\n## example: wm_open_window Chromium\nfunction wm_open_window() {\n        local app=\"$1\"\n        local space=\"$2\"\n\n        match=$(wmctrl -xl | grep -E \"^.{12}${space}.*${app}\")\n\n        if [[ ! -z \"$match\" ]]; then\n                wmctrl -i -R \"${match:0:10}\"\n        else\n                notify-send \"wm-open\" \"No window open for ${app}\"\n        fi\n}\n```\n",
+        "html": null
+      }
+    },
+    {
+      "id": "7ebf70b2-07ac-4c85-be99-3f22c45df055",
+      "meta": {
+        "header": "Bash-9",
+        "category": [
+          "cat2",
+          "subcat1"
+        ],
+        "tags": [
+          "tag1"
+        ]
+      },
+      "date": {
+        "created": "2021-12-07T00:06:24.122Z",
+        "updated": null,
+        "archived": null
+      },
+      "data": {},
+      "content": {
+        "md": "\n### BASH script - #9\n\n```bash\n#! /bin/bash\n\n## some other interesting classes:\n## Thunar: 'File Manager'\n\n## shortcut-1 is type: primary/secondary\n## shortcut-2 is key: z/x/c/v\n## an example of a shortcut: primary-x\nshortcut=\"${1}-${2}\"\n\n## space refers to the active space\nworkspace=$(wmctrl -d | grep \"*\" | cut -d\" \" -f1)\n\n\n## example: wm_open_window Chromium\nfunction wm_open_window() {\n        local app=\"$1\"\n        local space=\"$2\"\n\n        match=$(wmctrl -xl | grep -E \"^.{12}${space}.*${app}\")\n\n        if [[ ! -z \"$match\" ]]; then\n                wmctrl -i -R \"${match:0:10}\"\n        else\n                notify-send \"wm-open\" \"No window open for ${app}\"\n        fi\n}\n```\n",
+        "html": null
+      }
+    },
+    {
+      "id": "efcd4dce-58f7-4ffe-bb84-058556f0bc51",
+      "meta": {
+        "header": "Bash-10",
+        "category": [
+          "cat2",
+          "subcat3"
+        ],
+        "tags": [
+          "tag1",
+          "tag2"
+        ]
+      },
+      "date": {
+        "created": "2021-12-07T16:21:12.100Z",
+        "updated": null,
+        "archived": null
+      },
+      "data": {},
+      "content": {
+        "md": "\n### BASH script - #10\n\n```bash\n#! /bin/bash\n\n## some other interesting classes:\n## Thunar: 'File Manager'\n\n## shortcut-1 is type: primary/secondary\n## shortcut-2 is key: z/x/c/v\n## an example of a shortcut: primary-x\nshortcut=\"${1}-${2}\"\n\n## space refers to the active space\nworkspace=$(wmctrl -d | grep \"*\" | cut -d\" \" -f1)\n\n\n## example: wm_open_window Chromium\nfunction wm_open_window() {\n        local app=\"$1\"\n        local space=\"$2\"\n\n        match=$(wmctrl -xl | grep -E \"^.{12}${space}.*${app}\")\n\n        if [[ ! -z \"$match\" ]]; then\n                wmctrl -i -R \"${match:0:10}\"\n        else\n                notify-send \"wm-open\" \"No window open for ${app}\"\n        fi\n}\n```\n",
+        "html": null
+      }
+    },
+    {
+      "id": "0a1c1be3-5c6b-463d-8db6-23593b0e032c",
+      "meta": {
+        "header": "Bash-11",
+        "category": [
+          "cat1"
+        ],
+        "tags": []
+      },
+      "date": {
+        "created": "2021-12-07T03:34:40.281Z",
+        "updated": null,
+        "archived": null
+      },
+      "data": {},
+      "content": {
+        "md": "\n### BASH script - #11\n\n```bash\n#! /bin/bash\n\n## some other interesting classes:\n## Thunar: 'File Manager'\n\n## shortcut-1 is type: primary/secondary\n## shortcut-2 is key: z/x/c/v\n## an example of a shortcut: primary-x\nshortcut=\"${1}-${2}\"\n\n## space refers to the active space\nworkspace=$(wmctrl -d | grep \"*\" | cut -d\" \" -f1)\n\n\n## example: wm_open_window Chromium\nfunction wm_open_window() {\n        local app=\"$1\"\n        local space=\"$2\"\n\n        match=$(wmctrl -xl | grep -E \"^.{12}${space}.*${app}\")\n\n        if [[ ! -z \"$match\" ]]; then\n                wmctrl -i -R \"${match:0:10}\"\n        else\n                notify-send \"wm-open\" \"No window open for ${app}\"\n        fi\n}\n```\n",
+        "html": null
+      }
+    },
+    {
+      "id": "0d18e20b-0d53-4603-9ce5-242022ceb995",
+      "meta": {
+        "header": "Bash-12",
+        "category": [
+          "cat1",
+          "subcat1"
+        ],
+        "tags": [
+          "tag3",
+          "tag5"
+        ]
+      },
+      "date": {
+        "created": "2021-12-08T09:49:00.658Z",
+        "updated": null,
+        "archived": null
+      },
+      "data": {},
+      "content": {
+        "md": "\n### BASH script - #12\n\n```bash\n#! /bin/bash\n\n## some other interesting classes:\n## Thunar: 'File Manager'\n\n## shortcut-1 is type: primary/secondary\n## shortcut-2 is key: z/x/c/v\n## an example of a shortcut: primary-x\nshortcut=\"${1}-${2}\"\n\n## space refers to the active space\nworkspace=$(wmctrl -d | grep \"*\" | cut -d\" \" -f1)\n\n\n## example: wm_open_window Chromium\nfunction wm_open_window() {\n        local app=\"$1\"\n        local space=\"$2\"\n\n        match=$(wmctrl -xl | grep -E \"^.{12}${space}.*${app}\")\n\n        if [[ ! -z \"$match\" ]]; then\n                wmctrl -i -R \"${match:0:10}\"\n        else\n                notify-send \"wm-open\" \"No window open for ${app}\"\n        fi\n}\n```\n",
+        "html": null
+      }
+    },
+    {
+      "id": "4f117371-ac48-4aef-a1c2-2084f52eee54",
+      "meta": {
+        "header": "Bash-13",
+        "category": [
+          "cat1",
+          "subcat1"
+        ],
+        "tags": [
+          "tag5"
+        ]
+      },
+      "date": {
+        "created": "2021-12-07T09:29:13.192Z",
+        "updated": null,
+        "archived": null
+      },
+      "data": {},
+      "content": {
+        "md": "\n### BASH script - #13\n\n```bash\n#! /bin/bash\n\n## some other interesting classes:\n## Thunar: 'File Manager'\n\n## shortcut-1 is type: primary/secondary\n## shortcut-2 is key: z/x/c/v\n## an example of a shortcut: primary-x\nshortcut=\"${1}-${2}\"\n\n## space refers to the active space\nworkspace=$(wmctrl -d | grep \"*\" | cut -d\" \" -f1)\n\n\n## example: wm_open_window Chromium\nfunction wm_open_window() {\n        local app=\"$1\"\n        local space=\"$2\"\n\n        match=$(wmctrl -xl | grep -E \"^.{12}${space}.*${app}\")\n\n        if [[ ! -z \"$match\" ]]; then\n                wmctrl -i -R \"${match:0:10}\"\n        else\n                notify-send \"wm-open\" \"No window open for ${app}\"\n        fi\n}\n```\n",
+        "html": null
+      }
+    },
+    {
+      "id": "5c03d343-2e55-480a-b7dd-44bfa0da84f8",
+      "meta": {
+        "header": "Bash-14",
+        "category": [
+          "cat3"
+        ],
+        "tags": [
+          "tag1"
+        ]
+      },
+      "date": {
+        "created": "2021-12-07T03:44:15.919Z",
+        "updated": null,
+        "archived": null
+      },
+      "data": {},
+      "content": {
+        "md": "\n### BASH script - #14\n\n```bash\n#! /bin/bash\n\n## some other interesting classes:\n## Thunar: 'File Manager'\n\n## shortcut-1 is type: primary/secondary\n## shortcut-2 is key: z/x/c/v\n## an example of a shortcut: primary-x\nshortcut=\"${1}-${2}\"\n\n## space refers to the active space\nworkspace=$(wmctrl -d | grep \"*\" | cut -d\" \" -f1)\n\n\n## example: wm_open_window Chromium\nfunction wm_open_window() {\n        local app=\"$1\"\n        local space=\"$2\"\n\n        match=$(wmctrl -xl | grep -E \"^.{12}${space}.*${app}\")\n\n        if [[ ! -z \"$match\" ]]; then\n                wmctrl -i -R \"${match:0:10}\"\n        else\n                notify-send \"wm-open\" \"No window open for ${app}\"\n        fi\n}\n```\n",
+        "html": null
+      }
+    },
+    {
+      "id": "e86c5adf-4f11-4891-bf1c-b47961c78afb",
+      "meta": {
+        "header": "Bash-15",
+        "category": [
+          "cat1"
+        ],
+        "tags": []
+      },
+      "date": {
+        "created": "2021-12-07T10:43:53.468Z",
+        "updated": null,
+        "archived": null
+      },
+      "data": {},
+      "content": {
+        "md": "\n### BASH script - #15\n\n```bash\n#! /bin/bash\n\n## some other interesting classes:\n## Thunar: 'File Manager'\n\n## shortcut-1 is type: primary/secondary\n## shortcut-2 is key: z/x/c/v\n## an example of a shortcut: primary-x\nshortcut=\"${1}-${2}\"\n\n## space refers to the active space\nworkspace=$(wmctrl -d | grep \"*\" | cut -d\" \" -f1)\n\n\n## example: wm_open_window Chromium\nfunction wm_open_window() {\n        local app=\"$1\"\n        local space=\"$2\"\n\n        match=$(wmctrl -xl | grep -E \"^.{12}${space}.*${app}\")\n\n        if [[ ! -z \"$match\" ]]; then\n                wmctrl -i -R \"${match:0:10}\"\n        else\n                notify-send \"wm-open\" \"No window open for ${app}\"\n        fi\n}\n```\n",
+        "html": null
+      }
+    },
+    {
+      "id": "d027d81a-3dc3-4e5d-941e-b99a9c12ad9e",
+      "meta": {
+        "header": "Bash-16",
+        "category": [
+          "cat2"
+        ],
+        "tags": [
+          "tag1",
+          "tag3"
+        ]
+      },
+      "date": {
+        "created": "2021-12-04T18:15:09.637Z",
+        "updated": null,
+        "archived": null
+      },
+      "data": {},
+      "content": {
+        "md": "\n### BASH script - #16\n\n```bash\n#! /bin/bash\n\n## some other interesting classes:\n## Thunar: 'File Manager'\n\n## shortcut-1 is type: primary/secondary\n## shortcut-2 is key: z/x/c/v\n## an example of a shortcut: primary-x\nshortcut=\"${1}-${2}\"\n\n## space refers to the active space\nworkspace=$(wmctrl -d | grep \"*\" | cut -d\" \" -f1)\n\n\n## example: wm_open_window Chromium\nfunction wm_open_window() {\n        local app=\"$1\"\n        local space=\"$2\"\n\n        match=$(wmctrl -xl | grep -E \"^.{12}${space}.*${app}\")\n\n        if [[ ! -z \"$match\" ]]; then\n                wmctrl -i -R \"${match:0:10}\"\n        else\n                notify-send \"wm-open\" \"No window open for ${app}\"\n        fi\n}\n```\n",
+        "html": null
+      }
+    },
+    {
+      "id": "d70c10a8-6575-4ba0-b513-2cde26e514af",
+      "meta": {
+        "header": "Bash-17",
+        "category": [
+          "cat3"
+        ],
+        "tags": [
+          "tag4",
+          "tag3"
+        ]
+      },
+      "date": {
+        "created": "2021-12-03T04:28:00.089Z",
+        "updated": null,
+        "archived": null
+      },
+      "data": {},
+      "content": {
+        "md": "\n### BASH script - #17\n\n```bash\n#! /bin/bash\n\n## some other interesting classes:\n## Thunar: 'File Manager'\n\n## shortcut-1 is type: primary/secondary\n## shortcut-2 is key: z/x/c/v\n## an example of a shortcut: primary-x\nshortcut=\"${1}-${2}\"\n\n## space refers to the active space\nworkspace=$(wmctrl -d | grep \"*\" | cut -d\" \" -f1)\n\n\n## example: wm_open_window Chromium\nfunction wm_open_window() {\n        local app=\"$1\"\n        local space=\"$2\"\n\n        match=$(wmctrl -xl | grep -E \"^.{12}${space}.*${app}\")\n\n        if [[ ! -z \"$match\" ]]; then\n                wmctrl -i -R \"${match:0:10}\"\n        else\n                notify-send \"wm-open\" \"No window open for ${app}\"\n        fi\n}\n```\n",
+        "html": null
+      }
+    },
+    {
+      "id": "9fd6e12e-b4cd-4269-95d6-77b4ef2ae7df",
+      "meta": {
+        "header": "Bash-18",
+        "category": [
+          "cat2",
+          "subcat1"
+        ],
+        "tags": []
+      },
+      "date": {
+        "created": "2021-12-05T18:25:28.353Z",
+        "updated": null,
+        "archived": null
+      },
+      "data": {},
+      "content": {
+        "md": "\n### BASH script - #18\n\n```bash\n#! /bin/bash\n\n## some other interesting classes:\n## Thunar: 'File Manager'\n\n## shortcut-1 is type: primary/secondary\n## shortcut-2 is key: z/x/c/v\n## an example of a shortcut: primary-x\nshortcut=\"${1}-${2}\"\n\n## space refers to the active space\nworkspace=$(wmctrl -d | grep \"*\" | cut -d\" \" -f1)\n\n\n## example: wm_open_window Chromium\nfunction wm_open_window() {\n        local app=\"$1\"\n        local space=\"$2\"\n\n        match=$(wmctrl -xl | grep -E \"^.{12}${space}.*${app}\")\n\n        if [[ ! -z \"$match\" ]]; then\n                wmctrl -i -R \"${match:0:10}\"\n        else\n                notify-send \"wm-open\" \"No window open for ${app}\"\n        fi\n}\n```\n",
+        "html": null
+      }
+    },
+    {
+      "id": "3c44f0b1-6c1b-4964-b828-3a3501b0d7d2",
+      "meta": {
+        "header": "Bash-19",
+        "category": [
+          "cat2",
+          "subcat2"
+        ],
+        "tags": [
+          "tag3"
+        ]
+      },
+      "date": {
+        "created": "2021-12-08T21:42:06.871Z",
+        "updated": null,
+        "archived": null
+      },
+      "data": {},
+      "content": {
+        "md": "\n### BASH script - #19\n\n```bash\n#! /bin/bash\n\n## some other interesting classes:\n## Thunar: 'File Manager'\n\n## shortcut-1 is type: primary/secondary\n## shortcut-2 is key: z/x/c/v\n## an example of a shortcut: primary-x\nshortcut=\"${1}-${2}\"\n\n## space refers to the active space\nworkspace=$(wmctrl -d | grep \"*\" | cut -d\" \" -f1)\n\n\n## example: wm_open_window Chromium\nfunction wm_open_window() {\n        local app=\"$1\"\n        local space=\"$2\"\n\n        match=$(wmctrl -xl | grep -E \"^.{12}${space}.*${app}\")\n\n        if [[ ! -z \"$match\" ]]; then\n                wmctrl -i -R \"${match:0:10}\"\n        else\n                notify-send \"wm-open\" \"No window open for ${app}\"\n        fi\n}\n```\n",
+        "html": null
+      }
+    },
+    {
+      "id": "e9e440a9-3b46-413e-b6e4-30bb6dfbbfcf",
+      "meta": {
+        "header": "Bash-20",
+        "category": [
+          "cat2",
+          "subcat2"
+        ],
+        "tags": [
+          "tag2"
+        ]
+      },
+      "date": {
+        "created": "2021-12-08T07:54:16.564Z",
+        "updated": null,
+        "archived": null
+      },
+      "data": {},
+      "content": {
+        "md": "\n### BASH script - #20\n\n```bash\n#! /bin/bash\n\n## some other interesting classes:\n## Thunar: 'File Manager'\n\n## shortcut-1 is type: primary/secondary\n## shortcut-2 is key: z/x/c/v\n## an example of a shortcut: primary-x\nshortcut=\"${1}-${2}\"\n\n## space refers to the active space\nworkspace=$(wmctrl -d | grep \"*\" | cut -d\" \" -f1)\n\n\n## example: wm_open_window Chromium\nfunction wm_open_window() {\n        local app=\"$1\"\n        local space=\"$2\"\n\n        match=$(wmctrl -xl | grep -E \"^.{12}${space}.*${app}\")\n\n        if [[ ! -z \"$match\" ]]; then\n                wmctrl -i -R \"${match:0:10}\"\n        else\n                notify-send \"wm-open\" \"No window open for ${app}\"\n        fi\n}\n```\n",
+        "html": null
+      }
+    },
+    {
+      "id": "e0cf4dec-275c-4f1b-bcc3-9671f2277919",
+      "meta": {
+        "header": "Bash-21",
+        "category": [
+          "cat2",
+          "subcat1"
+        ],
+        "tags": [
+          "tag1",
+          "tag5"
+        ]
+      },
+      "date": {
+        "created": "2021-12-06T10:43:24.071Z",
+        "updated": null,
+        "archived": null
+      },
+      "data": {},
+      "content": {
+        "md": "\n### BASH script - #21\n\n```bash\n#! /bin/bash\n\n## some other interesting classes:\n## Thunar: 'File Manager'\n\n## shortcut-1 is type: primary/secondary\n## shortcut-2 is key: z/x/c/v\n## an example of a shortcut: primary-x\nshortcut=\"${1}-${2}\"\n\n## space refers to the active space\nworkspace=$(wmctrl -d | grep \"*\" | cut -d\" \" -f1)\n\n\n## example: wm_open_window Chromium\nfunction wm_open_window() {\n        local app=\"$1\"\n        local space=\"$2\"\n\n        match=$(wmctrl -xl | grep -E \"^.{12}${space}.*${app}\")\n\n        if [[ ! -z \"$match\" ]]; then\n                wmctrl -i -R \"${match:0:10}\"\n        else\n                notify-send \"wm-open\" \"No window open for ${app}\"\n        fi\n}\n```\n",
+        "html": null
+      }
+    },
+    {
+      "id": "adb1d358-1f58-4da9-b288-fa48970217bd",
+      "meta": {
+        "header": "Bash-22",
+        "category": [
+          "cat2"
+        ],
+        "tags": []
+      },
+      "date": {
+        "created": "2021-12-09T07:22:18.216Z",
+        "updated": null,
+        "archived": null
+      },
+      "data": {},
+      "content": {
+        "md": "\n### BASH script - #22\n\n```bash\n#! /bin/bash\n\n## some other interesting classes:\n## Thunar: 'File Manager'\n\n## shortcut-1 is type: primary/secondary\n## shortcut-2 is key: z/x/c/v\n## an example of a shortcut: primary-x\nshortcut=\"${1}-${2}\"\n\n## space refers to the active space\nworkspace=$(wmctrl -d | grep \"*\" | cut -d\" \" -f1)\n\n\n## example: wm_open_window Chromium\nfunction wm_open_window() {\n        local app=\"$1\"\n        local space=\"$2\"\n\n        match=$(wmctrl -xl | grep -E \"^.{12}${space}.*${app}\")\n\n        if [[ ! -z \"$match\" ]]; then\n                wmctrl -i -R \"${match:0:10}\"\n        else\n                notify-send \"wm-open\" \"No window open for ${app}\"\n        fi\n}\n```\n",
+        "html": null
+      }
+    },
+    {
+      "id": "015864ec-4b6c-4c51-b973-3f9c7f6e5429",
+      "meta": {
+        "header": "Bash-23",
+        "category": [
+          "cat3"
+        ],
+        "tags": [
+          "tag4"
+        ]
+      },
+      "date": {
+        "created": "2021-12-09T18:23:10.544Z",
+        "updated": null,
+        "archived": null
+      },
+      "data": {},
+      "content": {
+        "md": "\n### BASH script - #23\n\n```bash\n#! /bin/bash\n\n## some other interesting classes:\n## Thunar: 'File Manager'\n\n## shortcut-1 is type: primary/secondary\n## shortcut-2 is key: z/x/c/v\n## an example of a shortcut: primary-x\nshortcut=\"${1}-${2}\"\n\n## space refers to the active space\nworkspace=$(wmctrl -d | grep \"*\" | cut -d\" \" -f1)\n\n\n## example: wm_open_window Chromium\nfunction wm_open_window() {\n        local app=\"$1\"\n        local space=\"$2\"\n\n        match=$(wmctrl -xl | grep -E \"^.{12}${space}.*${app}\")\n\n        if [[ ! -z \"$match\" ]]; then\n                wmctrl -i -R \"${match:0:10}\"\n        else\n                notify-send \"wm-open\" \"No window open for ${app}\"\n        fi\n}\n```\n",
+        "html": null
+      }
+    },
+    {
+      "id": "fff8c529-b6a7-41ba-834e-ff00f744eef0",
+      "meta": {
+        "header": "Bash-24",
+        "category": [
+          "cat1",
+          "subcat2"
+        ],
+        "tags": [
+          "tag5"
+        ]
+      },
+      "date": {
+        "created": "2021-12-03T23:27:55.355Z",
+        "updated": null,
+        "archived": null
+      },
+      "data": {},
+      "content": {
+        "md": "\n### BASH script - #24\n\n```bash\n#! /bin/bash\n\n## some other interesting classes:\n## Thunar: 'File Manager'\n\n## shortcut-1 is type: primary/secondary\n## shortcut-2 is key: z/x/c/v\n## an example of a shortcut: primary-x\nshortcut=\"${1}-${2}\"\n\n## space refers to the active space\nworkspace=$(wmctrl -d | grep \"*\" | cut -d\" \" -f1)\n\n\n## example: wm_open_window Chromium\nfunction wm_open_window() {\n        local app=\"$1\"\n        local space=\"$2\"\n\n        match=$(wmctrl -xl | grep -E \"^.{12}${space}.*${app}\")\n\n        if [[ ! -z \"$match\" ]]; then\n                wmctrl -i -R \"${match:0:10}\"\n        else\n                notify-send \"wm-open\" \"No window open for ${app}\"\n        fi\n}\n```\n",
+        "html": null
+      }
+    },
+    {
+      "id": "d8c59b6a-8027-4ccd-94a7-21804fe832bb",
+      "meta": {
+        "header": "Bash-25",
+        "category": [
+          "cat2",
+          "subcat3"
+        ],
+        "tags": [
+          "tag5",
+          "tag1"
+        ]
+      },
+      "date": {
+        "created": "2021-12-09T05:09:08.572Z",
+        "updated": null,
+        "archived": null
+      },
+      "data": {},
+      "content": {
+        "md": "\n### BASH script - #25\n\n```bash\n#! /bin/bash\n\n## some other interesting classes:\n## Thunar: 'File Manager'\n\n## shortcut-1 is type: primary/secondary\n## shortcut-2 is key: z/x/c/v\n## an example of a shortcut: primary-x\nshortcut=\"${1}-${2}\"\n\n## space refers to the active space\nworkspace=$(wmctrl -d | grep \"*\" | cut -d\" \" -f1)\n\n\n## example: wm_open_window Chromium\nfunction wm_open_window() {\n        local app=\"$1\"\n        local space=\"$2\"\n\n        match=$(wmctrl -xl | grep -E \"^.{12}${space}.*${app}\")\n\n        if [[ ! -z \"$match\" ]]; then\n                wmctrl -i -R \"${match:0:10}\"\n        else\n                notify-send \"wm-open\" \"No window open for ${app}\"\n        fi\n}\n```\n",
+        "html": null
+      }
+    },
+    {
+      "id": "6a62b75c-6155-4a95-8c11-3336e11ae2e9",
+      "meta": {
+        "header": "Bash-26",
+        "category": [
+          "cat1",
+          "subcat2"
+        ],
+        "tags": [
+          "tag2"
+        ]
+      },
+      "date": {
+        "created": "2021-12-04T15:51:15.881Z",
+        "updated": null,
+        "archived": null
+      },
+      "data": {},
+      "content": {
+        "md": "\n### BASH script - #26\n\n```bash\n#! /bin/bash\n\n## some other interesting classes:\n## Thunar: 'File Manager'\n\n## shortcut-1 is type: primary/secondary\n## shortcut-2 is key: z/x/c/v\n## an example of a shortcut: primary-x\nshortcut=\"${1}-${2}\"\n\n## space refers to the active space\nworkspace=$(wmctrl -d | grep \"*\" | cut -d\" \" -f1)\n\n\n## example: wm_open_window Chromium\nfunction wm_open_window() {\n        local app=\"$1\"\n        local space=\"$2\"\n\n        match=$(wmctrl -xl | grep -E \"^.{12}${space}.*${app}\")\n\n        if [[ ! -z \"$match\" ]]; then\n                wmctrl -i -R \"${match:0:10}\"\n        else\n                notify-send \"wm-open\" \"No window open for ${app}\"\n        fi\n}\n```\n",
+        "html": null
+      }
+    },
+    {
+      "id": "c6d06e81-1c90-4408-bfc9-cca4d5f54cba",
+      "meta": {
+        "header": "Bash-27",
+        "category": [
+          "cat3"
+        ],
+        "tags": []
+      },
+      "date": {
+        "created": "2021-12-08T17:19:18.279Z",
+        "updated": null,
+        "archived": null
+      },
+      "data": {},
+      "content": {
+        "md": "\n### BASH script - #27\n\n```bash\n#! /bin/bash\n\n## some other interesting classes:\n## Thunar: 'File Manager'\n\n## shortcut-1 is type: primary/secondary\n## shortcut-2 is key: z/x/c/v\n## an example of a shortcut: primary-x\nshortcut=\"${1}-${2}\"\n\n## space refers to the active space\nworkspace=$(wmctrl -d | grep \"*\" | cut -d\" \" -f1)\n\n\n## example: wm_open_window Chromium\nfunction wm_open_window() {\n        local app=\"$1\"\n        local space=\"$2\"\n\n        match=$(wmctrl -xl | grep -E \"^.{12}${space}.*${app}\")\n\n        if [[ ! -z \"$match\" ]]; then\n                wmctrl -i -R \"${match:0:10}\"\n        else\n                notify-send \"wm-open\" \"No window open for ${app}\"\n        fi\n}\n```\n",
+        "html": null
+      }
+    },
+    {
+      "id": "0699d51a-0a78-4911-ac79-26ceb1400dff",
+      "meta": {
+        "header": "Bash-28",
+        "category": [
+          "cat2",
+          "subcat1"
+        ],
+        "tags": [
+          "tag5"
+        ]
+      },
+      "date": {
+        "created": "2021-12-03T02:30:04.178Z",
+        "updated": null,
+        "archived": null
+      },
+      "data": {},
+      "content": {
+        "md": "\n### BASH script - #28\n\n```bash\n#! /bin/bash\n\n## some other interesting classes:\n## Thunar: 'File Manager'\n\n## shortcut-1 is type: primary/secondary\n## shortcut-2 is key: z/x/c/v\n## an example of a shortcut: primary-x\nshortcut=\"${1}-${2}\"\n\n## space refers to the active space\nworkspace=$(wmctrl -d | grep \"*\" | cut -d\" \" -f1)\n\n\n## example: wm_open_window Chromium\nfunction wm_open_window() {\n        local app=\"$1\"\n        local space=\"$2\"\n\n        match=$(wmctrl -xl | grep -E \"^.{12}${space}.*${app}\")\n\n        if [[ ! -z \"$match\" ]]; then\n                wmctrl -i -R \"${match:0:10}\"\n        else\n                notify-send \"wm-open\" \"No window open for ${app}\"\n        fi\n}\n```\n",
+        "html": null
+      }
+    },
+    {
+      "id": "0d91ee9c-a608-4dbd-ae11-1f2f22c35573",
+      "meta": {
+        "header": "Bash-29",
+        "category": [
+          "cat1"
+        ],
+        "tags": []
+      },
+      "date": {
+        "created": "2021-12-08T00:00:32.370Z",
+        "updated": null,
+        "archived": null
+      },
+      "data": {},
+      "content": {
+        "md": "\n### BASH script - #29\n\n```bash\n#! /bin/bash\n\n## some other interesting classes:\n## Thunar: 'File Manager'\n\n## shortcut-1 is type: primary/secondary\n## shortcut-2 is key: z/x/c/v\n## an example of a shortcut: primary-x\nshortcut=\"${1}-${2}\"\n\n## space refers to the active space\nworkspace=$(wmctrl -d | grep \"*\" | cut -d\" \" -f1)\n\n\n## example: wm_open_window Chromium\nfunction wm_open_window() {\n        local app=\"$1\"\n        local space=\"$2\"\n\n        match=$(wmctrl -xl | grep -E \"^.{12}${space}.*${app}\")\n\n        if [[ ! -z \"$match\" ]]; then\n                wmctrl -i -R \"${match:0:10}\"\n        else\n                notify-send \"wm-open\" \"No window open for ${app}\"\n        fi\n}\n```\n",
+        "html": null
+      }
+    },
+    {
+      "id": "9bc9370a-405d-4f7f-9bc6-a614987ecdc3",
+      "meta": {
+        "header": "Bash-30",
+        "category": [
+          "cat1"
+        ],
+        "tags": []
+      },
+      "date": {
+        "created": "2021-12-03T11:16:51.897Z",
+        "updated": null,
+        "archived": null
+      },
+      "data": {},
+      "content": {
+        "md": "\n### BASH script - #30\n\n```bash\n#! /bin/bash\n\n## some other interesting classes:\n## Thunar: 'File Manager'\n\n## shortcut-1 is type: primary/secondary\n## shortcut-2 is key: z/x/c/v\n## an example of a shortcut: primary-x\nshortcut=\"${1}-${2}\"\n\n## space refers to the active space\nworkspace=$(wmctrl -d | grep \"*\" | cut -d\" \" -f1)\n\n\n## example: wm_open_window Chromium\nfunction wm_open_window() {\n        local app=\"$1\"\n        local space=\"$2\"\n\n        match=$(wmctrl -xl | grep -E \"^.{12}${space}.*${app}\")\n\n        if [[ ! -z \"$match\" ]]; then\n                wmctrl -i -R \"${match:0:10}\"\n        else\n                notify-send \"wm-open\" \"No window open for ${app}\"\n        fi\n}\n```\n",
+        "html": null
+      }
+    },
+    {
+      "id": "dfdb4c73-f412-4ab1-b39d-16b7cf11d3da",
+      "meta": {
+        "header": "Bash-31",
+        "category": [
+          "cat2"
+        ],
+        "tags": [
+          "tag3",
+          "tag1"
+        ]
+      },
+      "date": {
+        "created": "2021-12-08T11:20:24.700Z",
+        "updated": null,
+        "archived": null
+      },
+      "data": {},
+      "content": {
+        "md": "\n### BASH script - #31\n\n```bash\n#! /bin/bash\n\n## some other interesting classes:\n## Thunar: 'File Manager'\n\n## shortcut-1 is type: primary/secondary\n## shortcut-2 is key: z/x/c/v\n## an example of a shortcut: primary-x\nshortcut=\"${1}-${2}\"\n\n## space refers to the active space\nworkspace=$(wmctrl -d | grep \"*\" | cut -d\" \" -f1)\n\n\n## example: wm_open_window Chromium\nfunction wm_open_window() {\n        local app=\"$1\"\n        local space=\"$2\"\n\n        match=$(wmctrl -xl | grep -E \"^.{12}${space}.*${app}\")\n\n        if [[ ! -z \"$match\" ]]; then\n                wmctrl -i -R \"${match:0:10}\"\n        else\n                notify-send \"wm-open\" \"No window open for ${app}\"\n        fi\n}\n```\n",
+        "html": null
+      }
+    },
+    {
+      "id": "afc3e5de-c602-4ae9-b9d1-de16deff464b",
+      "meta": {
+        "header": "Bash-32",
+        "category": [
+          "cat3"
+        ],
+        "tags": [
+          "tag5"
+        ]
+      },
+      "date": {
+        "created": "2021-12-07T03:04:50.488Z",
+        "updated": null,
+        "archived": null
+      },
+      "data": {},
+      "content": {
+        "md": "\n### BASH script - #32\n\n```bash\n#! /bin/bash\n\n## some other interesting classes:\n## Thunar: 'File Manager'\n\n## shortcut-1 is type: primary/secondary\n## shortcut-2 is key: z/x/c/v\n## an example of a shortcut: primary-x\nshortcut=\"${1}-${2}\"\n\n## space refers to the active space\nworkspace=$(wmctrl -d | grep \"*\" | cut -d\" \" -f1)\n\n\n## example: wm_open_window Chromium\nfunction wm_open_window() {\n        local app=\"$1\"\n        local space=\"$2\"\n\n        match=$(wmctrl -xl | grep -E \"^.{12}${space}.*${app}\")\n\n        if [[ ! -z \"$match\" ]]; then\n                wmctrl -i -R \"${match:0:10}\"\n        else\n                notify-send \"wm-open\" \"No window open for ${app}\"\n        fi\n}\n```\n",
+        "html": null
+      }
+    },
+    {
+      "id": "a74cd755-bc67-4a30-ade4-38c89e79bf68",
+      "meta": {
+        "header": "Bash-33",
+        "category": [
+          "cat1",
+          "subcat1"
+        ],
+        "tags": [
+          "tag1"
+        ]
+      },
+      "date": {
+        "created": "2021-12-05T11:43:26.695Z",
+        "updated": null,
+        "archived": null
+      },
+      "data": {},
+      "content": {
+        "md": "\n### BASH script - #33\n\n```bash\n#! /bin/bash\n\n## some other interesting classes:\n## Thunar: 'File Manager'\n\n## shortcut-1 is type: primary/secondary\n## shortcut-2 is key: z/x/c/v\n## an example of a shortcut: primary-x\nshortcut=\"${1}-${2}\"\n\n## space refers to the active space\nworkspace=$(wmctrl -d | grep \"*\" | cut -d\" \" -f1)\n\n\n## example: wm_open_window Chromium\nfunction wm_open_window() {\n        local app=\"$1\"\n        local space=\"$2\"\n\n        match=$(wmctrl -xl | grep -E \"^.{12}${space}.*${app}\")\n\n        if [[ ! -z \"$match\" ]]; then\n                wmctrl -i -R \"${match:0:10}\"\n        else\n                notify-send \"wm-open\" \"No window open for ${app}\"\n        fi\n}\n```\n",
+        "html": null
+      }
+    },
+    {
+      "id": "5979cacb-b749-4f13-a89e-94716ac307c5",
+      "meta": {
+        "header": "Bash-34",
+        "category": [
+          "cat1",
+          "subcat2"
+        ],
+        "tags": [
+          "tag5"
+        ]
+      },
+      "date": {
+        "created": "2021-12-07T18:21:50.689Z",
+        "updated": null,
+        "archived": null
+      },
+      "data": {},
+      "content": {
+        "md": "\n### BASH script - #34\n\n```bash\n#! /bin/bash\n\n## some other interesting classes:\n## Thunar: 'File Manager'\n\n## shortcut-1 is type: primary/secondary\n## shortcut-2 is key: z/x/c/v\n## an example of a shortcut: primary-x\nshortcut=\"${1}-${2}\"\n\n## space refers to the active space\nworkspace=$(wmctrl -d | grep \"*\" | cut -d\" \" -f1)\n\n\n## example: wm_open_window Chromium\nfunction wm_open_window() {\n        local app=\"$1\"\n        local space=\"$2\"\n\n        match=$(wmctrl -xl | grep -E \"^.{12}${space}.*${app}\")\n\n        if [[ ! -z \"$match\" ]]; then\n                wmctrl -i -R \"${match:0:10}\"\n        else\n                notify-send \"wm-open\" \"No window open for ${app}\"\n        fi\n}\n```\n",
+        "html": null
+      }
+    },
+    {
+      "id": "d1411093-df76-4443-a890-e7f133d305c3",
+      "meta": {
+        "header": "Bash-35",
+        "category": [
+          "cat2",
+          "subcat3"
+        ],
+        "tags": []
+      },
+      "date": {
+        "created": "2021-12-04T23:25:31.249Z",
+        "updated": null,
+        "archived": null
+      },
+      "data": {},
+      "content": {
+        "md": "\n### BASH script - #35\n\n```bash\n#! /bin/bash\n\n## some other interesting classes:\n## Thunar: 'File Manager'\n\n## shortcut-1 is type: primary/secondary\n## shortcut-2 is key: z/x/c/v\n## an example of a shortcut: primary-x\nshortcut=\"${1}-${2}\"\n\n## space refers to the active space\nworkspace=$(wmctrl -d | grep \"*\" | cut -d\" \" -f1)\n\n\n## example: wm_open_window Chromium\nfunction wm_open_window() {\n        local app=\"$1\"\n        local space=\"$2\"\n\n        match=$(wmctrl -xl | grep -E \"^.{12}${space}.*${app}\")\n\n        if [[ ! -z \"$match\" ]]; then\n                wmctrl -i -R \"${match:0:10}\"\n        else\n                notify-send \"wm-open\" \"No window open for ${app}\"\n        fi\n}\n```\n",
+        "html": null
+      }
+    },
+    {
+      "id": "50a709b5-eade-4d9e-947e-05fa6f5c599f",
+      "meta": {
+        "header": "Bash-36",
+        "category": [
+          "cat1",
+          "subcat2"
+        ],
+        "tags": [
+          "tag3"
+        ]
+      },
+      "date": {
+        "created": "2021-12-04T11:20:39.608Z",
+        "updated": null,
+        "archived": null
+      },
+      "data": {},
+      "content": {
+        "md": "\n### BASH script - #36\n\n```bash\n#! /bin/bash\n\n## some other interesting classes:\n## Thunar: 'File Manager'\n\n## shortcut-1 is type: primary/secondary\n## shortcut-2 is key: z/x/c/v\n## an example of a shortcut: primary-x\nshortcut=\"${1}-${2}\"\n\n## space refers to the active space\nworkspace=$(wmctrl -d | grep \"*\" | cut -d\" \" -f1)\n\n\n## example: wm_open_window Chromium\nfunction wm_open_window() {\n        local app=\"$1\"\n        local space=\"$2\"\n\n        match=$(wmctrl -xl | grep -E \"^.{12}${space}.*${app}\")\n\n        if [[ ! -z \"$match\" ]]; then\n                wmctrl -i -R \"${match:0:10}\"\n        else\n                notify-send \"wm-open\" \"No window open for ${app}\"\n        fi\n}\n```\n",
+        "html": null
+      }
+    },
+    {
+      "id": "853d2b20-931e-4cb1-8fbe-89811f9c41a2",
+      "meta": {
+        "header": "Bash-37",
+        "category": [
+          "cat3"
+        ],
+        "tags": [
+          "tag2",
+          "tag5"
+        ]
+      },
+      "date": {
+        "created": "2021-12-05T16:55:20.503Z",
+        "updated": null,
+        "archived": null
+      },
+      "data": {},
+      "content": {
+        "md": "\n### BASH script - #37\n\n```bash\n#! /bin/bash\n\n## some other interesting classes:\n## Thunar: 'File Manager'\n\n## shortcut-1 is type: primary/secondary\n## shortcut-2 is key: z/x/c/v\n## an example of a shortcut: primary-x\nshortcut=\"${1}-${2}\"\n\n## space refers to the active space\nworkspace=$(wmctrl -d | grep \"*\" | cut -d\" \" -f1)\n\n\n## example: wm_open_window Chromium\nfunction wm_open_window() {\n        local app=\"$1\"\n        local space=\"$2\"\n\n        match=$(wmctrl -xl | grep -E \"^.{12}${space}.*${app}\")\n\n        if [[ ! -z \"$match\" ]]; then\n                wmctrl -i -R \"${match:0:10}\"\n        else\n                notify-send \"wm-open\" \"No window open for ${app}\"\n        fi\n}\n```\n",
+        "html": null
+      }
+    },
+    {
+      "id": "ef6c26d7-b151-440f-897e-300f63bd75ee",
+      "meta": {
+        "header": "Bash-38",
+        "category": [
+          "cat3"
+        ],
+        "tags": []
+      },
+      "date": {
+        "created": "2021-12-03T18:02:19.062Z",
+        "updated": null,
+        "archived": null
+      },
+      "data": {},
+      "content": {
+        "md": "\n### BASH script - #38\n\n```bash\n#! /bin/bash\n\n## some other interesting classes:\n## Thunar: 'File Manager'\n\n## shortcut-1 is type: primary/secondary\n## shortcut-2 is key: z/x/c/v\n## an example of a shortcut: primary-x\nshortcut=\"${1}-${2}\"\n\n## space refers to the active space\nworkspace=$(wmctrl -d | grep \"*\" | cut -d\" \" -f1)\n\n\n## example: wm_open_window Chromium\nfunction wm_open_window() {\n        local app=\"$1\"\n        local space=\"$2\"\n\n        match=$(wmctrl -xl | grep -E \"^.{12}${space}.*${app}\")\n\n        if [[ ! -z \"$match\" ]]; then\n                wmctrl -i -R \"${match:0:10}\"\n        else\n                notify-send \"wm-open\" \"No window open for ${app}\"\n        fi\n}\n```\n",
+        "html": null
+      }
+    },
+    {
+      "id": "d73d1fdd-eebf-4d5e-bbc2-a1b1569beca9",
+      "meta": {
+        "header": "Bash-39",
+        "category": [
+          "cat1"
+        ],
+        "tags": [
+          "tag5",
+          "tag2"
+        ]
+      },
+      "date": {
+        "created": "2021-12-04T20:17:23.286Z",
+        "updated": null,
+        "archived": null
+      },
+      "data": {},
+      "content": {
+        "md": "\n### BASH script - #39\n\n```bash\n#! /bin/bash\n\n## some other interesting classes:\n## Thunar: 'File Manager'\n\n## shortcut-1 is type: primary/secondary\n## shortcut-2 is key: z/x/c/v\n## an example of a shortcut: primary-x\nshortcut=\"${1}-${2}\"\n\n## space refers to the active space\nworkspace=$(wmctrl -d | grep \"*\" | cut -d\" \" -f1)\n\n\n## example: wm_open_window Chromium\nfunction wm_open_window() {\n        local app=\"$1\"\n        local space=\"$2\"\n\n        match=$(wmctrl -xl | grep -E \"^.{12}${space}.*${app}\")\n\n        if [[ ! -z \"$match\" ]]; then\n                wmctrl -i -R \"${match:0:10}\"\n        else\n                notify-send \"wm-open\" \"No window open for ${app}\"\n        fi\n}\n```\n",
+        "html": null
+      }
+    },
+    {
+      "id": "f709b124-397d-4784-9a68-f00daf646330",
+      "meta": {
+        "header": "Bash-40",
+        "category": [
+          "cat1"
+        ],
+        "tags": [
+          "tag5",
+          "tag2"
+        ]
+      },
+      "date": {
+        "created": "2021-12-09T02:37:04.322Z",
+        "updated": null,
+        "archived": null
+      },
+      "data": {},
+      "content": {
+        "md": "\n### BASH script - #40\n\n```bash\n#! /bin/bash\n\n## some other interesting classes:\n## Thunar: 'File Manager'\n\n## shortcut-1 is type: primary/secondary\n## shortcut-2 is key: z/x/c/v\n## an example of a shortcut: primary-x\nshortcut=\"${1}-${2}\"\n\n## space refers to the active space\nworkspace=$(wmctrl -d | grep \"*\" | cut -d\" \" -f1)\n\n\n## example: wm_open_window Chromium\nfunction wm_open_window() {\n        local app=\"$1\"\n        local space=\"$2\"\n\n        match=$(wmctrl -xl | grep -E \"^.{12}${space}.*${app}\")\n\n        if [[ ! -z \"$match\" ]]; then\n                wmctrl -i -R \"${match:0:10}\"\n        else\n                notify-send \"wm-open\" \"No window open for ${app}\"\n        fi\n}\n```\n",
+        "html": null
+      }
+    },
+    {
+      "id": "99ec8545-0a94-4c22-8f44-79967a034b70",
+      "meta": {
+        "header": "Bash-41",
+        "category": [
+          "cat2",
+          "subcat1"
+        ],
+        "tags": [
+          "tag5"
+        ]
+      },
+      "date": {
+        "created": "2021-12-09T09:18:02.503Z",
+        "updated": null,
+        "archived": null
+      },
+      "data": {},
+      "content": {
+        "md": "\n### BASH script - #41\n\n```bash\n#! /bin/bash\n\n## some other interesting classes:\n## Thunar: 'File Manager'\n\n## shortcut-1 is type: primary/secondary\n## shortcut-2 is key: z/x/c/v\n## an example of a shortcut: primary-x\nshortcut=\"${1}-${2}\"\n\n## space refers to the active space\nworkspace=$(wmctrl -d | grep \"*\" | cut -d\" \" -f1)\n\n\n## example: wm_open_window Chromium\nfunction wm_open_window() {\n        local app=\"$1\"\n        local space=\"$2\"\n\n        match=$(wmctrl -xl | grep -E \"^.{12}${space}.*${app}\")\n\n        if [[ ! -z \"$match\" ]]; then\n                wmctrl -i -R \"${match:0:10}\"\n        else\n                notify-send \"wm-open\" \"No window open for ${app}\"\n        fi\n}\n```\n",
+        "html": null
+      }
+    },
+    {
+      "id": "6101e086-51b2-489e-9888-cf32a8307329",
+      "meta": {
+        "header": "Bash-42",
+        "category": [
+          "cat1",
+          "subcat1"
+        ],
+        "tags": [
+          "tag3"
+        ]
+      },
+      "date": {
+        "created": "2021-12-03T04:29:16.751Z",
+        "updated": null,
+        "archived": null
+      },
+      "data": {},
+      "content": {
+        "md": "\n### BASH script - #42\n\n```bash\n#! /bin/bash\n\n## some other interesting classes:\n## Thunar: 'File Manager'\n\n## shortcut-1 is type: primary/secondary\n## shortcut-2 is key: z/x/c/v\n## an example of a shortcut: primary-x\nshortcut=\"${1}-${2}\"\n\n## space refers to the active space\nworkspace=$(wmctrl -d | grep \"*\" | cut -d\" \" -f1)\n\n\n## example: wm_open_window Chromium\nfunction wm_open_window() {\n        local app=\"$1\"\n        local space=\"$2\"\n\n        match=$(wmctrl -xl | grep -E \"^.{12}${space}.*${app}\")\n\n        if [[ ! -z \"$match\" ]]; then\n                wmctrl -i -R \"${match:0:10}\"\n        else\n                notify-send \"wm-open\" \"No window open for ${app}\"\n        fi\n}\n```\n",
+        "html": null
+      }
+    },
+    {
+      "id": "61e992e3-fb91-4c41-891c-f23a26b2203b",
+      "meta": {
+        "header": "Bash-43",
+        "category": [
+          "cat2",
+          "subcat3"
+        ],
+        "tags": [
+          "tag2"
+        ]
+      },
+      "date": {
+        "created": "2021-12-08T22:16:23.000Z",
+        "updated": null,
+        "archived": null
+      },
+      "data": {},
+      "content": {
+        "md": "\n### BASH script - #43\n\n```bash\n#! /bin/bash\n\n## some other interesting classes:\n## Thunar: 'File Manager'\n\n## shortcut-1 is type: primary/secondary\n## shortcut-2 is key: z/x/c/v\n## an example of a shortcut: primary-x\nshortcut=\"${1}-${2}\"\n\n## space refers to the active space\nworkspace=$(wmctrl -d | grep \"*\" | cut -d\" \" -f1)\n\n\n## example: wm_open_window Chromium\nfunction wm_open_window() {\n        local app=\"$1\"\n        local space=\"$2\"\n\n        match=$(wmctrl -xl | grep -E \"^.{12}${space}.*${app}\")\n\n        if [[ ! -z \"$match\" ]]; then\n                wmctrl -i -R \"${match:0:10}\"\n        else\n                notify-send \"wm-open\" \"No window open for ${app}\"\n        fi\n}\n```\n",
+        "html": null
+      }
+    },
+    {
+      "id": "4d1feeb5-31e4-44ed-9384-b7f027a361b4",
+      "meta": {
+        "header": "Bash-44",
+        "category": [
+          "cat3"
+        ],
+        "tags": [
+          "tag5"
+        ]
+      },
+      "date": {
+        "created": "2021-12-04T02:31:17.030Z",
+        "updated": null,
+        "archived": null
+      },
+      "data": {},
+      "content": {
+        "md": "\n### BASH script - #44\n\n```bash\n#! /bin/bash\n\n## some other interesting classes:\n## Thunar: 'File Manager'\n\n## shortcut-1 is type: primary/secondary\n## shortcut-2 is key: z/x/c/v\n## an example of a shortcut: primary-x\nshortcut=\"${1}-${2}\"\n\n## space refers to the active space\nworkspace=$(wmctrl -d | grep \"*\" | cut -d\" \" -f1)\n\n\n## example: wm_open_window Chromium\nfunction wm_open_window() {\n        local app=\"$1\"\n        local space=\"$2\"\n\n        match=$(wmctrl -xl | grep -E \"^.{12}${space}.*${app}\")\n\n        if [[ ! -z \"$match\" ]]; then\n                wmctrl -i -R \"${match:0:10}\"\n        else\n                notify-send \"wm-open\" \"No window open for ${app}\"\n        fi\n}\n```\n",
+        "html": null
+      }
+    },
+    {
+      "id": "031319c3-6329-446a-86ce-3df6b434a27c",
+      "meta": {
+        "header": "Bash-45",
+        "category": [
+          "cat1",
+          "subcat2"
+        ],
+        "tags": []
+      },
+      "date": {
+        "created": "2021-12-03T08:30:01.871Z",
+        "updated": null,
+        "archived": null
+      },
+      "data": {},
+      "content": {
+        "md": "\n### BASH script - #45\n\n```bash\n#! /bin/bash\n\n## some other interesting classes:\n## Thunar: 'File Manager'\n\n## shortcut-1 is type: primary/secondary\n## shortcut-2 is key: z/x/c/v\n## an example of a shortcut: primary-x\nshortcut=\"${1}-${2}\"\n\n## space refers to the active space\nworkspace=$(wmctrl -d | grep \"*\" | cut -d\" \" -f1)\n\n\n## example: wm_open_window Chromium\nfunction wm_open_window() {\n        local app=\"$1\"\n        local space=\"$2\"\n\n        match=$(wmctrl -xl | grep -E \"^.{12}${space}.*${app}\")\n\n        if [[ ! -z \"$match\" ]]; then\n                wmctrl -i -R \"${match:0:10}\"\n        else\n                notify-send \"wm-open\" \"No window open for ${app}\"\n        fi\n}\n```\n",
+        "html": null
+      }
+    },
+    {
+      "id": "dd062fc3-494b-4b72-8e33-1ec429cca41d",
+      "meta": {
+        "header": "Bash-46",
+        "category": [
+          "cat1"
+        ],
+        "tags": [
+          "tag3"
+        ]
+      },
+      "date": {
+        "created": "2021-12-04T08:29:12.265Z",
+        "updated": null,
+        "archived": null
+      },
+      "data": {},
+      "content": {
+        "md": "\n### BASH script - #46\n\n```bash\n#! /bin/bash\n\n## some other interesting classes:\n## Thunar: 'File Manager'\n\n## shortcut-1 is type: primary/secondary\n## shortcut-2 is key: z/x/c/v\n## an example of a shortcut: primary-x\nshortcut=\"${1}-${2}\"\n\n## space refers to the active space\nworkspace=$(wmctrl -d | grep \"*\" | cut -d\" \" -f1)\n\n\n## example: wm_open_window Chromium\nfunction wm_open_window() {\n        local app=\"$1\"\n        local space=\"$2\"\n\n        match=$(wmctrl -xl | grep -E \"^.{12}${space}.*${app}\")\n\n        if [[ ! -z \"$match\" ]]; then\n                wmctrl -i -R \"${match:0:10}\"\n        else\n                notify-send \"wm-open\" \"No window open for ${app}\"\n        fi\n}\n```\n",
+        "html": null
+      }
+    },
+    {
+      "id": "c066677b-abc8-450e-96ad-a5fbc8d84972",
+      "meta": {
+        "header": "Bash-47",
+        "category": [
+          "cat2",
+          "subcat1"
+        ],
+        "tags": [
+          "tag3"
+        ]
+      },
+      "date": {
+        "created": "2021-12-06T16:06:30.102Z",
+        "updated": null,
+        "archived": null
+      },
+      "data": {},
+      "content": {
+        "md": "\n### BASH script - #47\n\n```bash\n#! /bin/bash\n\n## some other interesting classes:\n## Thunar: 'File Manager'\n\n## shortcut-1 is type: primary/secondary\n## shortcut-2 is key: z/x/c/v\n## an example of a shortcut: primary-x\nshortcut=\"${1}-${2}\"\n\n## space refers to the active space\nworkspace=$(wmctrl -d | grep \"*\" | cut -d\" \" -f1)\n\n\n## example: wm_open_window Chromium\nfunction wm_open_window() {\n        local app=\"$1\"\n        local space=\"$2\"\n\n        match=$(wmctrl -xl | grep -E \"^.{12}${space}.*${app}\")\n\n        if [[ ! -z \"$match\" ]]; then\n                wmctrl -i -R \"${match:0:10}\"\n        else\n                notify-send \"wm-open\" \"No window open for ${app}\"\n        fi\n}\n```\n",
+        "html": null
+      }
+    },
+    {
+      "id": "28583a88-7194-4a92-b2f8-74540d87fcab",
+      "meta": {
+        "header": "Bash-48",
+        "category": [
+          "cat2"
+        ],
+        "tags": [
+          "tag5",
+          "tag2"
+        ]
+      },
+      "date": {
+        "created": "2021-12-07T13:35:57.684Z",
+        "updated": null,
+        "archived": null
+      },
+      "data": {},
+      "content": {
+        "md": "\n### BASH script - #48\n\n```bash\n#! /bin/bash\n\n## some other interesting classes:\n## Thunar: 'File Manager'\n\n## shortcut-1 is type: primary/secondary\n## shortcut-2 is key: z/x/c/v\n## an example of a shortcut: primary-x\nshortcut=\"${1}-${2}\"\n\n## space refers to the active space\nworkspace=$(wmctrl -d | grep \"*\" | cut -d\" \" -f1)\n\n\n## example: wm_open_window Chromium\nfunction wm_open_window() {\n        local app=\"$1\"\n        local space=\"$2\"\n\n        match=$(wmctrl -xl | grep -E \"^.{12}${space}.*${app}\")\n\n        if [[ ! -z \"$match\" ]]; then\n                wmctrl -i -R \"${match:0:10}\"\n        else\n                notify-send \"wm-open\" \"No window open for ${app}\"\n        fi\n}\n```\n",
+        "html": null
+      }
+    },
+    {
+      "id": "4f1fd88f-bc84-414d-9858-9017a72d60d0",
+      "meta": {
+        "header": "Bash-49",
+        "category": [
+          "cat2",
+          "subcat1"
+        ],
+        "tags": [
+          "tag4"
+        ]
+      },
+      "date": {
+        "created": "2021-12-08T07:57:47.676Z",
+        "updated": null,
+        "archived": null
+      },
+      "data": {},
+      "content": {
+        "md": "\n### BASH script - #49\n\n```bash\n#! /bin/bash\n\n## some other interesting classes:\n## Thunar: 'File Manager'\n\n## shortcut-1 is type: primary/secondary\n## shortcut-2 is key: z/x/c/v\n## an example of a shortcut: primary-x\nshortcut=\"${1}-${2}\"\n\n## space refers to the active space\nworkspace=$(wmctrl -d | grep \"*\" | cut -d\" \" -f1)\n\n\n## example: wm_open_window Chromium\nfunction wm_open_window() {\n        local app=\"$1\"\n        local space=\"$2\"\n\n        match=$(wmctrl -xl | grep -E \"^.{12}${space}.*${app}\")\n\n        if [[ ! -z \"$match\" ]]; then\n                wmctrl -i -R \"${match:0:10}\"\n        else\n                notify-send \"wm-open\" \"No window open for ${app}\"\n        fi\n}\n```\n",
+        "html": null
+      }
+    },
+    {
+      "id": "63f76398-19b4-40e3-9f0c-e22d13e721da",
+      "meta": {
+        "header": "Bash-50",
+        "category": [
+          "cat1",
+          "subcat1"
+        ],
+        "tags": [
+          "tag4"
+        ]
+      },
+      "date": {
+        "created": "2021-12-05T21:22:09.088Z",
+        "updated": null,
+        "archived": null
+      },
+      "data": {},
+      "content": {
+        "md": "\n### BASH script - #50\n\n```bash\n#! /bin/bash\n\n## some other interesting classes:\n## Thunar: 'File Manager'\n\n## shortcut-1 is type: primary/secondary\n## shortcut-2 is key: z/x/c/v\n## an example of a shortcut: primary-x\nshortcut=\"${1}-${2}\"\n\n## space refers to the active space\nworkspace=$(wmctrl -d | grep \"*\" | cut -d\" \" -f1)\n\n\n## example: wm_open_window Chromium\nfunction wm_open_window() {\n        local app=\"$1\"\n        local space=\"$2\"\n\n        match=$(wmctrl -xl | grep -E \"^.{12}${space}.*${app}\")\n\n        if [[ ! -z \"$match\" ]]; then\n                wmctrl -i -R \"${match:0:10}\"\n        else\n                notify-send \"wm-open\" \"No window open for ${app}\"\n        fi\n}\n```\n",
+        "html": null
+      }
+    },
+    {
+      "id": "12d5ea0e-71eb-43d2-81d0-b561ef9b8d93",
+      "meta": {
+        "header": "Bash-51",
+        "category": [
+          "cat1",
+          "subcat1"
+        ],
+        "tags": []
+      },
+      "date": {
+        "created": "2021-12-07T05:20:16.696Z",
+        "updated": null,
+        "archived": null
+      },
+      "data": {},
+      "content": {
+        "md": "\n### BASH script - #51\n\n```bash\n#! /bin/bash\n\n## some other interesting classes:\n## Thunar: 'File Manager'\n\n## shortcut-1 is type: primary/secondary\n## shortcut-2 is key: z/x/c/v\n## an example of a shortcut: primary-x\nshortcut=\"${1}-${2}\"\n\n## space refers to the active space\nworkspace=$(wmctrl -d | grep \"*\" | cut -d\" \" -f1)\n\n\n## example: wm_open_window Chromium\nfunction wm_open_window() {\n        local app=\"$1\"\n        local space=\"$2\"\n\n        match=$(wmctrl -xl | grep -E \"^.{12}${space}.*${app}\")\n\n        if [[ ! -z \"$match\" ]]; then\n                wmctrl -i -R \"${match:0:10}\"\n        else\n                notify-send \"wm-open\" \"No window open for ${app}\"\n        fi\n}\n```\n",
+        "html": null
+      }
+    },
+    {
+      "id": "b0fbf84e-cbec-4a92-89fd-b1b19545f04b",
+      "meta": {
+        "header": "Bash-52",
+        "category": [
+          "cat2",
+          "subcat2"
+        ],
+        "tags": [
+          "tag4"
+        ]
+      },
+      "date": {
+        "created": "2021-12-07T16:39:02.496Z",
+        "updated": null,
+        "archived": null
+      },
+      "data": {},
+      "content": {
+        "md": "\n### BASH script - #52\n\n```bash\n#! /bin/bash\n\n## some other interesting classes:\n## Thunar: 'File Manager'\n\n## shortcut-1 is type: primary/secondary\n## shortcut-2 is key: z/x/c/v\n## an example of a shortcut: primary-x\nshortcut=\"${1}-${2}\"\n\n## space refers to the active space\nworkspace=$(wmctrl -d | grep \"*\" | cut -d\" \" -f1)\n\n\n## example: wm_open_window Chromium\nfunction wm_open_window() {\n        local app=\"$1\"\n        local space=\"$2\"\n\n        match=$(wmctrl -xl | grep -E \"^.{12}${space}.*${app}\")\n\n        if [[ ! -z \"$match\" ]]; then\n                wmctrl -i -R \"${match:0:10}\"\n        else\n                notify-send \"wm-open\" \"No window open for ${app}\"\n        fi\n}\n```\n",
+        "html": null
+      }
+    },
+    {
+      "id": "86ed3a99-4efd-49f5-a3bc-946ea91ced5b",
+      "meta": {
+        "header": "Bash-53",
+        "category": [
+          "cat2"
+        ],
+        "tags": [
+          "tag4",
+          "tag1"
+        ]
+      },
+      "date": {
+        "created": "2021-12-04T18:13:50.402Z",
+        "updated": null,
+        "archived": null
+      },
+      "data": {},
+      "content": {
+        "md": "\n### BASH script - #53\n\n```bash\n#! /bin/bash\n\n## some other interesting classes:\n## Thunar: 'File Manager'\n\n## shortcut-1 is type: primary/secondary\n## shortcut-2 is key: z/x/c/v\n## an example of a shortcut: primary-x\nshortcut=\"${1}-${2}\"\n\n## space refers to the active space\nworkspace=$(wmctrl -d | grep \"*\" | cut -d\" \" -f1)\n\n\n## example: wm_open_window Chromium\nfunction wm_open_window() {\n        local app=\"$1\"\n        local space=\"$2\"\n\n        match=$(wmctrl -xl | grep -E \"^.{12}${space}.*${app}\")\n\n        if [[ ! -z \"$match\" ]]; then\n                wmctrl -i -R \"${match:0:10}\"\n        else\n                notify-send \"wm-open\" \"No window open for ${app}\"\n        fi\n}\n```\n",
+        "html": null
+      }
+    },
+    {
+      "id": "4115257f-35a6-466c-ab86-d892003ef6aa",
+      "meta": {
+        "header": "Bash-54",
+        "category": [
+          "cat2",
+          "subcat1"
+        ],
+        "tags": [
+          "tag2",
+          "tag3"
+        ]
+      },
+      "date": {
+        "created": "2021-12-04T10:41:08.367Z",
+        "updated": null,
+        "archived": null
+      },
+      "data": {},
+      "content": {
+        "md": "\n### BASH script - #54\n\n```bash\n#! /bin/bash\n\n## some other interesting classes:\n## Thunar: 'File Manager'\n\n## shortcut-1 is type: primary/secondary\n## shortcut-2 is key: z/x/c/v\n## an example of a shortcut: primary-x\nshortcut=\"${1}-${2}\"\n\n## space refers to the active space\nworkspace=$(wmctrl -d | grep \"*\" | cut -d\" \" -f1)\n\n\n## example: wm_open_window Chromium\nfunction wm_open_window() {\n        local app=\"$1\"\n        local space=\"$2\"\n\n        match=$(wmctrl -xl | grep -E \"^.{12}${space}.*${app}\")\n\n        if [[ ! -z \"$match\" ]]; then\n                wmctrl -i -R \"${match:0:10}\"\n        else\n                notify-send \"wm-open\" \"No window open for ${app}\"\n        fi\n}\n```\n",
+        "html": null
+      }
+    },
+    {
+      "id": "47b107d9-afdc-4e4e-93c6-c608b7736585",
+      "meta": {
+        "header": "Bash-55",
+        "category": [
+          "cat1",
+          "subcat1"
+        ],
+        "tags": [
+          "tag2"
+        ]
+      },
+      "date": {
+        "created": "2021-12-06T15:37:23.542Z",
+        "updated": null,
+        "archived": null
+      },
+      "data": {},
+      "content": {
+        "md": "\n### BASH script - #55\n\n```bash\n#! /bin/bash\n\n## some other interesting classes:\n## Thunar: 'File Manager'\n\n## shortcut-1 is type: primary/secondary\n## shortcut-2 is key: z/x/c/v\n## an example of a shortcut: primary-x\nshortcut=\"${1}-${2}\"\n\n## space refers to the active space\nworkspace=$(wmctrl -d | grep \"*\" | cut -d\" \" -f1)\n\n\n## example: wm_open_window Chromium\nfunction wm_open_window() {\n        local app=\"$1\"\n        local space=\"$2\"\n\n        match=$(wmctrl -xl | grep -E \"^.{12}${space}.*${app}\")\n\n        if [[ ! -z \"$match\" ]]; then\n                wmctrl -i -R \"${match:0:10}\"\n        else\n                notify-send \"wm-open\" \"No window open for ${app}\"\n        fi\n}\n```\n",
+        "html": null
+      }
+    },
+    {
+      "id": "d4b83f9c-4be3-40c5-81e5-cd3bbe2ae5a8",
+      "meta": {
+        "header": "Bash-56",
+        "category": [
+          "cat1",
+          "subcat2"
+        ],
+        "tags": [
+          "tag4",
+          "tag5"
+        ]
+      },
+      "date": {
+        "created": "2021-12-06T02:22:04.717Z",
+        "updated": null,
+        "archived": null
+      },
+      "data": {},
+      "content": {
+        "md": "\n### BASH script - #56\n\n```bash\n#! /bin/bash\n\n## some other interesting classes:\n## Thunar: 'File Manager'\n\n## shortcut-1 is type: primary/secondary\n## shortcut-2 is key: z/x/c/v\n## an example of a shortcut: primary-x\nshortcut=\"${1}-${2}\"\n\n## space refers to the active space\nworkspace=$(wmctrl -d | grep \"*\" | cut -d\" \" -f1)\n\n\n## example: wm_open_window Chromium\nfunction wm_open_window() {\n        local app=\"$1\"\n        local space=\"$2\"\n\n        match=$(wmctrl -xl | grep -E \"^.{12}${space}.*${app}\")\n\n        if [[ ! -z \"$match\" ]]; then\n                wmctrl -i -R \"${match:0:10}\"\n        else\n                notify-send \"wm-open\" \"No window open for ${app}\"\n        fi\n}\n```\n",
+        "html": null
+      }
+    },
+    {
+      "id": "e62373ac-ad54-497c-b5ba-82470a92bb2d",
+      "meta": {
+        "header": "Bash-57",
+        "category": [
+          "cat2",
+          "subcat3"
+        ],
+        "tags": []
+      },
+      "date": {
+        "created": "2021-12-04T13:43:13.329Z",
+        "updated": null,
+        "archived": null
+      },
+      "data": {},
+      "content": {
+        "md": "\n### BASH script - #57\n\n```bash\n#! /bin/bash\n\n## some other interesting classes:\n## Thunar: 'File Manager'\n\n## shortcut-1 is type: primary/secondary\n## shortcut-2 is key: z/x/c/v\n## an example of a shortcut: primary-x\nshortcut=\"${1}-${2}\"\n\n## space refers to the active space\nworkspace=$(wmctrl -d | grep \"*\" | cut -d\" \" -f1)\n\n\n## example: wm_open_window Chromium\nfunction wm_open_window() {\n        local app=\"$1\"\n        local space=\"$2\"\n\n        match=$(wmctrl -xl | grep -E \"^.{12}${space}.*${app}\")\n\n        if [[ ! -z \"$match\" ]]; then\n                wmctrl -i -R \"${match:0:10}\"\n        else\n                notify-send \"wm-open\" \"No window open for ${app}\"\n        fi\n}\n```\n",
+        "html": null
+      }
+    },
+    {
+      "id": "4ac9074e-9e66-43f6-a976-743173d737a8",
+      "meta": {
+        "header": "Bash-58",
+        "category": [
+          "cat2",
+          "subcat3"
+        ],
+        "tags": []
+      },
+      "date": {
+        "created": "2021-12-08T17:46:19.879Z",
+        "updated": null,
+        "archived": null
+      },
+      "data": {},
+      "content": {
+        "md": "\n### BASH script - #58\n\n```bash\n#! /bin/bash\n\n## some other interesting classes:\n## Thunar: 'File Manager'\n\n## shortcut-1 is type: primary/secondary\n## shortcut-2 is key: z/x/c/v\n## an example of a shortcut: primary-x\nshortcut=\"${1}-${2}\"\n\n## space refers to the active space\nworkspace=$(wmctrl -d | grep \"*\" | cut -d\" \" -f1)\n\n\n## example: wm_open_window Chromium\nfunction wm_open_window() {\n        local app=\"$1\"\n        local space=\"$2\"\n\n        match=$(wmctrl -xl | grep -E \"^.{12}${space}.*${app}\")\n\n        if [[ ! -z \"$match\" ]]; then\n                wmctrl -i -R \"${match:0:10}\"\n        else\n                notify-send \"wm-open\" \"No window open for ${app}\"\n        fi\n}\n```\n",
+        "html": null
+      }
+    },
+    {
+      "id": "72613971-c0c4-484f-8e51-73d822d1c02e",
+      "meta": {
+        "header": "Bash-59",
+        "category": [
+          "cat1"
+        ],
+        "tags": [
+          "tag4",
+          "tag5"
+        ]
+      },
+      "date": {
+        "created": "2021-12-09T21:14:04.715Z",
+        "updated": null,
+        "archived": null
+      },
+      "data": {},
+      "content": {
+        "md": "\n### BASH script - #59\n\n```bash\n#! /bin/bash\n\n## some other interesting classes:\n## Thunar: 'File Manager'\n\n## shortcut-1 is type: primary/secondary\n## shortcut-2 is key: z/x/c/v\n## an example of a shortcut: primary-x\nshortcut=\"${1}-${2}\"\n\n## space refers to the active space\nworkspace=$(wmctrl -d | grep \"*\" | cut -d\" \" -f1)\n\n\n## example: wm_open_window Chromium\nfunction wm_open_window() {\n        local app=\"$1\"\n        local space=\"$2\"\n\n        match=$(wmctrl -xl | grep -E \"^.{12}${space}.*${app}\")\n\n        if [[ ! -z \"$match\" ]]; then\n                wmctrl -i -R \"${match:0:10}\"\n        else\n                notify-send \"wm-open\" \"No window open for ${app}\"\n        fi\n}\n```\n",
+        "html": null
+      }
+    },
+    {
+      "id": "40da04b4-24fb-47b3-9fb6-2de34ac8c2d5",
+      "meta": {
+        "header": "Bash-60",
+        "category": [
+          "cat2",
+          "subcat2"
+        ],
+        "tags": []
+      },
+      "date": {
+        "created": "2021-12-04T07:11:51.672Z",
+        "updated": null,
+        "archived": null
+      },
+      "data": {},
+      "content": {
+        "md": "\n### BASH script - #60\n\n```bash\n#! /bin/bash\n\n## some other interesting classes:\n## Thunar: 'File Manager'\n\n## shortcut-1 is type: primary/secondary\n## shortcut-2 is key: z/x/c/v\n## an example of a shortcut: primary-x\nshortcut=\"${1}-${2}\"\n\n## space refers to the active space\nworkspace=$(wmctrl -d | grep \"*\" | cut -d\" \" -f1)\n\n\n## example: wm_open_window Chromium\nfunction wm_open_window() {\n        local app=\"$1\"\n        local space=\"$2\"\n\n        match=$(wmctrl -xl | grep -E \"^.{12}${space}.*${app}\")\n\n        if [[ ! -z \"$match\" ]]; then\n                wmctrl -i -R \"${match:0:10}\"\n        else\n                notify-send \"wm-open\" \"No window open for ${app}\"\n        fi\n}\n```\n",
+        "html": null
+      }
+    },
+    {
+      "id": "8d20665c-2dc6-4bff-a12d-f8c9f91653ce",
+      "meta": {
+        "header": "Bash-61",
+        "category": [
+          "cat2",
+          "subcat2"
+        ],
+        "tags": [
+          "tag5",
+          "tag3"
+        ]
+      },
+      "date": {
+        "created": "2021-12-03T22:43:13.861Z",
+        "updated": null,
+        "archived": null
+      },
+      "data": {},
+      "content": {
+        "md": "\n### BASH script - #61\n\n```bash\n#! /bin/bash\n\n## some other interesting classes:\n## Thunar: 'File Manager'\n\n## shortcut-1 is type: primary/secondary\n## shortcut-2 is key: z/x/c/v\n## an example of a shortcut: primary-x\nshortcut=\"${1}-${2}\"\n\n## space refers to the active space\nworkspace=$(wmctrl -d | grep \"*\" | cut -d\" \" -f1)\n\n\n## example: wm_open_window Chromium\nfunction wm_open_window() {\n        local app=\"$1\"\n        local space=\"$2\"\n\n        match=$(wmctrl -xl | grep -E \"^.{12}${space}.*${app}\")\n\n        if [[ ! -z \"$match\" ]]; then\n                wmctrl -i -R \"${match:0:10}\"\n        else\n                notify-send \"wm-open\" \"No window open for ${app}\"\n        fi\n}\n```\n",
+        "html": null
+      }
+    },
+    {
+      "id": "adc5f7b5-d227-428b-8d51-0720c2410153",
+      "meta": {
+        "header": "Bash-62",
+        "category": [
+          "cat2",
+          "subcat3"
+        ],
+        "tags": [
+          "tag4"
+        ]
+      },
+      "date": {
+        "created": "2021-12-04T10:47:04.853Z",
+        "updated": null,
+        "archived": null
+      },
+      "data": {},
+      "content": {
+        "md": "\n### BASH script - #62\n\n```bash\n#! /bin/bash\n\n## some other interesting classes:\n## Thunar: 'File Manager'\n\n## shortcut-1 is type: primary/secondary\n## shortcut-2 is key: z/x/c/v\n## an example of a shortcut: primary-x\nshortcut=\"${1}-${2}\"\n\n## space refers to the active space\nworkspace=$(wmctrl -d | grep \"*\" | cut -d\" \" -f1)\n\n\n## example: wm_open_window Chromium\nfunction wm_open_window() {\n        local app=\"$1\"\n        local space=\"$2\"\n\n        match=$(wmctrl -xl | grep -E \"^.{12}${space}.*${app}\")\n\n        if [[ ! -z \"$match\" ]]; then\n                wmctrl -i -R \"${match:0:10}\"\n        else\n                notify-send \"wm-open\" \"No window open for ${app}\"\n        fi\n}\n```\n",
+        "html": null
+      }
+    },
+    {
+      "id": "6e9f69bc-3e52-40fa-8609-5c076ae72be7",
+      "meta": {
+        "header": "Bash-63",
+        "category": [
+          "cat2",
+          "subcat2"
+        ],
+        "tags": []
+      },
+      "date": {
+        "created": "2021-12-06T05:21:19.731Z",
+        "updated": null,
+        "archived": null
+      },
+      "data": {},
+      "content": {
+        "md": "\n### BASH script - #63\n\n```bash\n#! /bin/bash\n\n## some other interesting classes:\n## Thunar: 'File Manager'\n\n## shortcut-1 is type: primary/secondary\n## shortcut-2 is key: z/x/c/v\n## an example of a shortcut: primary-x\nshortcut=\"${1}-${2}\"\n\n## space refers to the active space\nworkspace=$(wmctrl -d | grep \"*\" | cut -d\" \" -f1)\n\n\n## example: wm_open_window Chromium\nfunction wm_open_window() {\n        local app=\"$1\"\n        local space=\"$2\"\n\n        match=$(wmctrl -xl | grep -E \"^.{12}${space}.*${app}\")\n\n        if [[ ! -z \"$match\" ]]; then\n                wmctrl -i -R \"${match:0:10}\"\n        else\n                notify-send \"wm-open\" \"No window open for ${app}\"\n        fi\n}\n```\n",
+        "html": null
+      }
+    },
+    {
+      "id": "fea1bdb7-fcb5-4a74-96e3-1597339ed2d2",
+      "meta": {
+        "header": "Bash-64",
+        "category": [
+          "cat2",
+          "subcat1"
+        ],
+        "tags": [
+          "tag3",
+          "tag4"
+        ]
+      },
+      "date": {
+        "created": "2021-12-07T21:46:38.346Z",
+        "updated": null,
+        "archived": null
+      },
+      "data": {},
+      "content": {
+        "md": "\n### BASH script - #64\n\n```bash\n#! /bin/bash\n\n## some other interesting classes:\n## Thunar: 'File Manager'\n\n## shortcut-1 is type: primary/secondary\n## shortcut-2 is key: z/x/c/v\n## an example of a shortcut: primary-x\nshortcut=\"${1}-${2}\"\n\n## space refers to the active space\nworkspace=$(wmctrl -d | grep \"*\" | cut -d\" \" -f1)\n\n\n## example: wm_open_window Chromium\nfunction wm_open_window() {\n        local app=\"$1\"\n        local space=\"$2\"\n\n        match=$(wmctrl -xl | grep -E \"^.{12}${space}.*${app}\")\n\n        if [[ ! -z \"$match\" ]]; then\n                wmctrl -i -R \"${match:0:10}\"\n        else\n                notify-send \"wm-open\" \"No window open for ${app}\"\n        fi\n}\n```\n",
+        "html": null
+      }
+    },
+    {
+      "id": "27d7ca21-1234-44cd-986a-f4cba68d22d6",
+      "meta": {
+        "header": "Bash-65",
+        "category": [
+          "cat3"
+        ],
+        "tags": [
+          "tag3"
+        ]
+      },
+      "date": {
+        "created": "2021-12-04T06:22:43.657Z",
+        "updated": null,
+        "archived": null
+      },
+      "data": {},
+      "content": {
+        "md": "\n### BASH script - #65\n\n```bash\n#! /bin/bash\n\n## some other interesting classes:\n## Thunar: 'File Manager'\n\n## shortcut-1 is type: primary/secondary\n## shortcut-2 is key: z/x/c/v\n## an example of a shortcut: primary-x\nshortcut=\"${1}-${2}\"\n\n## space refers to the active space\nworkspace=$(wmctrl -d | grep \"*\" | cut -d\" \" -f1)\n\n\n## example: wm_open_window Chromium\nfunction wm_open_window() {\n        local app=\"$1\"\n        local space=\"$2\"\n\n        match=$(wmctrl -xl | grep -E \"^.{12}${space}.*${app}\")\n\n        if [[ ! -z \"$match\" ]]; then\n                wmctrl -i -R \"${match:0:10}\"\n        else\n                notify-send \"wm-open\" \"No window open for ${app}\"\n        fi\n}\n```\n",
+        "html": null
+      }
+    },
+    {
+      "id": "86dd0f06-bc23-4c2b-9bad-216c2c548409",
+      "meta": {
+        "header": "Bash-66",
+        "category": [
+          "cat2"
+        ],
+        "tags": [
+          "tag3"
+        ]
+      },
+      "date": {
+        "created": "2021-12-07T18:56:14.745Z",
+        "updated": null,
+        "archived": null
+      },
+      "data": {},
+      "content": {
+        "md": "\n### BASH script - #66\n\n```bash\n#! /bin/bash\n\n## some other interesting classes:\n## Thunar: 'File Manager'\n\n## shortcut-1 is type: primary/secondary\n## shortcut-2 is key: z/x/c/v\n## an example of a shortcut: primary-x\nshortcut=\"${1}-${2}\"\n\n## space refers to the active space\nworkspace=$(wmctrl -d | grep \"*\" | cut -d\" \" -f1)\n\n\n## example: wm_open_window Chromium\nfunction wm_open_window() {\n        local app=\"$1\"\n        local space=\"$2\"\n\n        match=$(wmctrl -xl | grep -E \"^.{12}${space}.*${app}\")\n\n        if [[ ! -z \"$match\" ]]; then\n                wmctrl -i -R \"${match:0:10}\"\n        else\n                notify-send \"wm-open\" \"No window open for ${app}\"\n        fi\n}\n```\n",
+        "html": null
+      }
+    },
+    {
+      "id": "423df5b3-1d57-4eea-b7c7-9b99e3e2a741",
+      "meta": {
+        "header": "Bash-67",
+        "category": [
+          "cat1",
+          "subcat2"
+        ],
+        "tags": []
+      },
+      "date": {
+        "created": "2021-12-03T17:03:01.917Z",
+        "updated": null,
+        "archived": null
+      },
+      "data": {},
+      "content": {
+        "md": "\n### BASH script - #67\n\n```bash\n#! /bin/bash\n\n## some other interesting classes:\n## Thunar: 'File Manager'\n\n## shortcut-1 is type: primary/secondary\n## shortcut-2 is key: z/x/c/v\n## an example of a shortcut: primary-x\nshortcut=\"${1}-${2}\"\n\n## space refers to the active space\nworkspace=$(wmctrl -d | grep \"*\" | cut -d\" \" -f1)\n\n\n## example: wm_open_window Chromium\nfunction wm_open_window() {\n        local app=\"$1\"\n        local space=\"$2\"\n\n        match=$(wmctrl -xl | grep -E \"^.{12}${space}.*${app}\")\n\n        if [[ ! -z \"$match\" ]]; then\n                wmctrl -i -R \"${match:0:10}\"\n        else\n                notify-send \"wm-open\" \"No window open for ${app}\"\n        fi\n}\n```\n",
+        "html": null
+      }
+    },
+    {
+      "id": "e8e0c5ca-cada-4488-ae24-2176aa8644fb",
+      "meta": {
+        "header": "Bash-68",
+        "category": [
+          "cat3"
+        ],
+        "tags": []
+      },
+      "date": {
+        "created": "2021-12-09T00:25:48.519Z",
+        "updated": null,
+        "archived": null
+      },
+      "data": {},
+      "content": {
+        "md": "\n### BASH script - #68\n\n```bash\n#! /bin/bash\n\n## some other interesting classes:\n## Thunar: 'File Manager'\n\n## shortcut-1 is type: primary/secondary\n## shortcut-2 is key: z/x/c/v\n## an example of a shortcut: primary-x\nshortcut=\"${1}-${2}\"\n\n## space refers to the active space\nworkspace=$(wmctrl -d | grep \"*\" | cut -d\" \" -f1)\n\n\n## example: wm_open_window Chromium\nfunction wm_open_window() {\n        local app=\"$1\"\n        local space=\"$2\"\n\n        match=$(wmctrl -xl | grep -E \"^.{12}${space}.*${app}\")\n\n        if [[ ! -z \"$match\" ]]; then\n                wmctrl -i -R \"${match:0:10}\"\n        else\n                notify-send \"wm-open\" \"No window open for ${app}\"\n        fi\n}\n```\n",
+        "html": null
+      }
+    },
+    {
+      "id": "318a3f10-6a08-45ac-922b-bcdfbaae60fd",
+      "meta": {
+        "header": "Bash-69",
+        "category": [
+          "cat1",
+          "subcat1"
+        ],
+        "tags": []
+      },
+      "date": {
+        "created": "2021-12-04T16:19:21.752Z",
+        "updated": null,
+        "archived": null
+      },
+      "data": {},
+      "content": {
+        "md": "\n### BASH script - #69\n\n```bash\n#! /bin/bash\n\n## some other interesting classes:\n## Thunar: 'File Manager'\n\n## shortcut-1 is type: primary/secondary\n## shortcut-2 is key: z/x/c/v\n## an example of a shortcut: primary-x\nshortcut=\"${1}-${2}\"\n\n## space refers to the active space\nworkspace=$(wmctrl -d | grep \"*\" | cut -d\" \" -f1)\n\n\n## example: wm_open_window Chromium\nfunction wm_open_window() {\n        local app=\"$1\"\n        local space=\"$2\"\n\n        match=$(wmctrl -xl | grep -E \"^.{12}${space}.*${app}\")\n\n        if [[ ! -z \"$match\" ]]; then\n                wmctrl -i -R \"${match:0:10}\"\n        else\n                notify-send \"wm-open\" \"No window open for ${app}\"\n        fi\n}\n```\n",
+        "html": null
+      }
+    },
+    {
+      "id": "f3ab3ef0-ad4a-4b89-a4c7-02e325c2fae8",
+      "meta": {
+        "header": "Bash-70",
+        "category": [
+          "cat2",
+          "subcat2"
+        ],
+        "tags": [
+          "tag5"
+        ]
+      },
+      "date": {
+        "created": "2021-12-04T19:44:10.797Z",
+        "updated": null,
+        "archived": null
+      },
+      "data": {},
+      "content": {
+        "md": "\n### BASH script - #70\n\n```bash\n#! /bin/bash\n\n## some other interesting classes:\n## Thunar: 'File Manager'\n\n## shortcut-1 is type: primary/secondary\n## shortcut-2 is key: z/x/c/v\n## an example of a shortcut: primary-x\nshortcut=\"${1}-${2}\"\n\n## space refers to the active space\nworkspace=$(wmctrl -d | grep \"*\" | cut -d\" \" -f1)\n\n\n## example: wm_open_window Chromium\nfunction wm_open_window() {\n        local app=\"$1\"\n        local space=\"$2\"\n\n        match=$(wmctrl -xl | grep -E \"^.{12}${space}.*${app}\")\n\n        if [[ ! -z \"$match\" ]]; then\n                wmctrl -i -R \"${match:0:10}\"\n        else\n                notify-send \"wm-open\" \"No window open for ${app}\"\n        fi\n}\n```\n",
+        "html": null
+      }
+    },
+    {
+      "id": "992f5969-321d-4068-b27b-04fd3189254d",
+      "meta": {
+        "header": "Bash-71",
+        "category": [
+          "cat1",
+          "subcat1"
+        ],
+        "tags": []
+      },
+      "date": {
+        "created": "2021-12-07T18:34:21.072Z",
+        "updated": null,
+        "archived": null
+      },
+      "data": {},
+      "content": {
+        "md": "\n### BASH script - #71\n\n```bash\n#! /bin/bash\n\n## some other interesting classes:\n## Thunar: 'File Manager'\n\n## shortcut-1 is type: primary/secondary\n## shortcut-2 is key: z/x/c/v\n## an example of a shortcut: primary-x\nshortcut=\"${1}-${2}\"\n\n## space refers to the active space\nworkspace=$(wmctrl -d | grep \"*\" | cut -d\" \" -f1)\n\n\n## example: wm_open_window Chromium\nfunction wm_open_window() {\n        local app=\"$1\"\n        local space=\"$2\"\n\n        match=$(wmctrl -xl | grep -E \"^.{12}${space}.*${app}\")\n\n        if [[ ! -z \"$match\" ]]; then\n                wmctrl -i -R \"${match:0:10}\"\n        else\n                notify-send \"wm-open\" \"No window open for ${app}\"\n        fi\n}\n```\n",
+        "html": null
+      }
+    },
+    {
+      "id": "ab352e41-db06-4ef4-afe6-7b7c5715d2de",
+      "meta": {
+        "header": "Bash-72",
+        "category": [
+          "cat1",
+          "subcat1"
+        ],
+        "tags": []
+      },
+      "date": {
+        "created": "2021-12-04T19:35:55.059Z",
+        "updated": null,
+        "archived": null
+      },
+      "data": {},
+      "content": {
+        "md": "\n### BASH script - #72\n\n```bash\n#! /bin/bash\n\n## some other interesting classes:\n## Thunar: 'File Manager'\n\n## shortcut-1 is type: primary/secondary\n## shortcut-2 is key: z/x/c/v\n## an example of a shortcut: primary-x\nshortcut=\"${1}-${2}\"\n\n## space refers to the active space\nworkspace=$(wmctrl -d | grep \"*\" | cut -d\" \" -f1)\n\n\n## example: wm_open_window Chromium\nfunction wm_open_window() {\n        local app=\"$1\"\n        local space=\"$2\"\n\n        match=$(wmctrl -xl | grep -E \"^.{12}${space}.*${app}\")\n\n        if [[ ! -z \"$match\" ]]; then\n                wmctrl -i -R \"${match:0:10}\"\n        else\n                notify-send \"wm-open\" \"No window open for ${app}\"\n        fi\n}\n```\n",
+        "html": null
+      }
+    },
+    {
+      "id": "91787982-4ff7-4f1f-977e-806b7d23c130",
+      "meta": {
+        "header": "Bash-73",
+        "category": [
+          "cat1",
+          "subcat2"
+        ],
+        "tags": []
+      },
+      "date": {
+        "created": "2021-12-06T12:57:23.175Z",
+        "updated": null,
+        "archived": null
+      },
+      "data": {},
+      "content": {
+        "md": "\n### BASH script - #73\n\n```bash\n#! /bin/bash\n\n## some other interesting classes:\n## Thunar: 'File Manager'\n\n## shortcut-1 is type: primary/secondary\n## shortcut-2 is key: z/x/c/v\n## an example of a shortcut: primary-x\nshortcut=\"${1}-${2}\"\n\n## space refers to the active space\nworkspace=$(wmctrl -d | grep \"*\" | cut -d\" \" -f1)\n\n\n## example: wm_open_window Chromium\nfunction wm_open_window() {\n        local app=\"$1\"\n        local space=\"$2\"\n\n        match=$(wmctrl -xl | grep -E \"^.{12}${space}.*${app}\")\n\n        if [[ ! -z \"$match\" ]]; then\n                wmctrl -i -R \"${match:0:10}\"\n        else\n                notify-send \"wm-open\" \"No window open for ${app}\"\n        fi\n}\n```\n",
+        "html": null
+      }
+    },
+    {
+      "id": "e11e6162-b0ef-4849-a86e-59a3942e839f",
+      "meta": {
+        "header": "Bash-74",
+        "category": [
+          "cat2",
+          "subcat1"
+        ],
+        "tags": [
+          "tag5"
+        ]
+      },
+      "date": {
+        "created": "2021-12-07T18:11:10.179Z",
+        "updated": null,
+        "archived": null
+      },
+      "data": {},
+      "content": {
+        "md": "\n### BASH script - #74\n\n```bash\n#! /bin/bash\n\n## some other interesting classes:\n## Thunar: 'File Manager'\n\n## shortcut-1 is type: primary/secondary\n## shortcut-2 is key: z/x/c/v\n## an example of a shortcut: primary-x\nshortcut=\"${1}-${2}\"\n\n## space refers to the active space\nworkspace=$(wmctrl -d | grep \"*\" | cut -d\" \" -f1)\n\n\n## example: wm_open_window Chromium\nfunction wm_open_window() {\n        local app=\"$1\"\n        local space=\"$2\"\n\n        match=$(wmctrl -xl | grep -E \"^.{12}${space}.*${app}\")\n\n        if [[ ! -z \"$match\" ]]; then\n                wmctrl -i -R \"${match:0:10}\"\n        else\n                notify-send \"wm-open\" \"No window open for ${app}\"\n        fi\n}\n```\n",
+        "html": null
+      }
+    },
+    {
+      "id": "701d2008-4d5c-4aea-b22d-49375aba63db",
+      "meta": {
+        "header": "Bash-75",
+        "category": [
+          "cat2",
+          "subcat2"
+        ],
+        "tags": []
+      },
+      "date": {
+        "created": "2021-12-08T09:56:15.804Z",
+        "updated": null,
+        "archived": null
+      },
+      "data": {},
+      "content": {
+        "md": "\n### BASH script - #75\n\n```bash\n#! /bin/bash\n\n## some other interesting classes:\n## Thunar: 'File Manager'\n\n## shortcut-1 is type: primary/secondary\n## shortcut-2 is key: z/x/c/v\n## an example of a shortcut: primary-x\nshortcut=\"${1}-${2}\"\n\n## space refers to the active space\nworkspace=$(wmctrl -d | grep \"*\" | cut -d\" \" -f1)\n\n\n## example: wm_open_window Chromium\nfunction wm_open_window() {\n        local app=\"$1\"\n        local space=\"$2\"\n\n        match=$(wmctrl -xl | grep -E \"^.{12}${space}.*${app}\")\n\n        if [[ ! -z \"$match\" ]]; then\n                wmctrl -i -R \"${match:0:10}\"\n        else\n                notify-send \"wm-open\" \"No window open for ${app}\"\n        fi\n}\n```\n",
+        "html": null
+      }
+    },
+    {
+      "id": "bc97e12a-082b-447b-97dc-5a06270c9faf",
+      "meta": {
+        "header": "Bash-76",
+        "category": [
+          "cat2",
+          "subcat3"
+        ],
+        "tags": [
+          "tag1"
+        ]
+      },
+      "date": {
+        "created": "2021-12-06T08:45:01.919Z",
+        "updated": null,
+        "archived": null
+      },
+      "data": {},
+      "content": {
+        "md": "\n### BASH script - #76\n\n```bash\n#! /bin/bash\n\n## some other interesting classes:\n## Thunar: 'File Manager'\n\n## shortcut-1 is type: primary/secondary\n## shortcut-2 is key: z/x/c/v\n## an example of a shortcut: primary-x\nshortcut=\"${1}-${2}\"\n\n## space refers to the active space\nworkspace=$(wmctrl -d | grep \"*\" | cut -d\" \" -f1)\n\n\n## example: wm_open_window Chromium\nfunction wm_open_window() {\n        local app=\"$1\"\n        local space=\"$2\"\n\n        match=$(wmctrl -xl | grep -E \"^.{12}${space}.*${app}\")\n\n        if [[ ! -z \"$match\" ]]; then\n                wmctrl -i -R \"${match:0:10}\"\n        else\n                notify-send \"wm-open\" \"No window open for ${app}\"\n        fi\n}\n```\n",
+        "html": null
+      }
+    },
+    {
+      "id": "e173a97c-b7cb-4be9-b1fe-25f818003a38",
+      "meta": {
+        "header": "Bash-77",
+        "category": [
+          "cat2",
+          "subcat2"
+        ],
+        "tags": [
+          "tag5",
+          "tag3"
+        ]
+      },
+      "date": {
+        "created": "2021-12-09T09:50:23.091Z",
+        "updated": null,
+        "archived": null
+      },
+      "data": {},
+      "content": {
+        "md": "\n### BASH script - #77\n\n```bash\n#! /bin/bash\n\n## some other interesting classes:\n## Thunar: 'File Manager'\n\n## shortcut-1 is type: primary/secondary\n## shortcut-2 is key: z/x/c/v\n## an example of a shortcut: primary-x\nshortcut=\"${1}-${2}\"\n\n## space refers to the active space\nworkspace=$(wmctrl -d | grep \"*\" | cut -d\" \" -f1)\n\n\n## example: wm_open_window Chromium\nfunction wm_open_window() {\n        local app=\"$1\"\n        local space=\"$2\"\n\n        match=$(wmctrl -xl | grep -E \"^.{12}${space}.*${app}\")\n\n        if [[ ! -z \"$match\" ]]; then\n                wmctrl -i -R \"${match:0:10}\"\n        else\n                notify-send \"wm-open\" \"No window open for ${app}\"\n        fi\n}\n```\n",
+        "html": null
+      }
+    },
+    {
+      "id": "2330af83-dcab-4ef8-8ef0-7ab7b90e341c",
+      "meta": {
+        "header": "Bash-78",
+        "category": [
+          "cat2",
+          "subcat2"
+        ],
+        "tags": []
+      },
+      "date": {
+        "created": "2021-12-07T14:45:07.798Z",
+        "updated": null,
+        "archived": null
+      },
+      "data": {},
+      "content": {
+        "md": "\n### BASH script - #78\n\n```bash\n#! /bin/bash\n\n## some other interesting classes:\n## Thunar: 'File Manager'\n\n## shortcut-1 is type: primary/secondary\n## shortcut-2 is key: z/x/c/v\n## an example of a shortcut: primary-x\nshortcut=\"${1}-${2}\"\n\n## space refers to the active space\nworkspace=$(wmctrl -d | grep \"*\" | cut -d\" \" -f1)\n\n\n## example: wm_open_window Chromium\nfunction wm_open_window() {\n        local app=\"$1\"\n        local space=\"$2\"\n\n        match=$(wmctrl -xl | grep -E \"^.{12}${space}.*${app}\")\n\n        if [[ ! -z \"$match\" ]]; then\n                wmctrl -i -R \"${match:0:10}\"\n        else\n                notify-send \"wm-open\" \"No window open for ${app}\"\n        fi\n}\n```\n",
+        "html": null
+      }
+    },
+    {
+      "id": "9aceebfd-0b5e-47de-8b06-54f4fba59d8e",
+      "meta": {
+        "header": "Bash-79",
+        "category": [
+          "cat2"
+        ],
+        "tags": []
+      },
+      "date": {
+        "created": "2021-12-09T11:56:07.706Z",
+        "updated": null,
+        "archived": null
+      },
+      "data": {},
+      "content": {
+        "md": "\n### BASH script - #79\n\n```bash\n#! /bin/bash\n\n## some other interesting classes:\n## Thunar: 'File Manager'\n\n## shortcut-1 is type: primary/secondary\n## shortcut-2 is key: z/x/c/v\n## an example of a shortcut: primary-x\nshortcut=\"${1}-${2}\"\n\n## space refers to the active space\nworkspace=$(wmctrl -d | grep \"*\" | cut -d\" \" -f1)\n\n\n## example: wm_open_window Chromium\nfunction wm_open_window() {\n        local app=\"$1\"\n        local space=\"$2\"\n\n        match=$(wmctrl -xl | grep -E \"^.{12}${space}.*${app}\")\n\n        if [[ ! -z \"$match\" ]]; then\n                wmctrl -i -R \"${match:0:10}\"\n        else\n                notify-send \"wm-open\" \"No window open for ${app}\"\n        fi\n}\n```\n",
+        "html": null
+      }
+    },
+    {
+      "id": "4389cb84-4cb5-4b59-8afc-01191d8e65b2",
+      "meta": {
+        "header": "Bash-80",
+        "category": [
+          "cat2",
+          "subcat2"
+        ],
+        "tags": [
+          "tag3"
+        ]
+      },
+      "date": {
+        "created": "2021-12-03T00:14:53.603Z",
+        "updated": null,
+        "archived": null
+      },
+      "data": {},
+      "content": {
+        "md": "\n### BASH script - #80\n\n```bash\n#! /bin/bash\n\n## some other interesting classes:\n## Thunar: 'File Manager'\n\n## shortcut-1 is type: primary/secondary\n## shortcut-2 is key: z/x/c/v\n## an example of a shortcut: primary-x\nshortcut=\"${1}-${2}\"\n\n## space refers to the active space\nworkspace=$(wmctrl -d | grep \"*\" | cut -d\" \" -f1)\n\n\n## example: wm_open_window Chromium\nfunction wm_open_window() {\n        local app=\"$1\"\n        local space=\"$2\"\n\n        match=$(wmctrl -xl | grep -E \"^.{12}${space}.*${app}\")\n\n        if [[ ! -z \"$match\" ]]; then\n                wmctrl -i -R \"${match:0:10}\"\n        else\n                notify-send \"wm-open\" \"No window open for ${app}\"\n        fi\n}\n```\n",
+        "html": null
+      }
+    },
+    {
+      "id": "05abb73c-6458-4a0c-844e-18702bf72ea5",
+      "meta": {
+        "header": "Bash-81",
+        "category": [
+          "cat2",
+          "subcat1"
+        ],
+        "tags": [
+          "tag2"
+        ]
+      },
+      "date": {
+        "created": "2021-12-08T04:49:46.927Z",
+        "updated": null,
+        "archived": null
+      },
+      "data": {},
+      "content": {
+        "md": "\n### BASH script - #81\n\n```bash\n#! /bin/bash\n\n## some other interesting classes:\n## Thunar: 'File Manager'\n\n## shortcut-1 is type: primary/secondary\n## shortcut-2 is key: z/x/c/v\n## an example of a shortcut: primary-x\nshortcut=\"${1}-${2}\"\n\n## space refers to the active space\nworkspace=$(wmctrl -d | grep \"*\" | cut -d\" \" -f1)\n\n\n## example: wm_open_window Chromium\nfunction wm_open_window() {\n        local app=\"$1\"\n        local space=\"$2\"\n\n        match=$(wmctrl -xl | grep -E \"^.{12}${space}.*${app}\")\n\n        if [[ ! -z \"$match\" ]]; then\n                wmctrl -i -R \"${match:0:10}\"\n        else\n                notify-send \"wm-open\" \"No window open for ${app}\"\n        fi\n}\n```\n",
+        "html": null
+      }
+    },
+    {
+      "id": "4c32e6db-234d-4aed-b54e-2dbc10431689",
+      "meta": {
+        "header": "Bash-82",
+        "category": [
+          "cat2"
+        ],
+        "tags": [
+          "tag3",
+          "tag1"
+        ]
+      },
+      "date": {
+        "created": "2021-12-04T14:42:38.415Z",
+        "updated": null,
+        "archived": null
+      },
+      "data": {},
+      "content": {
+        "md": "\n### BASH script - #82\n\n```bash\n#! /bin/bash\n\n## some other interesting classes:\n## Thunar: 'File Manager'\n\n## shortcut-1 is type: primary/secondary\n## shortcut-2 is key: z/x/c/v\n## an example of a shortcut: primary-x\nshortcut=\"${1}-${2}\"\n\n## space refers to the active space\nworkspace=$(wmctrl -d | grep \"*\" | cut -d\" \" -f1)\n\n\n## example: wm_open_window Chromium\nfunction wm_open_window() {\n        local app=\"$1\"\n        local space=\"$2\"\n\n        match=$(wmctrl -xl | grep -E \"^.{12}${space}.*${app}\")\n\n        if [[ ! -z \"$match\" ]]; then\n                wmctrl -i -R \"${match:0:10}\"\n        else\n                notify-send \"wm-open\" \"No window open for ${app}\"\n        fi\n}\n```\n",
+        "html": null
+      }
+    },
+    {
+      "id": "4c4d8cdd-afd2-4a61-b30e-5804e167a666",
+      "meta": {
+        "header": "Bash-83",
+        "category": [
+          "cat2",
+          "subcat3"
+        ],
+        "tags": [
+          "tag2",
+          "tag3"
+        ]
+      },
+      "date": {
+        "created": "2021-12-04T19:56:32.548Z",
+        "updated": null,
+        "archived": null
+      },
+      "data": {},
+      "content": {
+        "md": "\n### BASH script - #83\n\n```bash\n#! /bin/bash\n\n## some other interesting classes:\n## Thunar: 'File Manager'\n\n## shortcut-1 is type: primary/secondary\n## shortcut-2 is key: z/x/c/v\n## an example of a shortcut: primary-x\nshortcut=\"${1}-${2}\"\n\n## space refers to the active space\nworkspace=$(wmctrl -d | grep \"*\" | cut -d\" \" -f1)\n\n\n## example: wm_open_window Chromium\nfunction wm_open_window() {\n        local app=\"$1\"\n        local space=\"$2\"\n\n        match=$(wmctrl -xl | grep -E \"^.{12}${space}.*${app}\")\n\n        if [[ ! -z \"$match\" ]]; then\n                wmctrl -i -R \"${match:0:10}\"\n        else\n                notify-send \"wm-open\" \"No window open for ${app}\"\n        fi\n}\n```\n",
+        "html": null
+      }
+    },
+    {
+      "id": "20987ce7-d2cb-437f-ade0-701c5d723fd8",
+      "meta": {
+        "header": "Bash-84",
+        "category": [
+          "cat2",
+          "subcat3"
+        ],
+        "tags": []
+      },
+      "date": {
+        "created": "2021-12-03T18:04:26.918Z",
+        "updated": null,
+        "archived": null
+      },
+      "data": {},
+      "content": {
+        "md": "\n### BASH script - #84\n\n```bash\n#! /bin/bash\n\n## some other interesting classes:\n## Thunar: 'File Manager'\n\n## shortcut-1 is type: primary/secondary\n## shortcut-2 is key: z/x/c/v\n## an example of a shortcut: primary-x\nshortcut=\"${1}-${2}\"\n\n## space refers to the active space\nworkspace=$(wmctrl -d | grep \"*\" | cut -d\" \" -f1)\n\n\n## example: wm_open_window Chromium\nfunction wm_open_window() {\n        local app=\"$1\"\n        local space=\"$2\"\n\n        match=$(wmctrl -xl | grep -E \"^.{12}${space}.*${app}\")\n\n        if [[ ! -z \"$match\" ]]; then\n                wmctrl -i -R \"${match:0:10}\"\n        else\n                notify-send \"wm-open\" \"No window open for ${app}\"\n        fi\n}\n```\n",
+        "html": null
+      }
+    },
+    {
+      "id": "53af93de-b490-4df7-90bd-28b0ae8c151b",
+      "meta": {
+        "header": "Bash-85",
+        "category": [
+          "cat2",
+          "subcat3"
+        ],
+        "tags": [
+          "tag5"
+        ]
+      },
+      "date": {
+        "created": "2021-12-07T04:57:26.200Z",
+        "updated": null,
+        "archived": null
+      },
+      "data": {},
+      "content": {
+        "md": "\n### BASH script - #85\n\n```bash\n#! /bin/bash\n\n## some other interesting classes:\n## Thunar: 'File Manager'\n\n## shortcut-1 is type: primary/secondary\n## shortcut-2 is key: z/x/c/v\n## an example of a shortcut: primary-x\nshortcut=\"${1}-${2}\"\n\n## space refers to the active space\nworkspace=$(wmctrl -d | grep \"*\" | cut -d\" \" -f1)\n\n\n## example: wm_open_window Chromium\nfunction wm_open_window() {\n        local app=\"$1\"\n        local space=\"$2\"\n\n        match=$(wmctrl -xl | grep -E \"^.{12}${space}.*${app}\")\n\n        if [[ ! -z \"$match\" ]]; then\n                wmctrl -i -R \"${match:0:10}\"\n        else\n                notify-send \"wm-open\" \"No window open for ${app}\"\n        fi\n}\n```\n",
+        "html": null
+      }
+    },
+    {
+      "id": "bea2fb39-94e3-4ee6-9390-fcb61ea6569f",
+      "meta": {
+        "header": "Bash-86",
+        "category": [
+          "cat2",
+          "subcat1"
+        ],
+        "tags": []
+      },
+      "date": {
+        "created": "2021-12-06T10:57:45.628Z",
+        "updated": null,
+        "archived": null
+      },
+      "data": {},
+      "content": {
+        "md": "\n### BASH script - #86\n\n```bash\n#! /bin/bash\n\n## some other interesting classes:\n## Thunar: 'File Manager'\n\n## shortcut-1 is type: primary/secondary\n## shortcut-2 is key: z/x/c/v\n## an example of a shortcut: primary-x\nshortcut=\"${1}-${2}\"\n\n## space refers to the active space\nworkspace=$(wmctrl -d | grep \"*\" | cut -d\" \" -f1)\n\n\n## example: wm_open_window Chromium\nfunction wm_open_window() {\n        local app=\"$1\"\n        local space=\"$2\"\n\n        match=$(wmctrl -xl | grep -E \"^.{12}${space}.*${app}\")\n\n        if [[ ! -z \"$match\" ]]; then\n                wmctrl -i -R \"${match:0:10}\"\n        else\n                notify-send \"wm-open\" \"No window open for ${app}\"\n        fi\n}\n```\n",
+        "html": null
+      }
+    },
+    {
+      "id": "76d0729c-be43-45ed-a2c7-80505fca747c",
+      "meta": {
+        "header": "Bash-87",
+        "category": [
+          "cat2",
+          "subcat2"
+        ],
+        "tags": []
+      },
+      "date": {
+        "created": "2021-12-07T01:30:09.285Z",
+        "updated": null,
+        "archived": null
+      },
+      "data": {},
+      "content": {
+        "md": "\n### BASH script - #87\n\n```bash\n#! /bin/bash\n\n## some other interesting classes:\n## Thunar: 'File Manager'\n\n## shortcut-1 is type: primary/secondary\n## shortcut-2 is key: z/x/c/v\n## an example of a shortcut: primary-x\nshortcut=\"${1}-${2}\"\n\n## space refers to the active space\nworkspace=$(wmctrl -d | grep \"*\" | cut -d\" \" -f1)\n\n\n## example: wm_open_window Chromium\nfunction wm_open_window() {\n        local app=\"$1\"\n        local space=\"$2\"\n\n        match=$(wmctrl -xl | grep -E \"^.{12}${space}.*${app}\")\n\n        if [[ ! -z \"$match\" ]]; then\n                wmctrl -i -R \"${match:0:10}\"\n        else\n                notify-send \"wm-open\" \"No window open for ${app}\"\n        fi\n}\n```\n",
+        "html": null
+      }
+    },
+    {
+      "id": "3bd43e93-e97f-4901-b8a4-992d007facfc",
+      "meta": {
+        "header": "Bash-88",
+        "category": [
+          "cat2",
+          "subcat2"
+        ],
+        "tags": []
+      },
+      "date": {
+        "created": "2021-12-07T05:05:52.917Z",
+        "updated": null,
+        "archived": null
+      },
+      "data": {},
+      "content": {
+        "md": "\n### BASH script - #88\n\n```bash\n#! /bin/bash\n\n## some other interesting classes:\n## Thunar: 'File Manager'\n\n## shortcut-1 is type: primary/secondary\n## shortcut-2 is key: z/x/c/v\n## an example of a shortcut: primary-x\nshortcut=\"${1}-${2}\"\n\n## space refers to the active space\nworkspace=$(wmctrl -d | grep \"*\" | cut -d\" \" -f1)\n\n\n## example: wm_open_window Chromium\nfunction wm_open_window() {\n        local app=\"$1\"\n        local space=\"$2\"\n\n        match=$(wmctrl -xl | grep -E \"^.{12}${space}.*${app}\")\n\n        if [[ ! -z \"$match\" ]]; then\n                wmctrl -i -R \"${match:0:10}\"\n        else\n                notify-send \"wm-open\" \"No window open for ${app}\"\n        fi\n}\n```\n",
+        "html": null
+      }
+    },
+    {
+      "id": "11135ba5-7b21-4947-bc64-1414559df619",
+      "meta": {
+        "header": "Bash-89",
+        "category": [
+          "cat3"
+        ],
+        "tags": [
+          "tag1",
+          "tag2"
+        ]
+      },
+      "date": {
+        "created": "2021-12-03T18:51:15.891Z",
+        "updated": null,
+        "archived": null
+      },
+      "data": {},
+      "content": {
+        "md": "\n### BASH script - #89\n\n```bash\n#! /bin/bash\n\n## some other interesting classes:\n## Thunar: 'File Manager'\n\n## shortcut-1 is type: primary/secondary\n## shortcut-2 is key: z/x/c/v\n## an example of a shortcut: primary-x\nshortcut=\"${1}-${2}\"\n\n## space refers to the active space\nworkspace=$(wmctrl -d | grep \"*\" | cut -d\" \" -f1)\n\n\n## example: wm_open_window Chromium\nfunction wm_open_window() {\n        local app=\"$1\"\n        local space=\"$2\"\n\n        match=$(wmctrl -xl | grep -E \"^.{12}${space}.*${app}\")\n\n        if [[ ! -z \"$match\" ]]; then\n                wmctrl -i -R \"${match:0:10}\"\n        else\n                notify-send \"wm-open\" \"No window open for ${app}\"\n        fi\n}\n```\n",
+        "html": null
+      }
+    },
+    {
+      "id": "bd0377f9-ac6e-4f3c-be1f-378693874040",
+      "meta": {
+        "header": "Bash-90",
+        "category": [
+          "cat2",
+          "subcat1"
+        ],
+        "tags": []
+      },
+      "date": {
+        "created": "2021-12-04T07:47:57.322Z",
+        "updated": null,
+        "archived": null
+      },
+      "data": {},
+      "content": {
+        "md": "\n### BASH script - #90\n\n```bash\n#! /bin/bash\n\n## some other interesting classes:\n## Thunar: 'File Manager'\n\n## shortcut-1 is type: primary/secondary\n## shortcut-2 is key: z/x/c/v\n## an example of a shortcut: primary-x\nshortcut=\"${1}-${2}\"\n\n## space refers to the active space\nworkspace=$(wmctrl -d | grep \"*\" | cut -d\" \" -f1)\n\n\n## example: wm_open_window Chromium\nfunction wm_open_window() {\n        local app=\"$1\"\n        local space=\"$2\"\n\n        match=$(wmctrl -xl | grep -E \"^.{12}${space}.*${app}\")\n\n        if [[ ! -z \"$match\" ]]; then\n                wmctrl -i -R \"${match:0:10}\"\n        else\n                notify-send \"wm-open\" \"No window open for ${app}\"\n        fi\n}\n```\n",
+        "html": null
+      }
+    },
+    {
+      "id": "7fd1c93d-8360-4e1c-b302-41aa450c1e76",
+      "meta": {
+        "header": "Bash-91",
+        "category": [
+          "cat3"
+        ],
+        "tags": [
+          "tag1"
+        ]
+      },
+      "date": {
+        "created": "2021-12-03T05:13:31.625Z",
+        "updated": null,
+        "archived": null
+      },
+      "data": {},
+      "content": {
+        "md": "\n### BASH script - #91\n\n```bash\n#! /bin/bash\n\n## some other interesting classes:\n## Thunar: 'File Manager'\n\n## shortcut-1 is type: primary/secondary\n## shortcut-2 is key: z/x/c/v\n## an example of a shortcut: primary-x\nshortcut=\"${1}-${2}\"\n\n## space refers to the active space\nworkspace=$(wmctrl -d | grep \"*\" | cut -d\" \" -f1)\n\n\n## example: wm_open_window Chromium\nfunction wm_open_window() {\n        local app=\"$1\"\n        local space=\"$2\"\n\n        match=$(wmctrl -xl | grep -E \"^.{12}${space}.*${app}\")\n\n        if [[ ! -z \"$match\" ]]; then\n                wmctrl -i -R \"${match:0:10}\"\n        else\n                notify-send \"wm-open\" \"No window open for ${app}\"\n        fi\n}\n```\n",
+        "html": null
+      }
+    },
+    {
+      "id": "e2555fdf-6bf2-4e55-9218-ac45db260acc",
+      "meta": {
+        "header": "Bash-92",
+        "category": [
+          "cat2",
+          "subcat3"
+        ],
+        "tags": [
+          "tag2",
+          "tag5"
+        ]
+      },
+      "date": {
+        "created": "2021-12-07T03:00:35.420Z",
+        "updated": null,
+        "archived": null
+      },
+      "data": {},
+      "content": {
+        "md": "\n### BASH script - #92\n\n```bash\n#! /bin/bash\n\n## some other interesting classes:\n## Thunar: 'File Manager'\n\n## shortcut-1 is type: primary/secondary\n## shortcut-2 is key: z/x/c/v\n## an example of a shortcut: primary-x\nshortcut=\"${1}-${2}\"\n\n## space refers to the active space\nworkspace=$(wmctrl -d | grep \"*\" | cut -d\" \" -f1)\n\n\n## example: wm_open_window Chromium\nfunction wm_open_window() {\n        local app=\"$1\"\n        local space=\"$2\"\n\n        match=$(wmctrl -xl | grep -E \"^.{12}${space}.*${app}\")\n\n        if [[ ! -z \"$match\" ]]; then\n                wmctrl -i -R \"${match:0:10}\"\n        else\n                notify-send \"wm-open\" \"No window open for ${app}\"\n        fi\n}\n```\n",
+        "html": null
+      }
+    },
+    {
+      "id": "ebda0bc1-2de1-4b72-9c33-e2dcb3fcdd5e",
+      "meta": {
+        "header": "Bash-93",
+        "category": [
+          "cat2",
+          "subcat2"
+        ],
+        "tags": [
+          "tag5"
+        ]
+      },
+      "date": {
+        "created": "2021-12-08T05:11:01.424Z",
+        "updated": null,
+        "archived": null
+      },
+      "data": {},
+      "content": {
+        "md": "\n### BASH script - #93\n\n```bash\n#! /bin/bash\n\n## some other interesting classes:\n## Thunar: 'File Manager'\n\n## shortcut-1 is type: primary/secondary\n## shortcut-2 is key: z/x/c/v\n## an example of a shortcut: primary-x\nshortcut=\"${1}-${2}\"\n\n## space refers to the active space\nworkspace=$(wmctrl -d | grep \"*\" | cut -d\" \" -f1)\n\n\n## example: wm_open_window Chromium\nfunction wm_open_window() {\n        local app=\"$1\"\n        local space=\"$2\"\n\n        match=$(wmctrl -xl | grep -E \"^.{12}${space}.*${app}\")\n\n        if [[ ! -z \"$match\" ]]; then\n                wmctrl -i -R \"${match:0:10}\"\n        else\n                notify-send \"wm-open\" \"No window open for ${app}\"\n        fi\n}\n```\n",
+        "html": null
+      }
+    },
+    {
+      "id": "09309d0a-6071-4c6c-bfdc-c2da9d01a6ba",
+      "meta": {
+        "header": "Bash-94",
+        "category": [
+          "cat2",
+          "subcat2"
+        ],
+        "tags": [
+          "tag3"
+        ]
+      },
+      "date": {
+        "created": "2021-12-06T00:59:06.033Z",
+        "updated": null,
+        "archived": null
+      },
+      "data": {},
+      "content": {
+        "md": "\n### BASH script - #94\n\n```bash\n#! /bin/bash\n\n## some other interesting classes:\n## Thunar: 'File Manager'\n\n## shortcut-1 is type: primary/secondary\n## shortcut-2 is key: z/x/c/v\n## an example of a shortcut: primary-x\nshortcut=\"${1}-${2}\"\n\n## space refers to the active space\nworkspace=$(wmctrl -d | grep \"*\" | cut -d\" \" -f1)\n\n\n## example: wm_open_window Chromium\nfunction wm_open_window() {\n        local app=\"$1\"\n        local space=\"$2\"\n\n        match=$(wmctrl -xl | grep -E \"^.{12}${space}.*${app}\")\n\n        if [[ ! -z \"$match\" ]]; then\n                wmctrl -i -R \"${match:0:10}\"\n        else\n                notify-send \"wm-open\" \"No window open for ${app}\"\n        fi\n}\n```\n",
+        "html": null
+      }
+    },
+    {
+      "id": "f5042e15-98b2-41ff-ab07-bc668b9ea15a",
+      "meta": {
+        "header": "Bash-95",
+        "category": [
+          "cat2"
+        ],
+        "tags": [
+          "tag5",
+          "tag4"
+        ]
+      },
+      "date": {
+        "created": "2021-12-06T10:02:33.677Z",
+        "updated": null,
+        "archived": null
+      },
+      "data": {},
+      "content": {
+        "md": "\n### BASH script - #95\n\n```bash\n#! /bin/bash\n\n## some other interesting classes:\n## Thunar: 'File Manager'\n\n## shortcut-1 is type: primary/secondary\n## shortcut-2 is key: z/x/c/v\n## an example of a shortcut: primary-x\nshortcut=\"${1}-${2}\"\n\n## space refers to the active space\nworkspace=$(wmctrl -d | grep \"*\" | cut -d\" \" -f1)\n\n\n## example: wm_open_window Chromium\nfunction wm_open_window() {\n        local app=\"$1\"\n        local space=\"$2\"\n\n        match=$(wmctrl -xl | grep -E \"^.{12}${space}.*${app}\")\n\n        if [[ ! -z \"$match\" ]]; then\n                wmctrl -i -R \"${match:0:10}\"\n        else\n                notify-send \"wm-open\" \"No window open for ${app}\"\n        fi\n}\n```\n",
+        "html": null
+      }
+    },
+    {
+      "id": "9abf3666-5e26-4809-abc8-cb24dd52ebec",
+      "meta": {
+        "header": "Bash-96",
+        "category": [
+          "cat1",
+          "subcat2"
+        ],
+        "tags": [
+          "tag4"
+        ]
+      },
+      "date": {
+        "created": "2021-12-07T05:04:05.161Z",
+        "updated": null,
+        "archived": null
+      },
+      "data": {},
+      "content": {
+        "md": "\n### BASH script - #96\n\n```bash\n#! /bin/bash\n\n## some other interesting classes:\n## Thunar: 'File Manager'\n\n## shortcut-1 is type: primary/secondary\n## shortcut-2 is key: z/x/c/v\n## an example of a shortcut: primary-x\nshortcut=\"${1}-${2}\"\n\n## space refers to the active space\nworkspace=$(wmctrl -d | grep \"*\" | cut -d\" \" -f1)\n\n\n## example: wm_open_window Chromium\nfunction wm_open_window() {\n        local app=\"$1\"\n        local space=\"$2\"\n\n        match=$(wmctrl -xl | grep -E \"^.{12}${space}.*${app}\")\n\n        if [[ ! -z \"$match\" ]]; then\n                wmctrl -i -R \"${match:0:10}\"\n        else\n                notify-send \"wm-open\" \"No window open for ${app}\"\n        fi\n}\n```\n",
+        "html": null
+      }
+    },
+    {
+      "id": "540a98ff-208d-41e5-b54f-f750893cb3a5",
+      "meta": {
+        "header": "Bash-97",
+        "category": [
+          "cat1"
+        ],
+        "tags": []
+      },
+      "date": {
+        "created": "2021-12-07T05:21:42.895Z",
+        "updated": null,
+        "archived": null
+      },
+      "data": {},
+      "content": {
+        "md": "\n### BASH script - #97\n\n```bash\n#! /bin/bash\n\n## some other interesting classes:\n## Thunar: 'File Manager'\n\n## shortcut-1 is type: primary/secondary\n## shortcut-2 is key: z/x/c/v\n## an example of a shortcut: primary-x\nshortcut=\"${1}-${2}\"\n\n## space refers to the active space\nworkspace=$(wmctrl -d | grep \"*\" | cut -d\" \" -f1)\n\n\n## example: wm_open_window Chromium\nfunction wm_open_window() {\n        local app=\"$1\"\n        local space=\"$2\"\n\n        match=$(wmctrl -xl | grep -E \"^.{12}${space}.*${app}\")\n\n        if [[ ! -z \"$match\" ]]; then\n                wmctrl -i -R \"${match:0:10}\"\n        else\n                notify-send \"wm-open\" \"No window open for ${app}\"\n        fi\n}\n```\n",
+        "html": null
+      }
+    },
+    {
+      "id": "5aadfebd-7ed8-454f-b8e9-c83104ed73e4",
+      "meta": {
+        "header": "Bash-98",
+        "category": [
+          "cat2",
+          "subcat2"
+        ],
+        "tags": [
+          "tag5",
+          "tag4"
+        ]
+      },
+      "date": {
+        "created": "2021-12-05T05:40:45.267Z",
+        "updated": null,
+        "archived": null
+      },
+      "data": {},
+      "content": {
+        "md": "\n### BASH script - #98\n\n```bash\n#! /bin/bash\n\n## some other interesting classes:\n## Thunar: 'File Manager'\n\n## shortcut-1 is type: primary/secondary\n## shortcut-2 is key: z/x/c/v\n## an example of a shortcut: primary-x\nshortcut=\"${1}-${2}\"\n\n## space refers to the active space\nworkspace=$(wmctrl -d | grep \"*\" | cut -d\" \" -f1)\n\n\n## example: wm_open_window Chromium\nfunction wm_open_window() {\n        local app=\"$1\"\n        local space=\"$2\"\n\n        match=$(wmctrl -xl | grep -E \"^.{12}${space}.*${app}\")\n\n        if [[ ! -z \"$match\" ]]; then\n                wmctrl -i -R \"${match:0:10}\"\n        else\n                notify-send \"wm-open\" \"No window open for ${app}\"\n        fi\n}\n```\n",
+        "html": null
+      }
+    },
+    {
+      "id": "e3df2aed-675a-4676-9a58-e90a06a71939",
+      "meta": {
+        "header": "Bash-99",
+        "category": [
+          "cat1",
+          "subcat1"
+        ],
+        "tags": [
+          "tag1"
+        ]
+      },
+      "date": {
+        "created": "2021-12-07T12:42:56.932Z",
+        "updated": null,
+        "archived": null
+      },
+      "data": {},
+      "content": {
+        "md": "\n### BASH script - #99\n\n```bash\n#! /bin/bash\n\n## some other interesting classes:\n## Thunar: 'File Manager'\n\n## shortcut-1 is type: primary/secondary\n## shortcut-2 is key: z/x/c/v\n## an example of a shortcut: primary-x\nshortcut=\"${1}-${2}\"\n\n## space refers to the active space\nworkspace=$(wmctrl -d | grep \"*\" | cut -d\" \" -f1)\n\n\n## example: wm_open_window Chromium\nfunction wm_open_window() {\n        local app=\"$1\"\n        local space=\"$2\"\n\n        match=$(wmctrl -xl | grep -E \"^.{12}${space}.*${app}\")\n\n        if [[ ! -z \"$match\" ]]; then\n                wmctrl -i -R \"${match:0:10}\"\n        else\n                notify-send \"wm-open\" \"No window open for ${app}\"\n        fi\n}\n```\n",
+        "html": null
+      }
+    }
+  ]
+}

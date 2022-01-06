@@ -1,21 +1,24 @@
 {
-    // how are ts-node overrides actually used?
-    "ts-node": {
-        "include": ["./index.ts"]
-    },
-    "compilerOptions": {
-        "module": "CommonJS",
-        "target": "ES2020",
-        "outDir": "dist",
-        "sourceMap": true,
-        "esModuleInterop": true,
-        "types": ["node", "jest"],
-        "moduleResolution": "node",
-        "lib": ["ES2020"],
-        "noImplicitAny": true,
-        "baseUrl": ".",
-        // "allowSyntheticDefaultImports": true,
-    },
-    "exclude": ["node_modules"],
-    "include": ["src/**/*.ts"]
+  "compilerOptions": {
+      "module": "CommonJS",
+      "target": "ES2020",
+      "outDir": "dist",
+      "sourceMap": true,
+      "esModuleInterop": true,
+      "types": ["node"],
+      "moduleResolution": "Node",
+      "lib": ["ES2020", "DOM"],
+      "noImplicitAny": true,
+      "baseUrl": ".",
+      // "allowSyntheticDefaultImports": true
+  },
+  "ts-node": {
+    // "ignoreDiagnostics": [2393, 2403, 2532, 7006, 7005, 2378, 2300],
+      // "include": ["./index.ts"],
+      "ignoreDiagnostics": [2393, 2300],
+    "require": ["dotenv/config", "tsconfig-paths/register"]
+
+  },
+  "exclude": ["node_modules"],
+  "include": ["src/**/*.ts"]
 }
