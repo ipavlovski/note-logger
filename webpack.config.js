@@ -1,53 +1,68 @@
-const path = require('path');
-const MonacoWebpackPlugin = require('monaco-editor-webpack-plugin');
-const HtmlWebpackPlugin = require('html-webpack-plugin');
+const MonacoWebpackPlugin = require('monaco-editor-webpack-plugin')
+const HtmlWebpackPlugin = require('html-webpack-plugin')
+const MiniCssExtractPlugin = require("mini-css-extract-plugin")
+
 module.exports = {
     mode: 'development',
-    entry: './src/app.ts',
+    entry: `${__dirname}/frontend/code/app.ts`,
     module: {
         rules: [
             {
-                test: /\.tsx?$/,
-                use: 'ts-loader',
-                exclude: /node_modules/,
+                test: /\.ts?$/,
+                use: [{ loader: 'ts-loader'}],
+                exclude: [/node_modules/, /server.ts/]
             },
-
             {
                 test: /\.css$/,
-                use: ['style-loader', 'css-loader']
-            }, {
+                use: [MiniCssExtractPlugin.loader, 'css-loader', 'style-loader'],
+            },
+            {
                 test: /\.ttf$/,
                 use: ['file-loader']
-            }
+            },
+            { 
+                test: /\.pug$/, 
+                use: [{ loader: 'pug3-loader' }] 
+            },
 
         ],
     },
     plugins: [
-        new MonacoWebpackPlugin(
-            {
-                languages: ['markdown', 'javascript', 'typescript', 'r', 'shell']
-            }
-        ),
-        // new HtmlWebpackPlugin({
-        //     title: "Hot Module Replacement"
-        // })
+        new MonacoWebpackPlugin({
+            languages: ['markdown', 'javascript', 'typescript', 'r', 'shell']
+        }),
+        new HtmlWebpackPlugin({
+            template: "./frontend/markup/index.pug",
+            inject: 'body',
+            filename: 'index.html'
+        }),
+        new MiniCssExtractPlugin({
+            filename: "style.css"
+        }),
+        new MiniCssExtractPlugin({
+            filename: "modal.css"
+        })
     ],
 
     resolve: {
         extensions: ['.ts', '.js'],
         alias: {
-            src: path.resolve(__dirname, 'src')
+            frontend: `${__dirname}/frontend`
+            
         }
     },
+
     output: {
-        path: path.resolve(__dirname, 'public'),
+        path: `${__dirname}/dist/`,
         filename: 'bundle.js'
     },
+
     devtool: 'inline-source-map',
+
     devServer: {
-        static: './public',
+        static: { directory: './frontend/code' },
         port: 9000,
         open: false,
         hot: true
-    },
-};
+    }
+}

@@ -1,6 +1,6 @@
-import App from 'src/app'
-import { Item } from 'src/state/item'
-import { ItemSummary } from 'src/state/view'
+import App from 'frontend/code/app'
+import { Item } from 'frontend/code/state/item'
+import { ItemSummary } from 'frontend/code/state/view'
 
 export default class Sidebar {
     el: Element
@@ -27,7 +27,7 @@ export default class Sidebar {
 
     renderAll() {
         const flatView = app.view.flatten()
-        flatView.forEach(v => {
+        flatView.forEach((v: any) => {
             if (v.type == 'catitem') this.renderSideCat(v)
             if (v.type == 'item') this.renderSideLink(v)
         })

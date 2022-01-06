@@ -1,0 +1,4 @@
+mixin dbutton(event, text)
+    button(onclick="document.dispatchEvent(new CustomEvent('" + event + "', {detail: this}))")&attributes(attributes)=text
+
+//- USAGE: +dbutton("button-login", "Submit")(class="btn login-input")

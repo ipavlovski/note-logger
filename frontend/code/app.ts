@@ -1,14 +1,23 @@
-import Editor from 'src/ui/editor'
-import Content from 'src/ui/content'
-import Sidebar from 'src/ui/sidebar'
-import Omnibar from 'src/ui/omnibar'
+import Editor from 'frontend/code/ui/editor'
+import Content from 'frontend/code/ui/content'
+import Sidebar from 'frontend/code/ui/sidebar'
+import Omnibar from 'frontend/code/ui/omnibar'
 
-import { DB } from 'src/state/db'
-import { Item, ItemFactory } from 'src/state/item'
-import { Query } from 'src/state/query'
-import { SortingOptions, View } from 'src/state/view'
+import { DB } from 'frontend/code/state/db'
+import { Item, ItemFactory } from 'frontend/code/state/item'
+import { Query } from 'frontend/code/state/query'
+import { SortingOptions, View } from 'frontend/code/state/view'
 
 import hotkeys from 'hotkeys-js'
+import { DateTime } from 'luxon'
+import { fromEvent } from "rxjs"
+
+import MicroModal from 'micromodal'
+// import '../styles/style.css'
+// import '../styles/modal.css'
+
+
+
 
 export default class App {
     editor: Editor

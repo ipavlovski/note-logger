@@ -1,8 +1,8 @@
-import App from 'src/app'
+import App from 'frontend/code/app'
 import hljs from 'highlight.js'
 import MarkdownIt from 'markdown-it'
-import { Item } from 'src/state/item'
-import { ItemSummary } from 'src/state/view'
+import { Item } from 'frontend/code/state/item'
+import { ItemSummary } from 'frontend/code/state/view'
 
 // import hljs from 'highlight.js/lib/core'
 // import javascript from 'highlight.js/lib/languages/javascript'

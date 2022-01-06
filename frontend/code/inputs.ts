@@ -2,7 +2,7 @@
 // echo '{ "db": [  ] }' > db1.json
 // json-server db1.json
 
-import { Item } from 'src/state/item'
+import { Item } from 'frontend/code/state/item'
 import { v4 as uuidv4 } from "uuid"
 import fetch from 'node-fetch'
 import { random} from "lodash"

@@ -3,7 +3,7 @@
 // interaction with the state of the view
 
 // cat:
-import { CatItem, CatMap, Item, ItemFactory } from 'src/state/item'
+import { CatItem, CatMap, Item, ItemFactory } from 'frontend/code/state/item'
 
 export interface SortingOptions {
     sortBy: 'date' | 'category'

@@ -1,8 +1,9 @@
-import { Item } from '../state/item'
 import * as monaco from 'monaco-editor'
 import { Observable, interval, timer } from 'rxjs'
 import { scan, debounce, tap, map } from 'rxjs/operators'
-import App from 'src/app'
+
+import { Item } from 'frontend/code/state/item'
+import App from 'frontend/code/app'
 
 export default class Editor {
     el: Element

@@ -1,5 +1,5 @@
-import { Item } from 'src/state/item'
-import { Query } from 'src/state/query'
+import { Item } from 'frontend/code/state/item'
+import { Query } from 'frontend/code/state/query'
 
 export class DB {
 
