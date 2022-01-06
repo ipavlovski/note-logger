@@ -9,11 +9,11 @@
       "moduleResolution": "Node",
       "lib": ["ES2020", "DOM"],
       "noImplicitAny": true,
-      "baseUrl": ".",
-      "paths": {
-          "frontend/*": ["frontend/*"],
-          "backend/*": ["backend/*"]
-      }
+      "baseUrl": "."
+      // "paths": {
+      //     "frontend/*": ["frontend/*"],
+      //     "backend/*": ["backend/*"]
+      // }
       
   },
   "ts-node": {

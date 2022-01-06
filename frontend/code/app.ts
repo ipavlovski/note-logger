@@ -13,8 +13,8 @@ import { DateTime } from 'luxon'
 import { fromEvent } from "rxjs"
 
 import MicroModal from 'micromodal'
-// import '../styles/style.css'
-// import '../styles/modal.css'
+import 'frontend/styles/styles.css'
+import 'frontend/styles/modal.css'
 
 
 

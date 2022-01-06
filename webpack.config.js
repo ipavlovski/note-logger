@@ -14,7 +14,7 @@ module.exports = {
             },
             {
                 test: /\.css$/,
-                use: [MiniCssExtractPlugin.loader, 'css-loader', 'style-loader'],
+                use: [MiniCssExtractPlugin.loader, 'css-loader'],
             },
             {
                 test: /\.ttf$/,
@@ -27,6 +27,17 @@ module.exports = {
 
         ],
     },
+//     optimization: {
+//         splitChunks: {
+//             cacheGroups: {
+//                 monacoCommon: {
+//                     test: /[\\/]node_modules[\\/]monaco\-editor/,
+//                     name: 'monaco-editor-common',
+//                     chunks: 'async'
+//                 }
+//             }
+//         }
+//    },
     plugins: [
         new MonacoWebpackPlugin({
             languages: ['markdown', 'javascript', 'typescript', 'r', 'shell']

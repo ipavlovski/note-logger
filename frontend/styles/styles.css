@@ -11,7 +11,8 @@ body {
     /* grid-template-rows: 93vh; */
     grid-template-areas: 
         "sidebar content editor"
-        "sidebar content preview";
+        "sidebar content preview"
+        ;
     grid-gap: 2px;
 
     height: 100vh;

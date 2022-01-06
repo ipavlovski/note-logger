@@ -1,4 +1,5 @@
-import * as monaco from 'monaco-editor'
+// import * as monaco from 'monaco-editor'
+import * as monaco from 'monaco-editor/esm/vs/editor/editor.api'
 import { Observable, interval, timer } from 'rxjs'
 import { scan, debounce, tap, map } from 'rxjs/operators'
 
