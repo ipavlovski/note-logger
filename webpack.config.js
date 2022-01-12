@@ -1,15 +1,23 @@
 const MonacoWebpackPlugin = require('monaco-editor-webpack-plugin')
 const HtmlWebpackPlugin = require('html-webpack-plugin')
 const MiniCssExtractPlugin = require("mini-css-extract-plugin")
+const Dotenv = require('dotenv-webpack');
+
+console.log(`WEBPACK IS LOADING!!!!!!! in ${__dirname}`)
 
 module.exports = {
     mode: 'development',
-    entry: `${__dirname}/frontend/code/app.ts`,
+    entry: `${__dirname}/frontend/app.ts`,
     module: {
         rules: [
             {
                 test: /\.ts?$/,
-                use: [{ loader: 'ts-loader'}],
+                use: [{
+                    loader: 'ts-loader',
+                    options: {
+                        configFile: "tsconfig.json"
+                    }
+                }],
                 exclude: [/node_modules/, /server.ts/]
             },
             {
@@ -52,13 +60,15 @@ module.exports = {
         }),
         new MiniCssExtractPlugin({
             filename: "modal.css"
-        })
+        }),
+        new Dotenv()
     ],
 
     resolve: {
         extensions: ['.ts', '.js'],
         alias: {
-            frontend: `${__dirname}/frontend`
+            frontend: `${__dirname}/frontend`,
+            backend: `${__dirname}/backend`
             
         }
     },

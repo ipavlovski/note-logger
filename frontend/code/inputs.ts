@@ -1,13 +1,10 @@
-// INITIALIZE JSON-SERVER FIRST
-// echo '{ "db": [  ] }' > db1.json
-// json-server db1.json
-
 import { Item } from 'frontend/code/state/item'
 import { v4 as uuidv4 } from "uuid"
 import fetch from 'node-fetch'
 import { random} from "lodash"
+import { jsonServerPort } from 'backend/config'
 
-const baseURL = 'http://localhost:3000/db'
+const baseURL = `http://localhost:${jsonServerPort}/db`
 
 // DELETE ALL
 async function deleteAll() {

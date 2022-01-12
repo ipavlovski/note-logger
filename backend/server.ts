@@ -1,21 +1,13 @@
-// json-server --watch web/gpl-w2p/db.json --port 5000
-// npm run tsnd web/gpl-w2p/server.ts
-
-import express, { json, Request, response, Response } from 'express'
-import { v4 as uuidv4 } from 'uuid'
-import fetch from 'node-fetch'
-import morgan from 'morgan'
-
-import { Server } from 'ws'
 import { exec } from 'child_process'
-import { Subject } from 'rxjs'
-import { DateTime } from 'luxon'
+import express, { json } from 'express'
 import JsonServer from 'json-server'
+import morgan from 'morgan'
+import { Server } from 'ws'
+import { expressPort, jsonServerFile, jsonServerPort } from 'backend/config'
+
 
 
 //  ==========  MAIN EXPRESS SERVER  ==========
-
-const expressPort = 3001
 
 const app = express()
 app.use(json())
@@ -33,8 +25,6 @@ const server = app.listen(expressPort, () => console.log(`Listening on ${express
 
 //  ==========  JSON SERVER  ==========
 
-const jsonServerPort = 5000
-const jsonServerFile = 'db1.json'
 
 
 const jsonServer = JsonServer.create()

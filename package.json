@@ -41,6 +41,7 @@
         "@types/uuid": "^8.3.3",
         "@types/ws": "^8.2.2",
         "css-loader": "^6.5.1",
+        "dotenv-webpack": "^7.0.3",
         "file-loader": "^6.2.0",
         "html-webpack-plugin": "^5.5.0",
         "module-alias": "^2.2.2",
