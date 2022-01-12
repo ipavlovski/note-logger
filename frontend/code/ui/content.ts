@@ -1,4 +1,4 @@
-import App from 'frontend/code/app'
+import App from 'frontend/app'
 import hljs from 'highlight.js'
 import MarkdownIt from 'markdown-it'
 import { Item } from 'frontend/code/state/item'

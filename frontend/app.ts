@@ -15,6 +15,7 @@ import { fromEvent } from "rxjs"
 import MicroModal from 'micromodal'
 import 'frontend/styles/styles.css'
 import 'frontend/styles/modal.css'
+import { jsonServerPort } from 'backend/config'
 
 
 
@@ -51,7 +52,7 @@ export default class App {
         this.query = new Query(queryString)
 
         // prep the DB connection
-        const baseURL = localStorage.getItem('base_url') ?? 'http://localhost:3000/db'
+        const baseURL = localStorage.getItem('base_url') ?? `http://localhost:${jsonServerPort}/db`
         this.db = new DB(baseURL)
 
         // get the latest sort-order

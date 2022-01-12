@@ -4,7 +4,7 @@ import { Observable, interval, timer } from 'rxjs'
 import { scan, debounce, tap, map } from 'rxjs/operators'
 
 import { Item } from 'frontend/code/state/item'
-import App from 'frontend/code/app'
+import App from 'frontend/app'
 
 export default class Editor {
     el: Element

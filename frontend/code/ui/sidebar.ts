@@ -1,4 +1,4 @@
-import App from 'frontend/code/app'
+import App from 'frontend/app'
 import { Item } from 'frontend/code/state/item'
 import { ItemSummary } from 'frontend/code/state/view'
 

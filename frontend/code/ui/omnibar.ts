@@ -1,5 +1,5 @@
 import hotkeys from 'hotkeys-js'
-import App from 'frontend/code/app'
+import App from 'frontend/app'
 
 export default class Omnibar {
     el: HTMLElement
