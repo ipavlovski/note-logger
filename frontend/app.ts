@@ -178,6 +178,5 @@ declare global {
     var app: App
 }
 
-console.log("Initialziing from the app.ts")
 window.app = new App()
-window.app.init().then(() => console.log("INIT @", new Date().toISOString()))
+window.app.init().then(() => console.log("INIT FINISHED @", new Date().toISOString()))

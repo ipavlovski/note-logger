@@ -6,6 +6,14 @@ import { scan, debounce, tap, map } from 'rxjs/operators'
 import { Item } from 'frontend/code/state/item'
 import App from 'frontend/app'
 
+
+
+// EDITOR:
+// events:
+// 'change' - change event 
+// 'cancel' - cancel edit of an activated item
+// 'enter' - finish/split event (depending on context)
+
 export default class Editor {
     el: Element
     editor: monaco.editor.IStandaloneCodeEditor
@@ -43,8 +51,4 @@ export default class Editor {
             debounce(() => timer(300))
         ).subscribe(this.app.saveChanges)
     }
-
-
-
-
 }

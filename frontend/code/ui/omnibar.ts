@@ -57,7 +57,9 @@ export default class Omnibar {
         hotkeys.filter = (event: Event) => {
             const tagName = (event.target as HTMLElement).tagName
             if (hotkeys.getScope() == 'omnibar' && event.target == this.input) {
-                console.log(`${(event as KeyboardEvent).key} @ ${event.type} was pressed!`)
+                if (event.type == 'keyup') {
+                    console.log(`${(event as KeyboardEvent).key} @ ${event.type} was pressed!`)
+                }
 
 
                 // TODO: check if the letter fits, if it does='paste' corresponding expansion
