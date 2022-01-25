@@ -3,21 +3,9 @@
 // interaction with the state of the view
 
 // cat:
-import { CatItem, CatMap, Item, ItemFactory } from 'frontend/code/state/item'
-
-export interface SortingOptions {
-    sortBy: 'date' | 'category'
-    subsort: 'date' | 'name'
-    maxLevel?: number
-}
-
-export interface ItemSummary {
-    type: 'catitem' | 'item'
-    name: string
-    cat: string[]
-    item?: Item
-    children?: number
-}
+// import { CatItem, CatMap, Item, ItemFactory } from 'frontend/code/state/item'
+import { CatItem, CatMap, Item, ItemSummary, SortingOptions } from 'common/types'
+import { ItemFactory } from './item'
 
 // TODO: finally setup the editor + content + sidebar + preview (with scrollbars)
 // TODO: properly convert itesm from DB (parse dates)
@@ -30,6 +18,10 @@ export class View {
     constructor(items: Item[], sortOpts: SortingOptions) {
         this.sortOpts = sortOpts
         this.catMap = this.categorizeItems(items, this.sortOpts)
+    }
+
+    flatten() {
+        return this.recursiveSummary(this.catMap, [], [])
     }
 
     // get all the items
@@ -56,6 +48,10 @@ export class View {
 
     }
 
+
+
+    
+
     private getOrCreateCatItem(parent: CatMap, cats: string[]): CatItem {
         let catItem: CatItem
         const catItems = cats.reduce((col: CatMap, cat: string): CatMap => {
@@ -74,9 +70,9 @@ export class View {
         // resort the items by date
         map.forEach(catItem => {
             catItem.items = catItem.items.sort((item1, item2) => {
-                if (opts.subsort == 'date') 
+                if (opts.subsort == 'date')
                     return item2.date.created.valueOf() - item1.date.created.valueOf()
-                if (opts.subsort == 'name') 
+                if (opts.subsort == 'name')
                     return item2.meta.header.localeCompare(item1.meta.header)
             })
         })
@@ -91,7 +87,6 @@ export class View {
 
         return map
     }
-
 
 
     private categorizeItems(items: Item[], opts: SortingOptions) {
@@ -141,13 +136,5 @@ export class View {
 
         return collector
     }
-
-    flatten() {
-        return this.recursiveSummary(this.catMap, [], [])
-    }
-
-
-
-
 
 }

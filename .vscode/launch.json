@@ -18,7 +18,7 @@
             "envFile": "${workspaceFolder}/.env",
         },
         {
-            "name": "Debug Jest Tests",
+            "name": "vscode-jest-tests",
             "type": "pwa-node",
             "request": "launch",
             "runtimeArgs": [

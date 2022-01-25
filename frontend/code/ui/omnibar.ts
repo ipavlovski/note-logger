@@ -1,14 +1,14 @@
 import hotkeys from 'hotkeys-js'
-import App from 'frontend/app'
 
+// Omnibar: popup modal to provide a command pallette
+// emit events with data as primary source of interaction
+// no public methods - all interaction happens through shortcuts
 export default class Omnibar {
     el: HTMLElement
     input: HTMLElement
-    app: App
     hinting: boolean
 
-    constructor(app: App) {
-        this.app = app
+    constructor() {
         this.el = document.querySelector(".omnibar-full")
         this.input = document.querySelector(".omnibar-input")
 
@@ -17,10 +17,16 @@ export default class Omnibar {
         })
 
         this.configureShortcuts()
-
     }
 
-    configureShortcuts() {
+    showWarningMessage(text: string) {
+        // TODO: 
+        // popup with a clear message
+        // rattle a bit, and show an error message
+        // then dissappear
+    }
+
+    private configureShortcuts() {
         hotkeys.setScope('main')
 
         hotkeys('/', { scope: 'main' }, (event, handler) => {
@@ -80,7 +86,7 @@ export default class Omnibar {
     }
 
 
-    toggleHint() {
+    private toggleHint() {
         const hintArray = [
             'S sortby: category vs. date*',
             'O orderItems: name vs. date*',
@@ -116,15 +122,14 @@ export default class Omnibar {
         }
     }
 
-
-    openOmnibar() {
+    private openOmnibar() {
         this.el.style.display = "block"
         hotkeys.setScope('omnibar')
         console.log('Scope set:', hotkeys.getScope())
         this.input.focus()
     }
 
-    closeOmnibar() {
+    private closeOmnibar() {
         hotkeys.setScope('main')
         console.log('Scope set:', hotkeys.getScope())
         this.el.style.display = "none"

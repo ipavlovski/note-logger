@@ -1,13 +1,9 @@
-import App from 'frontend/app'
-import { Item } from 'frontend/code/state/item'
-import { ItemSummary } from 'frontend/code/state/view'
+import { ItemSummary } from 'common/types'
 
 export default class Sidebar {
     el: Element
-    app: App
 
-    constructor(app: App) {
-        this.app = app
+    constructor() {
         this.el = document.querySelector("#sidebar .sleeve")
         this.renderAll()
 

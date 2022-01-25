@@ -1,38 +1,27 @@
 // import * as monaco from 'monaco-editor'
 import * as monaco from 'monaco-editor/esm/vs/editor/editor.api'
-import { Observable, interval, timer } from 'rxjs'
-import { scan, debounce, tap, map } from 'rxjs/operators'
-
-import { Item } from 'frontend/code/state/item'
-import App from 'frontend/app'
-
-
+import { Observable, timer } from 'rxjs'
+import { debounce } from 'rxjs/operators'
 
 // EDITOR:
 // events:
 // 'change' - change event 
 // 'cancel' - cancel edit of an activated item
 // 'enter' - finish/split event (depending on context)
+// methods:
+// setContents(text) - show content of
+// clearFull() - empty the contents of the editor
+// clearPartial() - emoty after the point
 
-export default class Editor {
+export default class Editor extends EventTarget {
     el: Element
     editor: monaco.editor.IStandaloneCodeEditor
-    app: App
 
-    constructor(app: App) {
-        console.log("Creating the editor instance!")
-        // check that view.length > 0
-        // only then proceed
-
-        // check that active != null
-        // otherwise assign active view[0].id
-
-        this.app = app
-        const item: Item = app.getCurrentItem()
-
+    constructor() {
+        super()
         this.el = document.getElementById("editor")
         this.editor = monaco.editor.create(this.el as HTMLElement, {
-            value: item.content.md,
+            value: '',
             language: "markdwown",
             fontSize: 16,
             minimap: { enabled: false },
@@ -41,7 +30,6 @@ export default class Editor {
         })
 
         
-        // app will 
         const obs = new Observable(observer => {
             this.editor.getModel().onDidChangeContent((event) => {
                 observer.next(event)
@@ -49,6 +37,19 @@ export default class Editor {
         })
         obs.pipe(
             debounce(() => timer(300))
-        ).subscribe(this.app.saveChanges)
+        ).subscribe(() => this.dispatchEvent(new Event('create-item')))
     }
+
+    setContents(text: string) {
+        this.editor.setValue(text)
+    }
+
+    clearFull() {
+        // todo: remove ALL text
+    }
+
+    clearPArtial() {
+        // todo: remove SOME text
+    }
+
 }

@@ -1,89 +1,104 @@
-import { exec } from 'child_process'
 import express, { json } from 'express'
-import JsonServer from 'json-server'
+import { DateTime } from 'luxon'
 import morgan from 'morgan'
-import { Server } from 'ws'
-import { expressPort, jsonServerFile, jsonServerPort } from 'backend/config'
 
-
+import { db, webSocketServer } from 'backend/app'
+import { jsonReviver } from 'common/utils'
+import { Query } from 'common/types'
 
 //  ==========  MAIN EXPRESS SERVER  ==========
 
-const app = express()
-app.use(json())
+const server = express()
+
+// DateTime.now().toString() -> '2022-01-16T13:37:00.602-04:00'
+// DateTime.now().toUTC().toString() -> '2022-01-16T17:37:20.611Z'
+// JSON.parse(json, jsonReviver)
+server.use(json({ reviver: jsonReviver }))
 
 morgan.token('session', (req: any) => {
     return req.user?.id ?? 'anon'
 })
-app.use(morgan(':session :method :url :response-time'))
+server.use(morgan(':session :method :url :response-time'))
 
-app.use(express.static(`${__dirname}/../dist`))
-
-// Vanilla HTTP server is returned, which can be used to handle WS connections
-const server = app.listen(expressPort, () => console.log(`Listening on ${expressPort} in dir ${__dirname}`))
-
-
-//  ==========  JSON SERVER  ==========
+server.use(express.static(`${__dirname}/../dist`))
 
 
 
-const jsonServer = JsonServer.create()
-const jsonRouter = JsonServer.router(jsonServerFile)
-const jsonMiddlewares = JsonServer.defaults()
 
-jsonServer.use(jsonMiddlewares)
-jsonServer.use(jsonRouter)
 
-const dbURL = `http://localhost:${jsonServerPort}`
 
-jsonServer.listen(jsonServerPort, () => {
-    console.log(`json-server started on ${dbURL} using ${jsonServerFile}`)
+//  ==========  ROUTES  ==========
+
+// query the DB with a large query (and possibly paging)
+// send back a json-array of items (with 200 status)
+// on failure, send 400 with a JSON message on what went wrong (from try-catch)
+// no websocket action - purely synchronous http request/response
+server.post('/select', async (req, res) => {
+    // body contains the query object
+    const query: Query = req.body
+
+    try {
+        const results = await db.queryItems(query, 'preview')
+        return res.json(results)
+    } catch (error) {
+        return res.status(400).json({ error: error.name, message: error.message })
+    }
+})
+
+// create a new site
+// receive item-contents (no id), and try to create the item
+// on success send-out 201 (created), on failure send out 400 (bad request)
+// broadcast the created item through websocket (single sql query)
+server.put('/insert', async (req, res) => {
+    // body contains item object
+    const body = req.body
+    console.log(req.body)
+
+    console.log('Number of clients:', webSocketServer.wss.clients.size)
+    // THIS IS THE BROADCASTING METHOD!
+    webSocketServer.sockets.map(socket => socket.send(JSON.stringify('data from select...')))
+    res.sendStatus(201)
+})
+
+// update one or many items
+// this is where content, dates, tags, categories, archived are changed
+// on success, send 200 code (no json)
+// on failure, send 400 code with json messsage
+// websocket - use the RETURNING clause to get all affected items
+server.post('/update', async (req, res) => {
+    // 3 types of ranges: query, id-range, single-id
+    // 3 types of tag updates: set, add, remove
+    const body = req.body
+    res.sendStatus(200)
+})
+
+// delete an item
+// on success, send 200 code (no json)
+// on failure, sedn 400 code with json message
+// websocket : send out a json with info on deleted ID
+server.delete('/delete/:id', async (req, res) => {
+    res.sendStatus(200)
 })
 
 
-
-// export interface IAuthRequest extends Request {
-//     user: User
-// }
-
-
-
-
-//  ==========  WEB SOCKETS  ==========
-
-// headless websocket server
-const wss = new Server({ noServer: true })
-
-wss.on('connection', async (socket, req) => {
-    console.log('WSS CONNECTION for user')
-
-
-    socket.on('message', async (message) => {
-        const msg = JSON.parse(message.toString())
-        console.log('ws message:', msg)
-        
-        if (msg.command == 'exec') {
-            const cmd = 'for i in {1..3}; do echo $i; sleep 1; done'
-            exec(cmd).on('exit', () => {
-                socket.send(JSON.stringify('done'))
-            }).stdout.on('data', (v) => {
-                socket.send(v)
-            })
-        }        
-    })
-
-    socket.on('close', (code) => {
-        console.log(`Socket closed with code=${code}`)
-    })
+// receive tag/category rename request
+// on success, send 200 (no json)
+// on failure, send 400 with json-message
+// websocket: send out a json with renaming info
+server.post('/rename', async (req, res) => {
+    // body should contain identification of 
+    // on success,
+    const body = req.body
+    console.log(body)
+    res.sendStatus(200)
 })
 
-// the how-to on how to do express-based server+websockets
-// https://github.com/websockets/ws/blob/master/examples/express-session-parse/index.js
-server.on('upgrade', (request, socket, head) => {
-    console.log('HTTP Server "upgrade"')
-
-    wss.handleUpgrade(request, socket, head, function (ws) {
-        wss.emit('connection', ws, request)
-    })
-
+// refresh tags and category tables on the server
+// process orphaned categories/tags
+// send-out JSON objects of categories/tags
+// maybe do it through the websockets?
+server.get('/refresh', async (req, res) => {
+    res.sendStatus(200)
 })
+
+export default server

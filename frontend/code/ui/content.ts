@@ -1,8 +1,7 @@
 import App from 'frontend/app'
 import hljs from 'highlight.js'
 import MarkdownIt from 'markdown-it'
-import { Item } from 'frontend/code/state/item'
-import { ItemSummary } from 'frontend/code/state/view'
+import { ItemSummary } from 'common/types'
 
 // import hljs from 'highlight.js/lib/core'
 // import javascript from 'highlight.js/lib/languages/javascript'
@@ -16,10 +15,8 @@ import { ItemSummary } from 'frontend/code/state/view'
 export default class Content {
     el: Element
     md: MarkdownIt
-    app: App
 
-    constructor(app: App) {
-        this.app = app
+    constructor() {
         this.el = document.getElementById("content")
         this.initMarkdown()
         this.renderAll()

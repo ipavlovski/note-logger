@@ -68,8 +68,8 @@ module.exports = {
         extensions: ['.ts', '.js'],
         alias: {
             frontend: `${__dirname}/frontend`,
-            backend: `${__dirname}/backend`
-            
+            backend: `${__dirname}/backend`,
+            utils: `${__dirname}/utils`            
         }
     },
 

@@ -1,36 +1,5 @@
 import { v4 as uuidv4 } from "uuid"
-
-export interface CatItem {
-    cat: string
-    items: Item[]
-    subcat: Map<string, CatItem>
-}
-
-export type CatMap = Map<string, CatItem>
-
-
-export interface Item {
-    id: string
-    meta: {
-        header: string
-        category: string[]
-        tags: string[]
-    }
-    date: {
-        created: Date
-        updated?: Date
-        archived?: Date
-    }
-    // to be populated with custom data from the post
-    data?: {}
-
-    // contains the actual content
-    content: {
-        md: string
-        html: string
-    }
-}
-
+import { CatItem, Item } from 'frontend/types'
 
 
 export class ItemFactory {
