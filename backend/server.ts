@@ -51,12 +51,12 @@ server.post('/select', async (req, res) => {
 // broadcast the created item through websocket (single sql query)
 server.put('/insert', async (req, res) => {
     // body contains item object
-    const body = req.body
-    console.log(req.body)
-
+    const item = req.body
     console.log('Number of clients:', webSocketServer.wss.clients.size)
-    // THIS IS THE BROADCASTING METHOD!
-    webSocketServer.sockets.map(socket => socket.send(JSON.stringify('data from select...')))
+
+    const castable = await db.insertItem(item)
+
+    webSocketServer.sockets.map(socket => socket.send(JSON.stringify(castable)))
     res.sendStatus(201)
 })
 

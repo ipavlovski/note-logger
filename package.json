@@ -3,7 +3,7 @@
     "version": "0.1.0",
     "description": "A logger and a knolwdge-system",
     "scripts": {
-        "repl": "while true; do ts-node -e 'console.clear(); console.log(\"ready\")' -i; sleep 0; done",
+        "repl": "while true; do ts-nodeq -e 'console.clear(); console.log(\"ready\")' -i; sleep 0; done",
         "tsnd": "tsnd -r dotenv/config -r tsconfig-paths/register --respawn --clear backend/app.ts",
         "ts-node": "ts-node -r dotenv/config -r tsconfig-paths/register backend/app.ts",
         "webpack": "webpack",

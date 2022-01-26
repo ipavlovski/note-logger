@@ -4,3 +4,5 @@ dist
 scratch.*
 scratch/
 public/
+*.sqlite
+package-lock.json

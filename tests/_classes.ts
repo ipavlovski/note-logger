@@ -10,9 +10,6 @@ export class DBTest extends DB {
         super(filename, debug)
     }
 
-    // tables
-    async createTables() { super.createTables() }
-
     // query runners
     async run(q: string, args?: any[]) { return await super.run(q, args ?? []) }
     async all<T>(q: string, args?: any[]) { return await super.all<T>(q, args ?? []) }
@@ -21,16 +18,18 @@ export class DBTest extends DB {
     // categories
     async categoryById(id: number) { return await super.categoryById(id) }
     async categoryInsert(pid: number, name: string) { return await super.categoryInsert(pid, name) }
-    async getOrCreateCategory(chain: string[]) { return await super.getOrCreateCategory(chain) }
     async reconsructCategoryChain(catId: number) { return await super.reconsructCategoryChain(catId) }
 
     // tags
     async getOrCreateTag(name: string) { return await super.getOrCreateTag(name) }
     async getItemTags(itemId: number) { return await super.getItemTags(itemId) }
-    async setItemTags(itemId: number, tags: string[]) { return await super.setItemTags(itemId, tags) }
+    async setItemTags(itemId: number, tags: TagRow[]) { return await super.setItemTags(itemId, tags) }
+
+    async getTagList(tags: TagRow[]) { return await super.getTagList(tags) }
+    async getCatChain(chain: CategoryRow[]) { return await super.getCatChain(chain) }
 
     // items
-    async insertItem(item: Item) { return await super.insertItem(item) }
+    async insertItem(item: Partial<Item>) { return await super.insertItem(item) }
 }
 
 export class DBUtils extends DBTest {

@@ -5,14 +5,14 @@ import supertest from 'supertest'
 
 const req = supertest(server)
 
-test('basic select', async (done) => {
+test('basic select', async () => {
     const res = await req.post(`/select`)
 
     expect(res.status).toBe(203)
 }, 30000)
 
-test('basic insert', async (done) => {
-    const res = await req.get(`/dbtest/mysql`)
+test('basic insert', async () => {
+    const res = await req.get(`/`)
     const allResults = res.body
 
     expect(allResults.ping).toBe(true)

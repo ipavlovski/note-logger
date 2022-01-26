@@ -6,6 +6,8 @@ import DB from 'backend/db'
 // Vanilla HTTP server is returned, which can be used to handle WS connections
 const httpServer = server.listen(serverPort, () => console.log(`Listening on ${serverPort} in dir ${__dirname}\n@ ${new Date().toISOString()}`))
 const webSocketServer = new WSS(httpServer)
-const db = new DB('./db-test-main.sqlite', true)
+// const db = new DB('./db-test-main.sqlite', true)
+const db = new DB(':memory:', false)
+db.init()
 
 export { webSocketServer, db }

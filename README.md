@@ -1,3 +1,10 @@
+# INSTALLATION
+
+Need to compile sqlite from source, in order to use Arch's version.
+```bash
+npm install sqlite3 --build-from-source --sqlite=/usr/include
+```
+
 IMPLEMENTATION PLAN:
 - use lowdb with lodash as the database
 - can setup either express or websockets as a way to 'receive' data

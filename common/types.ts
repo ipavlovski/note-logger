@@ -167,12 +167,12 @@ export interface CastItem {
     value: Item | number
 }
 
-export interface CastTag {
-    type: 'tag'
-    value: TagRow | number
-}
-
 export interface CastCat {
     type: 'cat'
     value: CategoryRow | number
+}
+
+export interface CastTag {
+    type: 'tag'
+    value: TagRow | number
 }

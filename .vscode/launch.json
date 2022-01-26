@@ -29,10 +29,12 @@
                 "--coverage",
                 "false",
                 "-i",
-                "--watch",
+                // "--watch",
+                "--no-cache",
                 "--bail",
                 "--silent",
-                "false"
+                "false",
+                "db.test.ts"
             ],
             "skipFiles": ["<node_internals>/**"],
             "envFile": "${workspaceFolder}/.env",
