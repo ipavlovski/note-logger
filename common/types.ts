@@ -39,7 +39,7 @@ export interface Item {
     created: DateTime
     updated: DateTime
     archived: boolean
-    category: CategoryRow[]
+    category: CatRow[]
     tags: TagRow[]
 }
 
@@ -116,27 +116,26 @@ export interface SqlParams {
 }
 
 
-export type CatQuery = { rec: CategoryRow[], term: CategoryRow[] }
+export type CatQuery = { rec: CatRow[], term: CatRow[] }
 export type TagQuery = TagRow[][]
 
 
 //  ==========  DB TYPES  ==========
+
+export interface CategoryLeaf extends CatRow {
+    children: CategoryLeaf[]
+}
 
 export interface RunResult {
     changes: number
     lastID: number
 }
 
-export interface CategoryRow {
+export interface CatRow {
     id: number
     pid: number
     name: string
 }
-
-export interface CategoryLeaf extends CategoryRow {
-    children: CategoryLeaf[]
-}
-
 
 export interface TagRow {
     id: number
@@ -169,7 +168,7 @@ export interface CastItem {
 
 export interface CastCat {
     type: 'cat'
-    value: CategoryRow | number
+    value: CatRow | number
 }
 
 export interface CastTag {

@@ -1,7 +1,7 @@
-import DB from 'backend/db'
+import { DB } from 'backend/db'
 import { SqlBuilder } from 'backend/sql-builder'
 import { unlinkSync, existsSync } from 'fs'
-import { CategoryRow, Item, ItemRow, Query, TagRow } from 'common/types'
+import { CatRow, Item, ItemRow, Query, TagRow } from 'common/types'
 
 export class DBTest extends DB {
 
@@ -26,7 +26,7 @@ export class DBTest extends DB {
     async setItemTags(itemId: number, tags: TagRow[]) { return await super.setItemTags(itemId, tags) }
 
     async getTagList(tags: TagRow[]) { return await super.getTagList(tags) }
-    async getCatChain(chain: CategoryRow[]) { return await super.getCatChain(chain) }
+    async getCatChain(chain: CatRow[]) { return await super.getCatChain(chain) }
 
     // items
     async insertItem(item: Partial<Item>) { return await super.insertItem(item) }

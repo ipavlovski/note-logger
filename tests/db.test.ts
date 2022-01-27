@@ -1,6 +1,6 @@
 import { DBTest } from 'tests/_classes'
 import QueryBuilder from 'common/query-builder'
-import { CategoryRow, CatQuery, Item, TagQuery, TagRow } from 'common/types'
+import { CatRow, CatQuery, Item, TagQuery, TagRow } from 'common/types'
 import { differenceBy } from 'lodash'
 import { DateTime } from 'luxon'
 
@@ -9,8 +9,8 @@ describe('db test', () => {
         const testdb = new DBTest({ filename: './db-test-main.sqlite' })
     
         var catInput: CatQuery = {
-            rec: await testdb.all<CategoryRow>('select * from category where id in (3)'),
-            term: await testdb.all<CategoryRow>('select * from category where id in (46, 448)')
+            rec: await testdb.all<CatRow>('select * from category where id in (3)'),
+            term: await testdb.all<CatRow>('select * from category where id in (46, 448)')
         }
     
         var tagInput: TagQuery = [
@@ -33,7 +33,7 @@ describe('db test', () => {
         (null, 'Cat0'), (1, 'Cat1'), (1, 'Cat2'), 
         (2, 'Cat3'), (2, 'Cat4'), (3, 'Cat5'), (6, 'Cat6') 
         RETURNING *`
-        await memorydb.all<CategoryRow[]>(Q)
+        await memorydb.all<CatRow[]>(Q)
     
         // first 2 elements already exist, last 2 do not exist
         var inputRows = [
@@ -63,7 +63,7 @@ describe('db test', () => {
     
     })
     
-    test.only('insertItem', async () => {
+    test('insertItem', async () => {
     
         const memorydb = await new DBTest({ debug: true }).init()
     
@@ -71,7 +71,7 @@ describe('db test', () => {
         (null, 'Cat0'), (1, 'Cat1'), (1, 'Cat2'), 
         (2, 'Cat3'), (2, 'Cat4'), (3, 'Cat5'), (6, 'Cat6') 
         RETURNING *`
-        await memorydb.all<CategoryRow[]>(Q)
+        await memorydb.all<CatRow[]>(Q)
     
         var Q = `INSERT INTO  tag (name) VALUES ('tag1'), ('tag2'), ('tag3'), ('tag4') RETURNING *`
         await memorydb.all<TagRow[]>(Q)

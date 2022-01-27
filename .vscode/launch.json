@@ -29,21 +29,14 @@
                 "--coverage",
                 "false",
                 "-i",
-                // "--watch",
                 "--no-cache",
                 "--bail",
                 "--silent",
                 "false",
-                "db.test.ts"
+                "${fileBasename}"
             ],
             "skipFiles": ["<node_internals>/**"],
             "envFile": "${workspaceFolder}/.env",
-            // "outputCapture": "console",
-            // "console": "internalConsole",
-            // "internalConsoleOptions": "openOnSessionStart",
-            // "outputCapture": "std",
-            // "console": "integratedTerminal",
-            // "internalConsoleOptions": "",
             "console": "integratedTerminal",
             "internalConsoleOptions": "openOnSessionStart",
             "resolveSourceMapLocations": ["${workspaceFolder}/**", "!**/node_modules/**"]

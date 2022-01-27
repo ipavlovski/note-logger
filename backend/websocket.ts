@@ -3,16 +3,14 @@ import { IncomingMessage, Server as HttpServer } from 'http'
 import internal from 'stream'
 import { Server as WSServer, WebSocket } from 'ws'
 
-export class WSS {
+class WSS {
     wss: WSServer
     sockets: WebSocket[] = []
 
-    constructor(server: HttpServer) {
-        console.log('Initiating the AuthWebsocketServer')
-        this.wss = new WSServer({ noServer: true, clientTracking: true }, () => {
-            console.log('WSS server callback')
-        })
-        server.on('upgrade', this.onUpgradeHandler)
+    constructor(httpServer: HttpServer) {
+        console.log('Initiating the Websocket Server')
+        this.wss = new WSServer({ noServer: true, clientTracking: true })
+        httpServer.on('upgrade', this.onUpgradeHandler)
         this.wss.on('connection', this.onConnectionHandler)
     }
 
@@ -21,7 +19,7 @@ export class WSS {
 
         this.wss.handleUpgrade(request, socket, head, (ws) => {
             this.wss.emit('connection', ws, request)
-        })    
+        })
     }
 
     private onConnectionHandler = async (socket: WebSocket, request: IncomingMessage) => {
@@ -32,6 +30,11 @@ export class WSS {
             const msg = JSON.parse(message.toString())
             console.log('MESSAGE:', msg)
 
+            if (msg == 'ping') {
+                console.log('SENDING PONG')
+                socket.send('pong')
+            }
+
             if (msg.command == 'exec') {
                 const cmd = 'for i in {1..3}; do echo $i; sleep 1; done'
                 exec(cmd).on('exit', () => {
@@ -41,7 +44,7 @@ export class WSS {
                 })
             }
         })
-        
+
         socket.on('close', (code) => {
             console.log(`Socket closed with code=${code}`)
         })
@@ -49,5 +52,4 @@ export class WSS {
 }
 
 
-
-export default WSS
+export { WSS }

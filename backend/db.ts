@@ -1,12 +1,12 @@
-import sqlite3 from 'sqlite3'
-import { existsSync } from 'fs'
-import { CategoryRow, RunResult, Item, Query, TagRow, ItemRow, SqlParams, Castable } from 'common/types'
-import { DateTime, DurationLike } from 'luxon'
-import { flattenDeep, dropRight, last, differenceBy } from 'lodash'
 import sqlBuilder from 'backend/sql-builder'
+import { dbPath } from 'common/config'
+import { Castable, CatRow, Item, ItemRow, Query, RunResult, SqlParams, TagRow } from 'common/types'
+import { differenceBy } from 'lodash'
+import { DateTime } from 'luxon'
+import sqlite3 from 'sqlite3'
 
 
-export default class DB {
+class DB {
     db: sqlite3.Database
 
     constructor(filename: string, debug: boolean) {
@@ -51,7 +51,7 @@ export default class DB {
 
     async reconsructCategoryChain(catId: number) {
 
-        const acc: CategoryRow[] = []
+        const acc: CatRow[] = []
         let out = await this.categoryById(catId)
         if (!out) throw new Error(`No category with id=${catId}`)
         do {
@@ -107,7 +107,7 @@ export default class DB {
 
 
     protected async categoryById(id: number) {
-        return await this.get<CategoryRow>("select * from category where id = ?", [id])
+        return await this.get<CatRow>("select * from category where id = ?", [id])
     }
 
     // pid+name unique constraint -> return an ID for exsiting pid+name combination
@@ -123,7 +123,7 @@ export default class DB {
             "select * from category where pid = ? and name = ?" :
             "select * from category where pid IS NULL and name = ?"
         const args = pid ? [pid, name] : [name]
-        const match = await this.get<CategoryRow>(selectQ, args)
+        const match = await this.get<CatRow>(selectQ, args)
         if (match) return match
 
         // if an item doesn't exist, check if parent exists (if pid not null)
@@ -136,13 +136,13 @@ export default class DB {
 
         // if pid-item exists, ant no pid+name pair is present -> insert this new pairing
         const insertQ = "insert into category (pid, name) values (?, ?) RETURNING *"
-        return await this.get<CategoryRow>(insertQ, [pid, name])
+        return await this.get<CatRow>(insertQ, [pid, name])
     }
 
 
-    protected async getCatChain(chain: CategoryRow[]): Promise<CategoryRow[]> {
-        let last: CategoryRow
-        const acc: CategoryRow[] = []
+    protected async getCatChain(chain: CatRow[]): Promise<CatRow[]> {
+        let last: CatRow
+        const acc: CatRow[] = []
         for (let ind = 0; ind < chain.length; ind++) {
             const curr = chain[ind]
             last = (curr.id != null) ? curr : (ind == 0) ?
@@ -220,10 +220,10 @@ export default class DB {
 
 
 
-    private getCatChainForItem(id: number, allCats: CategoryRow[]) {
+    private getCatChainForItem(id: number, allCats: CatRow[]) {
         let row = allCats.find(v => v.id == id)
         if (!row) return null
-        var acc: CategoryRow[] = [row]
+        var acc: CatRow[] = [row]
         while (row != null && row.pid != null) {
             row = allCats.find(v => v.id == row.pid)
             acc.push(row)
@@ -244,7 +244,7 @@ export default class DB {
         var ids = itemRows.map(({ id }) => id)
 
         // query#2 - categories
-        var allCatRows = await this.all<CategoryRow>(`select * from category`)
+        var allCatRows = await this.all<CatRow>(`select * from category`)
 
         // query#3 - tags
         var tagQuery = sqlBuilder.tagsByItem(ids)
@@ -265,11 +265,6 @@ export default class DB {
         })
     }
 
-
-
-
-
-
     async deleteItem(id: number): Promise<RunResult> {
         return null
     }
@@ -277,3 +272,4 @@ export default class DB {
 
 }
 
+export { DB }

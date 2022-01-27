@@ -1,7 +1,6 @@
+import { ItemRow, SqlParams, TagRow } from 'common/types'
 import { intersectionBy } from 'lodash'
 import { DBTest, SqlBuilderTest } from 'tests/_classes'
-import QueryBuilder from 'common/query-builder'
-import { CategoryRow, CatQuery, ItemRow, SqlParams, TagQuery, TagRow } from 'common/types'
 
 test('parse tag', () => {
     const builder = new SqlBuilderTest()

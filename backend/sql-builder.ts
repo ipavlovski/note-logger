@@ -3,7 +3,7 @@ import { Query, SqlParams } from 'common/types'
 export class SqlBuilder {
 
     getTable(table: string): string {
-        const category = `CREATE TABLE category (
+        const category = `CREATE TABLE IF NOT EXISTS category (
             id INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT,
             pid INTEGER, 
             name TEXT, 
@@ -11,12 +11,12 @@ export class SqlBuilder {
             FOREIGN KEY (pid) REFERENCES category (id)
         )`
 
-        const tag = `CREATE TABLE tag (
+        const tag = `CREATE TABLE IF NOT EXISTS tag (
             id INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT,
             name TEXT
         )`
 
-        const item = `CREATE TABLE item (
+        const item = `CREATE TABLE IF NOT EXISTS item (
             id INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT,
             header TEXT,
             md TEXT,
@@ -28,7 +28,7 @@ export class SqlBuilder {
             FOREIGN KEY (category_id) REFERENCES category (id)
         )`
 
-        const itemTag = `CREATE TABLE item_tag (
+        const itemTag = `CREATE TABLE IF NOT EXISTS item_tag (
             tag_id INTEGER NOT NULL,
             item_id INTEGER NOT NULL,
             UNIQUE(tag_id, item_id),
