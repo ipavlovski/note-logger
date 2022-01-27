@@ -1,8 +1,9 @@
-node_modules
-.env
-dist
-scratch.*
+coverage/
+node_modules/
 scratch/
 public/
+dist/
+.env
 *.sqlite
+scratch.*
 package-lock.json

@@ -5,13 +5,17 @@ import { DateTime } from 'luxon'
 import { WebSocket } from 'ws'
 import fetch from 'node-fetch'
 import { jsonReviver } from 'common/utils'
+import { serverPort } from 'common/config'
 
-const port = 3003
+// const port = 3003
 let httpServer: Server
 
 function startServer(port: number) {
     return new Promise<Server>((resolve) => {
-        server.listen(port, () => resolve(server))
+        server.listen(port, () => {
+            console.log(`TEST SERVER LISTENING ON PORT: ${serverPort}`)
+            resolve(server)
+        })
     })
 }
 
@@ -26,11 +30,11 @@ function waitForSocketState(socket: WebSocket, state: number) {
 }
 
 describe('SOCKET', () => {
-    beforeAll(async () => httpServer = await startServer(port))
+    beforeAll(async () => httpServer = await startServer(serverPort))
     afterAll(() => httpServer.close())
 
     test('basic socket', async () => {
-        const client = new WebSocket(`ws://localhost:${port}`)
+        const client = new WebSocket(`ws://localhost:${serverPort}`)
         await waitForSocketState(client, client.OPEN)
 
         // check for response data
@@ -53,7 +57,7 @@ describe('SOCKET', () => {
     test('advenced socket', async () => {
 
         // 1. PREP THE SOCKET
-        const client = new WebSocket(`ws://localhost:${port}`)
+        const client = new WebSocket(`ws://localhost:${serverPort}`)
         await waitForSocketState(client, client.OPEN)
 
         // check for response data
@@ -88,7 +92,7 @@ describe('SOCKET', () => {
 
         // 3. SEND THE DATA OVER
 
-        const res = await fetch(`http://localhost:${port}/insert`, {
+        const res = await fetch(`http://localhost:${serverPort}/insert`, {
             method: 'PUT',
             body: JSON.stringify(inputItem),
             headers: { 'Content-Type': 'application/json' }

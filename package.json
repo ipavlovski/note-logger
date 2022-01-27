@@ -7,8 +7,7 @@
         "tsnd": "tsnd -r dotenv/config -r tsconfig-paths/register --respawn --clear backend/app.ts",
         "ts-node": "ts-node -r dotenv/config -r tsconfig-paths/register backend/app.ts",
         "webpack": "webpack",
-        "live-server": "live-server --no-browser --ignorePattern='scratch.js' scratch/",
-        "jest": "jest --setupFiles dotenv/config --watch"
+        "jest": "jest --watch"
     },
     "dependencies": {
         "dotenv": "^10.0.0",
@@ -51,6 +50,7 @@
         "file-loader": "^6.2.0",
         "html-webpack-plugin": "^5.5.0",
         "jest": "^27.4.7",
+        "jest-watch-suspend": "^1.1.2",
         "module-alias": "^2.2.2",
         "monaco-editor-webpack-plugin": "^6.0.0",
         "seedrandom": "^3.0.5",
