@@ -5,10 +5,10 @@ import { CatRow, Item, ItemRow, Query, TagRow } from 'common/types'
 
 export class DBTest extends DB {
 
-    constructor({ filename = ':memory:', rebuild = false, debug = true }) {
-        if (rebuild && filename != ':memory:' && existsSync(filename)) unlinkSync(filename)
+    constructor({ filename = ':memory:', debug = true}) {
         super(filename, debug)
     }
+
 
     // query runners
     async run(q: string, args?: any[]) { return await super.run(q, args ?? []) }

@@ -22,6 +22,14 @@ class DB {
         return this
     }
 
+    async populate(sourcePath: string) {
+        await this.run(`ATTACH '${sourcePath}' AS db2;`)
+        await this.run('INSERT INTO category SELECT * FROM db2.category')
+        await this.run('INSERT INTO item SELECT * FROM db2.item')
+        await this.run('INSERT INTO tag SELECT * FROM db2.tag')
+        await this.run('INSERT INTO item_tag SELECT * FROM db2.item_tag')
+        await this.run('DETACH db2')
+    }
 
     // insert/update/delete
     // return changes/lastId
@@ -268,8 +276,9 @@ class DB {
     async deleteItem(id: number): Promise<RunResult> {
         return null
     }
-
-
 }
 
-export { DB }
+const db = new DB(dbPath, false)
+db.init()
+
+export { DB, db }

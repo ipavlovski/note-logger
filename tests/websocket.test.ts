@@ -6,8 +6,8 @@ import { WebSocket } from 'ws'
 import fetch from 'node-fetch'
 import { jsonReviver } from 'common/utils'
 import { serverPort } from 'common/config'
+import { db } from 'backend/db'
 
-// const port = 3003
 let httpServer: Server
 
 function startServer(port: number) {
@@ -29,12 +29,18 @@ function waitForSocketState(socket: WebSocket, state: number) {
     })
 }
 
+
+
 describe('SOCKET', () => {
+    let client: WebSocket
+
     beforeAll(async () => httpServer = await startServer(serverPort))
     afterAll(() => httpServer.close())
+    afterEach(async () => await waitForSocketState(client, client.CLOSED))
 
-    test('basic socket', async () => {
-        const client = new WebSocket(`ws://localhost:${serverPort}`)
+
+    test('ping/pong', async () => {
+        client = new WebSocket(`ws://localhost:${serverPort}`)
         await waitForSocketState(client, client.OPEN)
 
         // check for response data
@@ -54,10 +60,10 @@ describe('SOCKET', () => {
         expect(responseMessage).toBe("pong")
     }, 5000)
 
-    test('advenced socket', async () => {
+    test('insert query', async () => {
 
         // 1. PREP THE SOCKET
-        const client = new WebSocket(`ws://localhost:${serverPort}`)
+        client = new WebSocket(`ws://localhost:${serverPort}`)
         await waitForSocketState(client, client.OPEN)
 
         // check for response data
@@ -99,7 +105,7 @@ describe('SOCKET', () => {
         })
 
         // 4. PROCESS RESULTS
-        
+
         expect(res.status).toBe(201)
 
         // Perform assertions on the response
@@ -121,9 +127,46 @@ describe('SOCKET', () => {
 
     }, 5000)
 
+
+    test.only('update query', async () => {
+
+        // 0. SEED DATABASE
+        await db.init()
+        await db.populate('./db-test-main.sqlite')
+
+        // 1. PREP THE SOCKET
+        client = new WebSocket(`ws://localhost:${serverPort}`)
+        await waitForSocketState(client, client.OPEN)
+
+        // check for response data
+        let responseMessage
+        client.on("message", (data) => {
+            responseMessage = data.toString()
+            // Close the client after it receives the response
+            client.close()
+        })
+
+
+        // 2. PREP THE INPUT
+        var inputItem = {}
+
+        // 3. SEND THE INPUT
+        const res = await fetch(`http://localhost:${serverPort}/update`, {
+            method: 'PUT',
+            body: JSON.stringify(inputItem),
+            headers: { 'Content-Type': 'application/json' }
+        })
+
+        await waitForSocketState(client, client.CLOSED)
+
+        // 4. PROCESS RESULTS
+        expect(res.status).toBe(200)
+
+        // Perform assertions on the response
+        const result: Castable = JSON.parse(responseMessage, jsonReviver)
+
+    }, 2000)
 })
-
-
 
 
 

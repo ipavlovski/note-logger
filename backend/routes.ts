@@ -1,15 +1,10 @@
-import { DB } from 'backend/db'
+import { db } from 'backend/db'
 import { wss } from 'backend/server'
-import { dbPath } from 'common/config'
 import { Query } from 'common/types'
 import { Router } from 'express'
 
 
 const routes = Router()
-
-const db = new DB(dbPath, false)
-db.init()
-
 
 //  ==========  ROUTES  ==========
 
@@ -52,8 +47,14 @@ routes.put('/insert', async (req, res) => {
 routes.post('/update', async (req, res) => {
     // 3 types of ranges: query, id-range, single-id
     // 3 types of tag updates: set, add, remove
-    const body = req.body
-    res.sendStatus(200)
+    const query: Query = req.body
+
+    try {
+        const results = await db.queryItems(query, 'preview')
+        res.sendStatus(200)
+    } catch (error) {
+        return res.status(400).json({ error: error.name, message: error.message })
+    }
 })
 
 // delete an item
