@@ -1,4 +1,4 @@
-import { Query, SqlParams } from 'common/types'
+import { Item, Query, SqlParams } from 'common/types'
 
 export class SqlBuilder {
 
@@ -44,6 +44,40 @@ export class SqlBuilder {
             case 'item_tag': return itemTag
             default: throw new Error('No such table')
         }
+    }
+
+
+    parseSetParams(item: Partial<Item>) {
+        
+        const q: string[] = []
+        const args: any[] = []
+
+        if (item.header) {
+            q.push('header = ?')
+            args.push(item.header)
+        }
+
+        if (item.body != null) {
+            q.push('html = ?', 'md = ?')
+            args.push(item.body.html, item.body.md)
+        }
+
+        if (item.created != null) {
+            q.push('created = ?')
+            args.push(item.created.toSeconds() | 0)
+        }
+
+        if (item.updated != null) {
+            q.push('updated = ?')
+            args.push(item.updated.toSeconds() | 0)
+        }
+
+        if (item.archived != null) {
+            q.push('archived = ?')
+            args.push(item.archived ? 1 : 0)
+        }
+
+        return { q, args }
     }
 
 

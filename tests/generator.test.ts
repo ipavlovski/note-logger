@@ -4,7 +4,7 @@ import { DateTime } from 'luxon'
 import MarkdownIt from 'markdown-it'
 import 'common/seed'
 import { Item } from 'common/types'
-import { DBTest } from 'tests/_classes'
+import { DB } from 'backend/db'
 
 class Generator {
     categories: string[][]
@@ -119,7 +119,7 @@ ${tilde}
         // return inds.map(ind => this.genItem(ind, random(maxTags)))
     }
 
-    async genDatabase(db: DBTest, itemSize: number) {
+    async genDatabase(db: DB, itemSize: number) {
         const maxTagsPerItem = 6
 
         // insert categories
@@ -128,7 +128,7 @@ ${tilde}
         }
 
         // insert tags
-        for await (const tag of this.tags) await db.getOrCreateTag(tag)
+        for await (const tag of this.tags) await db["getOrCreateTag"](tag)
 
         // create multiple items
         const items = this.genItems(itemSize, maxTagsPerItem)
@@ -146,7 +146,8 @@ ${tilde}
 test('DB generator actually works', async () => {
     const filename = './db-test-test.sqlite'
     const gen = new Generator()
-    const testdb = new DBTest({ filename: filename, rebuild: true, debug: false })
+    const testdb = new DB(filename, true)
+    await testdb.init()
     await gen.genDatabase(testdb, 10)
 
     expect(existsSync(filename)).toBeTruthy()
@@ -165,7 +166,7 @@ test('DB generator actually works', async () => {
 // const testdb = new DBTest({ filename: './db-test-main.sqlite' })
 // await gen.genDatabase(testdb, 500)    
 test('check params of the main test-DB', async () => {
-    const testdb = new DBTest({ filename: './db-test-main.sqlite', rebuild: false, debug: false })
+    const testdb = new DB('./db-test-main.sqlite', true)
 
     const catResult = await testdb.get<{ count: number }>('select count(*) as count from category', [])
     const itemResult = await testdb.get<{ count: number }>('select count(*) as count from item', [])
@@ -185,9 +186,8 @@ test('check params of the main test-DB', async () => {
 // const testdb = new DBTest({ filename: './db-test-2.sqlite' })
 // await gen.genDatabase(testdb, 10)
 test('test DB generator seed equality', async () => {
-
-    const testdb1 = new DBTest({ filename: './db-test-1.sqlite', rebuild: false, debug: false })
-    const testdb2 = new DBTest({ filename: './db-test-2.sqlite', rebuild: false, debug: false })
+    const testdb1 = new DB('./db-test-1.sqlite', true)
+    const testdb2 = new DB('./db-test-2.sqlite', true)
 
     const count1 = await testdb1.get<{ count: number }>('select count(*) as count from category', [])
     console.log('COUNT1:', count1)

@@ -1,32 +1,33 @@
+import { DB } from 'backend/db'
+import { SqlBuilder } from 'backend/sql-builder'
 import { ItemRow, SqlParams, TagRow } from 'common/types'
 import { intersectionBy } from 'lodash'
-import { DBTest, SqlBuilderTest } from 'tests/_classes'
 
 test('parse tag', () => {
-    const builder = new SqlBuilderTest()
+    const builder = new SqlBuilder()
 
     const tags1 = [[1, 5], [3, 7, 20]]
-    const params1 = builder.parseTags(tags1)
+    const params1 = builder["parseTags"](tags1)
     expect(params1.q).toBe('GROUP BY item.id HAVING COUNT(tag.id IN (?, ?) OR NULL) = ? OR COUNT(tag.id IN (?, ?, ?) OR NULL) = ?')
     expect(params1.args).toStrictEqual([1, 5, 2, 3, 7, 20, 3])
 
     const tags2 = [[1, 5]]
-    const params2 = builder.parseTags(tags2)
+    const params2 = builder["parseTags"](tags2)
     expect(params2.q).toBe('GROUP BY item.id HAVING COUNT(tag.id IN (?, ?) OR NULL) = ?')
     expect(params2.args).toStrictEqual([1, 5, 2])
 })
 
 test('the sum of rec and term cat query lines up', async () => {
-    const sqlBuilder = new SqlBuilderTest()
+    const builder = new SqlBuilder()
 
     let sqlParams: SqlParams
-    const testdb = new DBTest({ filename: 'db-test-main.sqlite' })
+    const testdb = new DB('db-test-main.sqlite', false)
 
-    sqlParams = sqlBuilder.parseCategories({ rec: [3], term: [] })
+    sqlParams = builder["parseCategories"]({ rec: [3], term: [] })
     const recItems = await testdb.all<ItemRow>(`SELECT item.id, item.header, output.cat_pid, output.cat_name from item ${sqlParams.q}`, sqlParams.args)
-    sqlParams = sqlBuilder.parseCategories({ rec: [], term: [5, 20] })
+    sqlParams = builder["parseCategories"]({ rec: [], term: [5, 20] })
     const termItems = await testdb.all<ItemRow>(`SELECT item.id, item.header, category.pid, category.name from item ${sqlParams.q}`, sqlParams.args)
-    sqlParams = sqlBuilder.parseCategories({ rec: [3], term: [5, 20] })
+    sqlParams = builder["parseCategories"]({ rec: [3], term: [5, 20] })
     const bothItems = await testdb.all<ItemRow>(`SELECT item.id, item.header, output.cat_pid, output.cat_name from item ${sqlParams.q}`, sqlParams.args)
 
     const xItems = intersectionBy(recItems, termItems, 'id')
@@ -36,10 +37,10 @@ test('the sum of rec and term cat query lines up', async () => {
 })
 
 test('basic category and tag inner join', async () => {
-    const sqlBuilder = new SqlBuilderTest()
-    const testdb = new DBTest({ filename: 'db-test-main.sqlite' })
+    const sqlBuilder = new SqlBuilder()
+    const testdb = new DB('db-test-main.sqlite', false)
 
-    const sqlCategories = sqlBuilder.parseCategories({ rec: [3], term: [5, 20] })
+    const sqlCategories = sqlBuilder["parseCategories"]({ rec: [3], term: [5, 20] })
     const Q = `SELECT item.id, item.header, output.cat_name, tag.id as tagid, 
 tag.name as tagname from item
 INNER JOIN item_tag ON item.id = item_tag.item_id 
@@ -50,13 +51,13 @@ INNER JOIN tag ON tag.id = item_tag.tag_id ${sqlCategories.q}`
 })
 
 test('both categories and tag', async () => {
-    const sqlBuilder = new SqlBuilderTest()
-    const testdb = new DBTest({ filename: 'db-test-main.sqlite' })
+    const sqlBuilder = new SqlBuilder()
+    const testdb = new DB('db-test-main.sqlite', false)
     let Q: string
 
     // categorie and tags
-    const sqlCategories = sqlBuilder.parseCategories({ rec: [3], term: [5, 20] })
-    const sqlTags = sqlBuilder.parseTags([[10], [11], [12], [13]])
+    const sqlCategories = sqlBuilder["parseCategories"]({ rec: [3], term: [5, 20] })
+    const sqlTags = sqlBuilder["parseTags"]([[10], [11], [12], [13]])
     Q = `SELECT item.id, item.header, tag.id as tag_id, 
 tag.name as tag_name from item
 INNER JOIN item_tag ON item.id = item_tag.item_id 

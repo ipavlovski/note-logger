@@ -1,33 +1,37 @@
-import { DBTest } from 'tests/_classes'
 import QueryBuilder from 'common/query-builder'
-import { CatRow, CatQuery, Item, TagQuery, TagRow, ItemRow } from 'common/types'
+import { CatRow, CatQuery, Item, TagQuery, TagRow, ItemRow, ItemUpdate } from 'common/types'
 import { differenceBy } from 'lodash'
 import { DateTime } from 'luxon'
 import { DB } from 'backend/db'
 
 describe('db test', () => {
-    test('select / queryItems', async () => {
-        const testdb = new DBTest({ filename: './db-test-main.sqlite' })
+    let db: DB
+    beforeEach(async () => {
+        db = new DB(':memory:', false)
+        await db.init()
+        await db.populate('./db-test-main.sqlite')
+    })
 
+    test('select / queryItems', async () => {
         var catInput: CatQuery = {
-            rec: await testdb.all<CatRow>('select * from category where id in (3)'),
-            term: await testdb.all<CatRow>('select * from category where id in (46, 448)')
+            rec: await db.all<CatRow>('select * from category where id in (3)'),
+            term: await db.all<CatRow>('select * from category where id in (46, 448)')
         }
 
         var tagInput: TagQuery = [
-            await testdb.all<TagRow>('select * from tag where id IN (11, 14)'),
-            await testdb.all<TagRow>('select * from tag where id=7'),
+            await db.all<TagRow>('select * from tag where id IN (11, 14)'),
+            await db.all<TagRow>('select * from tag where id=7'),
         ]
 
         var query = new QueryBuilder().tags(tagInput).categories(catInput).toJSON()
-        var results = await testdb.queryItems(query, 'preview')
+        var results = await db.queryItems(query, 'preview')
         expect(results.length).toBe(3)
     })
 
     test('getCatChain', async () => {
 
         // create an in-memory database with empty tables
-        const memorydb = await new DBTest({ debug: false }).init()
+        var memorydb = await new DB(':memory:', false).init()
 
         // insert some test data into the database
         var Q = `INSERT INTO category (pid, name) VALUES 
@@ -42,14 +46,15 @@ describe('db test', () => {
             { id: null, pid: null, name: 'Cat10' }, { id: null, pid: null, name: 'Cat13' }
         ]
 
-        var outputRows = await memorydb.getCatChain(inputRows)
+        var outputRows = await memorydb["getCatChain"](inputRows)
         var newRows = differenceBy(outputRows, inputRows, 'id')
         expect(newRows.map(({ id }) => id)).toStrictEqual([8, 9])
     })
 
     test('getTagList', async () => {
 
-        var memorydb = await new DBTest({ debug: false }).init()
+        var memorydb = await new DB(':memory:', false).init()
+        
         var Q = `INSERT INTO  tag (name) VALUES ('tag1'), ('tag2'), ('tag3'), ('tag4') RETURNING *`
         await memorydb.all<TagRow[]>(Q)
 
@@ -58,7 +63,7 @@ describe('db test', () => {
             { id: null, name: 'tag10' }, { id: null, name: 'tag11' },
         ]
 
-        var outputTags = await memorydb.getTagList(inputTags)
+        var outputTags = await memorydb["getTagList"](inputTags)
         var newTags = differenceBy(outputTags, inputTags, 'id')
         expect(newTags.map(({ id }) => id)).toStrictEqual([5, 6])
 
@@ -66,7 +71,7 @@ describe('db test', () => {
 
     test('insertItem', async () => {
 
-        const memorydb = await new DBTest({ debug: true }).init()
+        var memorydb = await new DB(':memory:', false).init()
 
         var Q = `INSERT INTO category (pid, name) VALUES 
         (null, 'Cat0'), (1, 'Cat1'), (1, 'Cat2'), 
@@ -123,7 +128,7 @@ describe('update one', () => {
         expect(originalState.created).toBe(1640894025)
         expect(originalState.archived).toBe(0)
 
-        var item: Omit<Partial<Item>, 'id'> = {
+        var item: ItemUpdate = {
             header: 'header-123',
             body: { md: '', html: '' },
             created: DateTime.now(),
@@ -146,7 +151,7 @@ describe('update one', () => {
 
         var id = 123
 
-        var item: Omit<Partial<Item>, 'id'> = {
+        var item: ItemUpdate = {
             header: 'header-123',
             body: { md: '', html: '' },
             created: DateTime.now(),
@@ -173,7 +178,7 @@ describe('update one', () => {
 
         var id = 123
 
-        var item: Omit<Partial<Item>, 'id'> = {
+        var item: ItemUpdate = {
             header: 'header-123',
             body: { md: '', html: '' },
             created: DateTime.now(),
@@ -199,7 +204,7 @@ describe('update one', () => {
 
         var id = 123
 
-        var item: Omit<Partial<Item>, 'id'> = {
+        var item: ItemUpdate = {
             header: 'header-123',
             body: { md: '', html: '' },
             created: DateTime.now(),
@@ -228,15 +233,24 @@ describe('update many', () => {
     test('test with id range', async () => {
 
         const ids = [123, 125, 250]
-        const output = await db.updateMany(id, item)
-    })
+        var inputTags: TagRow[] = [{ id: null, name: 'tag-new' }, { id: 5, name: 'tag4' }]
+        var inputCats: CatRow[] = [
+            { id: null, pid: null, name: 'Cat-Parent' },
+            { id: null, pid: null, name: 'Cat-Child' }
+        ]
 
-    test('test with a query', async () => {
-        const tags: TagRow[][]
-        const cats: CatQuery
-        const query = new QueryBuilder().tags().categories()
+        var item:  Omit<ItemUpdate, 'header' | 'body'> = {
+            created: DateTime.now(),
+            updated: null,
+            archived: false,
+            category: inputCats,
+            tags: inputTags
+        }
 
-        const output = await db.updateMany(id, item)
+        const output = await db.updateMany(ids, item, 'add')
+        expect(output.insert).toHaveLength(3)
+        expect(output.update).toHaveLength(3)
+
     })
 
 })

@@ -1,6 +1,6 @@
 import sqlBuilder from 'backend/sql-builder'
 import { dbPath } from 'common/config'
-import { Castable, CatRow, Item, ItemRow, Query, RunResult, SqlParams, TagRow } from 'common/types'
+import { Castable, CatRow, Item, ItemRow, ItemUpdate, Query, RunResult, SqlParams, TagRow } from 'common/types'
 import { differenceBy } from 'lodash'
 import { DateTime } from 'luxon'
 import sqlite3 from 'sqlite3'
@@ -93,20 +93,20 @@ class DB {
 
     protected async unsetSomeItemTags(itemIds: number | number[], tags: TagRow[]) {
         const ids = [itemIds].flat()
-        const tagIds = tags.map(({id}) => id)
+        const tagIds = tags.map(({ id }) => id)
         await this.all(`DELETE FROM item_tag as t1 WHERE EXISTS (SELECT * FROM 
             (SELECT tag.id as tag_id, item.id as item_id FROM item 
             CROSS JOIN tag 
             WHERE item.id IN (${ids.map(_ => "?").join(', ')})
             AND tag.id IN (${tagIds.map(_ => '?').join(', ')}) 
             ) as t2 WHERE t1.item_id = t2.item_id 
-            AND t1.tag_id = t2.tag_id)`,[ids, tagIds].flat())       
+            AND t1.tag_id = t2.tag_id)`, [ids, tagIds].flat())
     }
 
 
     protected async setItemTags(itemIds: number | number[], tags: TagRow[]) {
         const ids = [itemIds].flat()
-        const tagIds = tags.map(({id}) => id)
+        const tagIds = tags.map(({ id }) => id)
         await this.run(`INSERT OR IGNORE INTO item_tag (item_id, tag_id)
             SELECT item.id as item_id, tag.id as tag_id FROM item 
             CROSS JOIN tag WHERE item.id IN (${ids.map(_ => "?").join(', ')}) 
@@ -179,6 +179,71 @@ class DB {
     }
 
 
+
+    // should unpopulated categories/tags be nulls or empty arrays?
+    // what to do about 'preview' vs. 'full' query mode?
+    private inflateItemRow(itemRow: ItemRow, cats?: CatRow[], tags?: TagRow[]) {
+        const md = itemRow.md ?? ''
+        const html = itemRow.html ?? ''
+        const updated = itemRow.updated ? DateTime.fromSeconds(itemRow.updated) : null
+
+        const outputItem: Item = {
+            id: itemRow.id,
+            header: itemRow.header,
+            body: { md, html },
+            created: DateTime.fromSeconds(itemRow.created),
+            updated: updated,
+            archived: itemRow.archived ? true : false,
+            category: cats != null ? cats : null,
+            tags: tags != null ? tags : null
+        }
+        return outputItem
+    }
+
+
+    private getCatChainForItem(id: number, allCats: CatRow[]) {
+        let row = allCats.find(v => v.id == id)
+        if (!row) return null
+        var acc: CatRow[] = [row]
+        while (row != null && row.pid != null) {
+            row = allCats.find(v => v.id == row.pid)
+            acc.push(row)
+        }
+        return acc.reverse()
+    }
+
+    private getTagsForItem(itemId: number, itemTags: Array<{ item_id: number } & TagRow>): TagRow[] {
+        const matchedTags = itemTags.filter(itemTag => itemTag.item_id == itemId)
+        return matchedTags.map(({ id, name }) => ({ id, name }))
+    }
+
+    private async getItemTagJoin(itemRows: ItemRow[]) {
+        var ids = itemRows.map(({ id }) => id)
+        var tagQuery = sqlBuilder.tagsByItem(ids)
+        return await this.all<{ item_id: number } & TagRow>(tagQuery.q, tagQuery.args)
+    }
+
+    async queryItems(query: Query, type: 'full' | 'preview'): Promise<Item[]> {
+
+        // query#1 - items
+        const itemQuery: SqlParams = sqlBuilder.select(query, type)
+        var itemRows = await this.all<ItemRow>(itemQuery.q, itemQuery.args)
+
+        // query#2 - categories
+        var allCatRows = await this.all<CatRow>(`select * from category`)
+
+        // query#3 - tags
+        var itemTagJoin = await this.getItemTagJoin(itemRows)
+
+        // now, putting it all together
+        return itemRows.map(row => {
+            const cats = this.getCatChainForItem(row.id, allCatRows)
+            const tags = this.getTagsForItem(row.id, itemTagJoin)
+            return this.inflateItemRow(row, cats, tags)            
+        })
+    }
+
+
     // create new item
     // based on the items properties, generate an 'insert' statement
     // this is where the date are converted to integers
@@ -224,16 +289,8 @@ class DB {
         VALUES (?, ?, ?, ?, ?, ?, ?) RETURNING *`
         const args = [header, md, html, created, updated, archived, catId]
         const itemRow = await this.get<ItemRow>(q, args)
-        const outputItem: Item = {
-            id: itemRow.id,
-            header: header,
-            body: { md, html },
-            created: item.created,
-            updated: item.updated ? item.updated : null,
-            archived: false,
-            category: outputCats,
-            tags: outputTags
-        }
+        const outputItem: Item = this.inflateItemRow(itemRow, outputCats, outputTags)
+
         output.insert.push({ type: 'item', value: outputItem })
 
         // setup the mappings
@@ -243,99 +300,23 @@ class DB {
     }
 
 
-
-
-    private getCatChainForItem(id: number, allCats: CatRow[]) {
-        let row = allCats.find(v => v.id == id)
-        if (!row) return null
-        var acc: CatRow[] = [row]
-        while (row != null && row.pid != null) {
-            row = allCats.find(v => v.id == row.pid)
-            acc.push(row)
-        }
-        return acc.reverse()
-    }
-
-    private getTagsForItem(itemId: number, itemTags: Array<{ item_id: number } & TagRow>): TagRow[] {
-        const matchedTags = itemTags.filter(itemTag => itemTag.item_id == itemId)
-        return matchedTags.map(({ id, name }) => ({ id, name }))
-    }
-
-    async queryItems(query: Query, type: 'full' | 'preview'): Promise<Item[]> {
-
-        // query#1 - items
-        const itemQuery: SqlParams = sqlBuilder.select(query, type)
-        var itemRows = await this.all<ItemRow>(itemQuery.q, itemQuery.args)
-        var ids = itemRows.map(({ id }) => id)
-
-        // query#2 - categories
-        var allCatRows = await this.all<CatRow>(`select * from category`)
-
-        // query#3 - tags
-        var tagQuery = sqlBuilder.tagsByItem(ids)
-        var itemTags = await this.all<{ item_id: number } & TagRow>(tagQuery.q, tagQuery.args)
-
-        // now, putting it all together
-        return itemRows.map(row => {
-            return {
-                id: row.id,
-                header: row.header,
-                body: type == 'full' ? { md: row.html, html: row.html } : { md: '', html: '' },
-                created: DateTime.fromSeconds(row.created),
-                updated: row.updated ? DateTime.fromSeconds(row.updated) : null,
-                archived: row.archived ? true : false,
-                category: this.getCatChainForItem(row.id, allCatRows),
-                tags: this.getTagsForItem(row.id, itemTags)
-            }
-        })
-    }
-
-
-    async updateOne(id: number, item: Omit<Partial<Item>, 'id'>) {
+    async updateOne(id: number, item: ItemUpdate) {
 
         const output: Castable = { insert: [], update: [] }
-
-        const q: string[] = []
-        const args: any = []
-
-        if (item.header) {
-            q.push('header = ?')
-            args.push(item.header)
-        }
-
-        if (item.body != null) {
-            q.push('html = ?', 'md = ?')
-            args.push(item.body.html, item.body.md)
-        }
-
-        if (item.created != null) {
-            q.push('created = ?')
-            args.push(item.created.toSeconds() | 0)
-        }
-
-        if (item.updated != null) {
-            q.push('updated = ?')
-            args.push(item.updated.toSeconds() | 0)
-        }
-
-        if (item.archived != null) {
-            q.push('archived = ?')
-            args.push(item.archived ? 1 : 0)
-        }
-
+        const sqlParams = sqlBuilder.parseSetParams(item)
 
         // CATEGORIES
         let cats: CatRow[]
         if (item.category != null) {
             if (item.category.length == 0) {
-                q.push('category_id = ?')
-                args.push(null)
+                sqlParams.q.push('category_id = ?')
+                sqlParams.args.push(null)
             } else {
                 cats = await this.getCatChain(item.category)
                 const catDiff = differenceBy(cats, item.category, 'id')
                 catDiff.forEach(catRow => output.insert.push({ type: 'cat', value: catRow }))
-                q.push('category_id = ?')
-                args.push(cats[cats.length - 1].id)
+                sqlParams.q.push('category_id = ?')
+                sqlParams.args.push(cats[cats.length - 1].id)
             }
         }
 
@@ -343,7 +324,6 @@ class DB {
         let tags: TagRow[]
         if (item.tags != null) {
             if (item.tags.length == 0) {
-                // unmap all tags - same method, with different ID?
                 await this.unsetAllItemTags(id)
             } else {
                 tags = await this.getTagList(item.tags)
@@ -355,31 +335,93 @@ class DB {
         }
 
         // run the query
-        args.push(id)
-        const Q = `UPDATE item SET ${q.join(', ')} WHERE item.id = ? RETURNING *`
-        const itemRow = await this.get<ItemRow>(Q, args)
+        sqlParams.args.push(id)
+        const Q = `UPDATE item SET ${sqlParams.q.join(', ')} WHERE item.id = ? RETURNING *`
+        const itemRow = await this.get<ItemRow>(Q, sqlParams.args)
 
         // generate item
-        const outputItem: Item = {
-            id: itemRow.id,
-            header: itemRow.header,
-            body: { md: itemRow.md, html: itemRow.html },
-            created: DateTime.fromSeconds(itemRow.created),
-            updated: item.updated ? DateTime.fromSeconds(itemRow.updated) : null,
-            archived: itemRow.archived ? true : false,
-            category: cats,
-            tags: tags
-        }
+        const outputItem = this.inflateItemRow(itemRow, cats, tags)
         output.update.push({ type: 'item', value: outputItem })
-
         return output
 
     }
+
+    async updateMany(ids: number[], item: Omit<ItemUpdate, 'header' | 'body'>, op: 'add' | 'remove' | 'replace') {
+
+        const output: Castable = { insert: [], update: [] }
+        const sqlParams = sqlBuilder.parseSetParams(item)
+
+        // CATEGORIES
+        let cats: CatRow[]
+        if (item.category != null) {
+            if (item.category.length == 0) {
+                sqlParams.q.push('category_id = ?')
+                sqlParams.args.push(null)
+            } else {
+                cats = await this.getCatChain(item.category)
+                const catDiff = differenceBy(cats, item.category, 'id')
+                catDiff.forEach(catRow => output.insert.push({ type: 'cat', value: catRow }))
+                sqlParams.q.push('category_id = ?')
+                sqlParams.args.push(cats[cats.length - 1].id)
+            }
+        }
+
+        // TAGS
+        let tags: TagRow[]
+        if (item.tags != null) {
+            if (item.tags.length == 0) {
+                await this.unsetAllItemTags(ids)
+            } else {
+                tags = await this.getTagList(item.tags)
+                const tagDiff = differenceBy(tags, item.tags, 'id')
+                tagDiff.forEach(tagRow => output.insert.push({ type: 'tag', value: tagRow }))
+
+                if (op == null) throw new Error('Tag operation must be provided!')
+                switch (op) {
+                    case 'add':
+                        await this.setItemTags(ids, tags)
+                        break
+                    case 'remove':
+                        await this.unsetSomeItemTags(ids, tags)
+                        break
+                    case 'replace':
+                        await this.unsetAllItemTags(ids)
+                        await this.setItemTags(ids, tags)
+                        break
+                }
+            }
+        }
+
+        // run the query
+        sqlParams.args.push(ids)
+        const Q = `UPDATE item SET ${sqlParams.q.join(', ')} 
+        WHERE item.id IN (${ids.map(_ => '?').join(', ')}) RETURNING *`
+        const itemRows = await this.all<ItemRow>(Q, sqlParams.args.flat())
+
+        // get item tag colelction for the rows
+        var itemTagJoin = await this.getItemTagJoin(itemRows)
+
+        // generate item
+        // NEED TO GET TAGS!
+        for (const row of itemRows) {
+            const tags = this.getTagsForItem(row.id, itemTagJoin)
+            const outputItem = this.inflateItemRow(row, cats, tags)
+            output.update.push({ type: 'item', value: outputItem })    
+        }
+        return output
+
+    }
+
 
     async deleteItem(id: number): Promise<RunResult> {
         return null
     }
 }
+
+
+
+
+
 
 const db = new DB(dbPath, false)
 db.init()

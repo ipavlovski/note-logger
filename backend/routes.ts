@@ -1,6 +1,6 @@
 import { db } from 'backend/db'
 import { wss } from 'backend/server'
-import { Query } from 'common/types'
+import { Item, Query } from 'common/types'
 import { Router } from 'express'
 
 

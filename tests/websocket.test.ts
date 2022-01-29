@@ -122,13 +122,13 @@ describe('SOCKET', () => {
         expect(result.insert.slice(0, 4)).toEqual(metadata)
 
         const outputItem = result.insert[4].value as Item
-        expect(outputItem.created.toSeconds()).toBeCloseTo(inputItem.created.toSeconds())
+        expect(outputItem.created.toSeconds()).toBeCloseTo(inputItem.created.toSeconds() | 0)
         expect(outputItem.header).toEqual(inputItem.header)
 
     }, 5000)
 
 
-    test.only('update query', async () => {
+    test('update query', async () => {
 
         // 0. SEED DATABASE
         await db.init()

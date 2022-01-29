@@ -153,6 +153,8 @@ export interface ItemRow {
     category_id: number
 }
 
+export type  ItemUpdate = Omit<Partial<Item>, 'id'>
+
 //  ==========  WEBSOCKET  ==========
 
 export interface Castable {

@@ -6,18 +6,6 @@ module.exports = {
     },
     setupFiles: ["dotenv/config"],
     moduleDirectories: ['node_modules', 'src', '.'],
-    watchPlugins: [
-        [
-            "jest-watch-suspend", {
-                // override key press
-                "key": "s"
-                // override prompt
-                // "prompt": "suspend watch mode",
-                // starts in suspend mode
-                // "suspend-on-start": true
-            }
-        ]
-    ]
 }
 
 process.env = Object.assign(process.env, {
