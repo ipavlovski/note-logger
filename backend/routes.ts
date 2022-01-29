@@ -39,11 +39,26 @@ routes.put('/insert', async (req, res) => {
     res.sendStatus(201)
 })
 
-// update one or many items
 // this is where content, dates, tags, categories, archived are changed
 // on success, send 200 code (no json)
 // on failure, send 400 code with json messsage
 // websocket - use the RETURNING clause to get all affected items
+// UPDATE ONE
+routes.post('/update/:id', async (req, res) => {
+    // 3 types of ranges: query, id-range, single-id
+    // 3 types of tag updates: set, add, remove
+    const item: Item = req.body
+    const id = parseInt(req.params.id)
+
+    try {
+        const results = await db.updateOne(id, item)
+        res.sendStatus(200)
+    } catch (error) {
+        return res.status(400).json({ error: error.name, message: error.message })
+    }
+})
+
+// UPDATE MANY
 routes.post('/update', async (req, res) => {
     // 3 types of ranges: query, id-range, single-id
     // 3 types of tag updates: set, add, remove
@@ -56,6 +71,7 @@ routes.post('/update', async (req, res) => {
         return res.status(400).json({ error: error.name, message: error.message })
     }
 })
+
 
 // delete an item
 // on success, send 200 code (no json)

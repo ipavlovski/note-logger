@@ -7,7 +7,7 @@ import sqlite3 from 'sqlite3'
 
 
 class DB {
-    db: sqlite3.Database
+    private db: sqlite3.Database
 
     constructor(filename: string, debug: boolean) {
         this.db = new sqlite3.Database(filename)
@@ -33,7 +33,7 @@ class DB {
 
     // insert/update/delete
     // return changes/lastId
-    protected async run(q: string, args?: any[]): Promise<RunResult> {
+    async run(q: string, args?: any[]): Promise<RunResult> {
         return new Promise((resolve, reject) => {
             this.db.run(q, args ?? [], function (err) {
                 err ? reject(err) : resolve({ changes: this.changes, lastID: this.lastID })
@@ -42,21 +42,21 @@ class DB {
     }
 
     // select multiple rows
-    protected async all<T>(q: string, args?: any[]): Promise<T[]> {
+    async all<T>(q: string, args?: any[]): Promise<T[]> {
         return new Promise<T[]>((resolve, reject) => {
             this.db.all(q, args ?? [], (err, rows) => err ? reject(err) : resolve(rows))
         })
     }
 
     // select single row
-    protected async get<T>(q: string, args?: any[]): Promise<T> {
+    async get<T>(q: string, args?: any[]): Promise<T> {
         return new Promise<T>((resolve, reject) => {
             this.db.get(q, args ?? [], (err, row) => err ? reject(err) : resolve(row))
         })
     }
 
 
-
+    // NOT USED!?
     async reconsructCategoryChain(catId: number) {
 
         const acc: CatRow[] = []
@@ -73,6 +73,7 @@ class DB {
     }
 
 
+    // NOT USED!?
     protected async getItemTags(itemId: number): Promise<string[]> {
         const q = `select name from tag inner join item_tag on tag.id = item_tag.tag_id where item_tag.item_id = ?`
         return await this.all<{ name: string }>(q, [itemId]).then(rows => rows.map(v => v.name))
@@ -84,16 +85,32 @@ class DB {
 
 
 
+    protected async unsetAllItemTags(itemIds: number | number[]) {
+        const ids = [itemIds].flat()
+        await this.run(`DELETE FROM item_tag 
+        WHERE item_id IN (${ids.map(_ => "?").join(', ')})`, ids)
+    }
+
+    protected async unsetSomeItemTags(itemIds: number | number[], tags: TagRow[]) {
+        const ids = [itemIds].flat()
+        const tagIds = tags.map(({id}) => id)
+        await this.all(`DELETE FROM item_tag as t1 WHERE EXISTS (SELECT * FROM 
+            (SELECT tag.id as tag_id, item.id as item_id FROM item 
+            CROSS JOIN tag 
+            WHERE item.id IN (${ids.map(_ => "?").join(', ')})
+            AND tag.id IN (${tagIds.map(_ => '?').join(', ')}) 
+            ) as t2 WHERE t1.item_id = t2.item_id 
+            AND t1.tag_id = t2.tag_id)`,[ids, tagIds].flat())       
+    }
 
 
-
-    protected async setItemTags(itemId: number, tags: TagRow[]) {
-        const tagItemSelect = 'select * from item_tag where tag_id = ? and item_id = ?'
-        const tagItemInsert = 'insert into item_tag (tag_id, item_id) values (?, ?)'
-        for (const tag of tags) {
-            const results = await this.get(tagItemSelect, [tag.id, itemId])
-            if (!results) await this.run(tagItemInsert, [tag.id, itemId])
-        }
+    protected async setItemTags(itemIds: number | number[], tags: TagRow[]) {
+        const ids = [itemIds].flat()
+        const tagIds = tags.map(({id}) => id)
+        await this.run(`INSERT OR IGNORE INTO item_tag (item_id, tag_id)
+            SELECT item.id as item_id, tag.id as tag_id FROM item 
+            CROSS JOIN tag WHERE item.id IN (${ids.map(_ => "?").join(', ')}) 
+            AND tag.id IN (${tagIds.map(_ => '?').join(', ')})`, [ids, tagIds].flat())
     }
 
 
@@ -217,7 +234,7 @@ class DB {
             category: outputCats,
             tags: outputTags
         }
-        output.insert.push({ type: 'item', value: outputItem})
+        output.insert.push({ type: 'item', value: outputItem })
 
         // setup the mappings
         await this.setItemTags(itemRow.id, outputTags)
@@ -271,6 +288,92 @@ class DB {
                 tags: this.getTagsForItem(row.id, itemTags)
             }
         })
+    }
+
+
+    async updateOne(id: number, item: Omit<Partial<Item>, 'id'>) {
+
+        const output: Castable = { insert: [], update: [] }
+
+        const q: string[] = []
+        const args: any = []
+
+        if (item.header) {
+            q.push('header = ?')
+            args.push(item.header)
+        }
+
+        if (item.body != null) {
+            q.push('html = ?', 'md = ?')
+            args.push(item.body.html, item.body.md)
+        }
+
+        if (item.created != null) {
+            q.push('created = ?')
+            args.push(item.created.toSeconds() | 0)
+        }
+
+        if (item.updated != null) {
+            q.push('updated = ?')
+            args.push(item.updated.toSeconds() | 0)
+        }
+
+        if (item.archived != null) {
+            q.push('archived = ?')
+            args.push(item.archived ? 1 : 0)
+        }
+
+
+        // CATEGORIES
+        let cats: CatRow[]
+        if (item.category != null) {
+            if (item.category.length == 0) {
+                q.push('category_id = ?')
+                args.push(null)
+            } else {
+                cats = await this.getCatChain(item.category)
+                const catDiff = differenceBy(cats, item.category, 'id')
+                catDiff.forEach(catRow => output.insert.push({ type: 'cat', value: catRow }))
+                q.push('category_id = ?')
+                args.push(cats[cats.length - 1].id)
+            }
+        }
+
+        // TAGS
+        let tags: TagRow[]
+        if (item.tags != null) {
+            if (item.tags.length == 0) {
+                // unmap all tags - same method, with different ID?
+                await this.unsetAllItemTags(id)
+            } else {
+                tags = await this.getTagList(item.tags)
+                const tagDiff = differenceBy(tags, item.tags, 'id')
+                tagDiff.forEach(tagRow => output.insert.push({ type: 'tag', value: tagRow }))
+                await this.unsetAllItemTags(id)
+                await this.setItemTags(id, tags)
+            }
+        }
+
+        // run the query
+        args.push(id)
+        const Q = `UPDATE item SET ${q.join(', ')} WHERE item.id = ? RETURNING *`
+        const itemRow = await this.get<ItemRow>(Q, args)
+
+        // generate item
+        const outputItem: Item = {
+            id: itemRow.id,
+            header: itemRow.header,
+            body: { md: itemRow.md, html: itemRow.html },
+            created: DateTime.fromSeconds(itemRow.created),
+            updated: item.updated ? DateTime.fromSeconds(itemRow.updated) : null,
+            archived: itemRow.archived ? true : false,
+            category: cats,
+            tags: tags
+        }
+        output.update.push({ type: 'item', value: outputItem })
+
+        return output
+
     }
 
     async deleteItem(id: number): Promise<RunResult> {

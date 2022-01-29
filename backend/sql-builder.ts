@@ -13,7 +13,8 @@ export class SqlBuilder {
 
         const tag = `CREATE TABLE IF NOT EXISTS tag (
             id INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT,
-            name TEXT
+            name TEXT,
+            UNIQUE(name)
         )`
 
         const item = `CREATE TABLE IF NOT EXISTS item (
