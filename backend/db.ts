@@ -31,6 +31,17 @@ class DB {
         await this.run('DETACH db2')
     }
 
+    async clear() {
+        for (const table of ['item_tag', 'tag', 'item' ,'category' ]) {
+            await this.run(`drop table ${table}`)
+        }
+        // await new Promise((resolve, reject) => {
+        //     this.db.close( (err) => {
+        //         err ? reject(err) : resolve(true)
+        //     })
+        // })
+    }
+
     // insert/update/delete
     // return changes/lastId
     async run(q: string, args?: any[]): Promise<RunResult> {
