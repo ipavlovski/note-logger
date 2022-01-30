@@ -4,13 +4,14 @@ import { differenceBy } from 'lodash'
 import { DateTime } from 'luxon'
 import { DB } from 'backend/db'
 
+let db: DB
+beforeEach(async () => {
+    db = new DB(':memory:', false)
+    await db.init()
+    await db.populate('./db-test-main.sqlite')
+})
+
 describe('db test', () => {
-    let db: DB
-    beforeEach(async () => {
-        db = new DB(':memory:', false)
-        await db.init()
-        await db.populate('./db-test-main.sqlite')
-    })
 
     test('select / queryItems', async () => {
         var catInput: CatQuery = {
@@ -112,13 +113,6 @@ describe('db test', () => {
 
 
 describe('update one', () => {
-    let db: DB
-
-    beforeEach(async () => {
-        db = new DB(':memory:', false)
-        await db.init()
-        await db.populate('./db-test-main.sqlite')
-    })
 
     test('updateOne - no tags or cats', async () => {
 
@@ -222,13 +216,6 @@ describe('update one', () => {
 
 
 describe('update many', () => {
-    let db: DB
-
-    beforeEach(async () => {
-        db = new DB(':memory:', false)
-        await db.init()
-        await db.populate('./db-test-main.sqlite')
-    })
 
     test('test with id range', async () => {
 
@@ -253,4 +240,17 @@ describe('update many', () => {
 
     })
 
+})
+
+describe('delete', () => {
+
+    test('delete item by id', async () => {
+        const id = 123
+        const output = await db.deleteItem(id)
+        expect(output.delete).toHaveLength(1)
+
+        const postDelete = await db.get('select * from item where id = ?', [id])
+        expect(postDelete).toBeUndefined()
+
+    })
 })

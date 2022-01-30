@@ -77,7 +77,15 @@ routes.post('/update', async (req, res) => {
 // on failure, sedn 400 code with json message
 // websocket : send out a json with info on deleted ID
 routes.delete('/delete/:id', async (req, res) => {
-    res.sendStatus(200)
+    const id = parseInt(req.params.id)
+
+    try {
+        const castable = await db.deleteItem(id)
+        wss.sockets.map(socket => socket.send(JSON.stringify(castable)))
+        return res.sendStatus(200)
+    } catch (error) {
+        return res.status(400).json({ error: error.name, message: error.message })
+    }
 })
 
 

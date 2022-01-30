@@ -165,15 +165,15 @@ export interface Castable {
 
 export interface CastItem {
     type: 'item'
-    value: Item | number
+    value: Item
 }
 
 export interface CastCat {
     type: 'cat'
-    value: CatRow | number
+    value: CatRow
 }
 
 export interface CastTag {
     type: 'tag'
-    value: TagRow | number
+    value: TagRow
 }

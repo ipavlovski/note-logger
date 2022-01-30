@@ -250,6 +250,33 @@ describe('SOCKET-BASED', () => {
         expect(startingState[0].category_id).not.toBe(finishedState[0].category_id)
     })
 
+
+
+    test('delete', async () => {
+        // 1. PREP THE SOCKET
+        const [client, messages] = await createSocketClient()
+
+        // 2. PREP THE INPUT
+        const id = 123
+
+        const startingState = await db.get<ItemRow>(`select * from item where id = ${id}`)
+
+        // 3. SEND THE INPUT
+        const res = await fetch(`http://localhost:${serverPort}/delete/${id}`, {
+            method: 'DELETE'
+        })
+        expect(res.status).toBe(200)
+
+        // 4. WAIT FOR OUTPUT
+        await waitForSocketState(client, client.CLOSED)
+        const [message] = messages
+        const result: Castable = JSON.parse(message, jsonReviver)
+        expect(result.delete).toHaveLength(1)
+
+        var finishedState = await db.get<ItemRow>(`select * from item where id = ${id}`)
+        expect(startingState.id).toBe(123)
+        expect(finishedState).toBe(undefined)
+    })
 })
 
 

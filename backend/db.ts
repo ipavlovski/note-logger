@@ -423,9 +423,15 @@ class DB {
 
     }
 
-
-    async deleteItem(id: number): Promise<RunResult> {
-        return null
+    async deleteItem(id: number) {
+        const output: Castable = { delete: [] }
+        await this.run('delete from item_tag where item_id = ?', [id])
+        const itemRow = await this.get<ItemRow>('delete from item where id = ? RETURNING *', [id])
+        if (itemRow != null) {
+            const outputItem = this.inflateItemRow(itemRow, null, null)
+            output.delete.push({ type: 'item', value: outputItem })
+        }
+        return output
     }
 }
 
