@@ -277,6 +277,38 @@ describe('SOCKET-BASED', () => {
         expect(startingState.id).toBe(123)
         expect(finishedState).toBe(undefined)
     })
+
+    test('rename category', async () => {
+        // 1. PREP THE SOCKET
+        const [client, messages] = await createSocketClient()
+
+        // 2. PREP THE INPUT
+        const input = { id: 41, name: 'new-cat1', type: 'cat'}
+
+        const stateBefore = await db.get<CatRow>(`select * from category where id = ${input.id}`)
+        expect(stateBefore.id).toBe(input.id)
+        expect(stateBefore.name).not.toBe(input.name)
+
+        // 3. SEND THE INPUT
+        const res = await fetch(`http://localhost:${serverPort}/rename`, {
+            method: 'POST',
+            body: JSON.stringify(input),
+            headers: { 'Content-Type': 'application/json' }
+        })
+        expect(res.status).toBe(200)
+
+        // 4. WAIT FOR OUTPUT
+        await waitForSocketState(client, client.CLOSED)
+        const [message] = messages
+        const result: Castable = JSON.parse(message, jsonReviver)
+        expect(result.rename).toHaveLength(1)
+
+        const stateAfter = await db.get<CatRow>(`select * from category where id = ${input.id}`)
+        expect(stateAfter.id).toBe(input.id)
+        expect(stateAfter.name).not.toBe(stateBefore.name)
+    })
+
+
 })
 
 

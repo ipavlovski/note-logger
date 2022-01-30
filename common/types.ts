@@ -161,6 +161,7 @@ export interface Castable {
     insert?: Array<CastItem | CastTag | CastCat>
     update?: Array<CastItem | CastTag | CastCat>
     delete?: Array<CastItem | CastTag | CastCat>
+    rename?: Array<CastTag | CastCat>
 }
 
 export interface CastItem {

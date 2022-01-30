@@ -59,7 +59,7 @@ routes.post('/update/:id', async (req, res) => {
 
 routes.post('/update', async (req, res) => {
     const ids: number[] = req.body.ids
-    const itemUpdate: Omit<ItemUpdate, 'header' | 'body'>  = req.body.itemUpdate
+    const itemUpdate: Omit<ItemUpdate, 'header' | 'body'> = req.body.itemUpdate
     const op = req.body.op
 
     try {
@@ -94,11 +94,17 @@ routes.delete('/delete/:id', async (req, res) => {
 // on failure, send 400 with json-message
 // websocket: send out a json with renaming info
 routes.post('/rename', async (req, res) => {
-    // body should contain identification of 
-    // on success,
-    const body = req.body
-    console.log(body)
-    res.sendStatus(200)
+    const body: { id: number, type: 'tag' | 'cat', name: 'string' } = req.body
+    const { id, type, name } = body
+
+    try {
+        const castable = (type == 'tag') ?
+            await db.renameTag(id, name) : await db.renameCat(id, name)
+        wss.sockets.map(socket => socket.send(JSON.stringify(castable)))
+        return res.sendStatus(200)
+    } catch (error) {
+        return res.status(400).json({ error: error.name, message: error.message })
+    }
 })
 
 // refresh tags and category tables on the server

@@ -253,4 +253,61 @@ describe('delete', () => {
         expect(postDelete).toBeUndefined()
 
     })
+
+})
+
+describe('rename / update', () => {
+
+    test('rename tag', async () => {
+        const id = 10
+        const newName = 'tag-new3'
+
+        const stateBefore = await db.get<TagRow>(`select * from tag where id = ${id}`)
+        expect(stateBefore.id).toBe(id)
+        expect(stateBefore.name).not.toBe(newName)
+
+        const output = await db.renameTag(id, newName)
+        expect(output.rename).toHaveLength(1)
+
+        const stateAfter = await db.get<TagRow>(`select * from tag where id = ${id}`)
+        expect(stateAfter.id).toBe(id)
+        expect(stateAfter.name).not.toBe(stateBefore.name)
+        
+    })
+
+    test('rename tag - trigger error constraint', async () => {
+        const id = 10
+        const newName = 'tag3'
+
+        await expect(async () => {
+            await db.renameTag(id, newName)
+        }).rejects.toThrowError()
+    })
+    
+    test('rename category', async () => {
+        const id = 41
+        const newName = 'new-cat1'
+
+        const stateBefore = await db.get<CatRow>(`select * from category where id = ${id}`)
+        expect(stateBefore.id).toBe(id)
+        expect(stateBefore.name).not.toBe(newName)
+
+        const output = await db.renameCat(id, newName)
+        expect(output.rename).toHaveLength(1)
+
+        const stateAfter = await db.get<CatRow>(`select * from category where id = ${id}`)
+        expect(stateAfter.id).toBe(id)
+        expect(stateAfter.name).not.toBe(stateBefore.name)
+
+    })
+
+    test('rename cat - trigger error constraint', async () => {
+        const id = 41
+        const newName = 'subEI'
+
+        await expect(async () => {
+            await db.renameCat(id, newName)
+        }).rejects.toThrowError()
+    })
+
 })

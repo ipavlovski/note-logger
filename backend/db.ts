@@ -433,6 +433,20 @@ class DB {
         }
         return output
     }
+
+    async renameTag(id: number, name: string) {
+        const output: Castable = { rename: [] }
+        const tagRow = await this.get<TagRow>('update tag set name = ? where id = ? returning *', [name, id])
+        output.rename.push({ type: 'tag', value: tagRow })
+        return output
+    }
+
+    async renameCat(id: number, name: string) {
+        const output: Castable = { rename: [] }
+        const catRow = await this.get<CatRow>('update category set name = ? where id = ? returning *', [name, id])
+        output.rename.push({ type: 'cat', value: catRow })
+        return output
+    }
 }
 
 
