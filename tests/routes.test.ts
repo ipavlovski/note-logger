@@ -1,5 +1,5 @@
 import { server } from 'backend/server'
-import { CatRow, TagRow, Item, Castable, CatQuery, TagQuery } from 'common/types'
+import { CatRow, TagRow, Item, Castable, CatQuery, TagQuery, ItemUpdate, ItemRow } from 'common/types'
 import { Server } from 'http'
 import { DateTime } from 'luxon'
 import { WebSocket } from 'ws'
@@ -99,8 +99,7 @@ describe('HTTP-SELECT', () => {
 
 describe('SOCKET-BASED', () => {
 
-    // this was done to prevent 'hangups'
-    // maybe still NEED this?
+    // this was done to prevent 'hangups' -- maybe still NEED this?
     // afterEach(async () => await waitForSocketState(client, client.CLOSED))
     // let client: WebSocket
 
@@ -172,26 +171,85 @@ describe('SOCKET-BASED', () => {
         const [client, messages] = await createSocketClient()
 
         // 2. PREP THE INPUT
-        var inputItem = {}
+        var inputTags: TagRow[] = [{ id: null, name: 'tag-new' }, { id: 5, name: 'tag4' }]
+        var inputCats: CatRow[] = [
+            { id: null, pid: null, name: 'Cat-Parent' },
+            { id: null, pid: null, name: 'Cat-Child' }
+        ]
+        var item: ItemUpdate = {
+            header: 'header-123',
+            body: { md: '', html: '' },
+            created: DateTime.now(),
+            updated: null,
+            archived: false,
+            category: inputCats,
+            tags: inputTags
+        }
+
+        var startingState = await db.get<ItemRow>('select * from item where id = 123')
 
         // 3. SEND THE INPUT
-        const res = await fetch(`http://localhost:${serverPort}/update`, {
-            method: 'PUT',
-            body: JSON.stringify(inputItem),
+        const res = await fetch(`http://localhost:${serverPort}/update/123`, {
+            method: 'POST',
+            body: JSON.stringify(item),
             headers: { 'Content-Type': 'application/json' }
         })
         expect(res.status).toBe(200)
 
-        // w
+        // 4. WAIT FOR OUTPUT
         await waitForSocketState(client, client.CLOSED)
-
-
-
-        // Perform assertions on the response
         const [message] = messages
         const result: Castable = JSON.parse(message, jsonReviver)
+        expect(result.insert).toHaveLength(3)
+        expect(result.update).toHaveLength(1)
 
-    }, 2000)
+
+        var finishedState = await db.get<ItemRow>('select * from item where id = 123')
+        expect(startingState.category_id).not.toBe(finishedState.category_id)
+    })
+
+
+
+    test('update many', async () => {
+        // 1. PREP THE SOCKET
+        const [client, messages] = await createSocketClient()
+
+        // 2. PREP THE INPUT
+        const ids = [123, 125, 250]
+        const op = 'add'
+        const inputTags: TagRow[] = [{ id: null, name: 'tag-new' }, { id: 5, name: 'tag4' }]
+        const inputCats: CatRow[] = [
+            { id: null, pid: null, name: 'Cat-Parent' },
+            { id: null, pid: null, name: 'Cat-Child' }
+        ]
+        const itemUpdate:  Omit<ItemUpdate, 'header' | 'body'> = {
+            created: DateTime.now(),
+            updated: null,
+            archived: false,
+            category: inputCats,
+            tags: inputTags
+        }
+        const startingState = await db.all<ItemRow>(`select * from item where id IN (${ids.join(', ')})`)
+
+        // 3. SEND THE INPUT
+        const res = await fetch(`http://localhost:${serverPort}/update`, {
+            method: 'POST',
+            body: JSON.stringify({ ids, itemUpdate, op }),
+            headers: { 'Content-Type': 'application/json' }
+        })
+        expect(res.status).toBe(200)
+
+        // 4. WAIT FOR OUTPUT
+        await waitForSocketState(client, client.CLOSED)
+        const [message] = messages
+        const result: Castable = JSON.parse(message, jsonReviver)
+        expect(result.insert).toHaveLength(3)
+        expect(result.update).toHaveLength(3)
+
+        var finishedState = await db.all<ItemRow>(`select * from item where id IN (${ids.join(', ')})`)
+        expect(startingState[0].category_id).not.toBe(finishedState[0].category_id)
+    })
+
 })
 
 

@@ -1,6 +1,6 @@
 import { db } from 'backend/db'
 import { wss } from 'backend/server'
-import { Item, Query } from 'common/types'
+import { Castable, Item, ItemUpdate, Query } from 'common/types'
 import { Router } from 'express'
 
 
@@ -45,28 +45,27 @@ routes.put('/insert', async (req, res) => {
 // websocket - use the RETURNING clause to get all affected items
 // UPDATE ONE
 routes.post('/update/:id', async (req, res) => {
-    // 3 types of ranges: query, id-range, single-id
-    // 3 types of tag updates: set, add, remove
     const item: Item = req.body
     const id = parseInt(req.params.id)
 
     try {
-        const results = await db.updateOne(id, item)
-        res.sendStatus(200)
+        const castable = await db.updateOne(id, item)
+        wss.sockets.map(socket => socket.send(JSON.stringify(castable)))
+        return res.sendStatus(200)
     } catch (error) {
         return res.status(400).json({ error: error.name, message: error.message })
     }
 })
 
-// UPDATE MANY
 routes.post('/update', async (req, res) => {
-    // 3 types of ranges: query, id-range, single-id
-    // 3 types of tag updates: set, add, remove
-    const query: Query = req.body
+    const ids: number[] = req.body.ids
+    const itemUpdate: Omit<ItemUpdate, 'header' | 'body'>  = req.body.itemUpdate
+    const op = req.body.op
 
     try {
-        const results = await db.queryItems(query, 'preview')
-        res.sendStatus(200)
+        const castable = await db.updateMany(ids, itemUpdate, op)
+        wss.sockets.map(socket => socket.send(JSON.stringify(castable)))
+        return res.sendStatus(200)
     } catch (error) {
         return res.status(400).json({ error: error.name, message: error.message })
     }
