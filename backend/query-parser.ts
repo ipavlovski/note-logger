@@ -7,7 +7,7 @@ export default function parseQuery(query: Query): SqlParams {
 
     // main sql statement
     const stmt: string[] = []
-    const args: any[] = []
+    const stmtArgs: any[] = []
 
     // deermine the 'core' output columns
     // if type == preview, DONT incldue md and html columns
@@ -29,20 +29,20 @@ export default function parseQuery(query: Query): SqlParams {
     if (query.cats) {
         const { q, args } = parseCategories(query.cats)
         stmt.push(q)
-        args.push(args)
+        stmtArgs.push(args)
     } else {
         stmt.push('WHERE TRUE')
     }
 
     if (query.archived != null) {
         stmt.push('AND archived = ?')
-        args.push(query.archived ? 1 : 0)
+        stmtArgs.push(query.archived ? 1 : 0)
     }
 
     if (query.created != null) {
         const [start, end] = parseDates(query.created)
         stmt.push('AND created BETWEEN ? AND ?')
-        args.push(start, end)
+        stmtArgs.push(start, end)
     }
 
     if (typeof query.updated !== 'undefined') {
@@ -51,30 +51,30 @@ export default function parseQuery(query: Query): SqlParams {
         } else {
             const [start, end] = parseDates(query.updated)
             stmt.push('AND updated BETWEEN ? AND ?')
-            args.push(start, end)
+            stmtArgs.push(start, end)
         }
     }
 
     if (query.search != null) {
         const { q, args } = parseSearch(query.search)
         stmt.push(q)
-        args.push(args)
+        stmtArgs.push(args)
     }
 
     // tags - after all the clauses
     if (tagArgs) {
         stmt.push(tagArgs.q)
-        args.push(tagArgs.args)
+        stmtArgs.push(tagArgs.args)
     }
 
     // pager - at the end
     if (query.pager) {
         const { q, args } = parsePager(query.pager)
         stmt.push(q)
-        args.push(args)
+        stmtArgs.push(args)
     }
 
-    return { q: stmt.join(' '), args: args.flat() }
+    return { q: stmt.join(' '), args: stmtArgs.flat() }
 }
 
 

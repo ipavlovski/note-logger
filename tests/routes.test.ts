@@ -1,11 +1,12 @@
 import { server } from 'backend/server'
-import { CatRow, TagRow, Item, Castable, CatQuery, TagQuery, ItemRow, Query, UpdateItemOne, UpdateItemMany } from 'common/types'
+import { CatRow, TagRow, Item, Castable, CatQuery, TagQuery, ItemRow, Query, UpdateItemOne, UpdateItemMany, InsertItem } from 'common/types'
 import { Server } from 'http'
 import { DateTime } from 'luxon'
 import { WebSocket } from 'ws'
 import fetch from 'node-fetch'
 import { serverPort } from 'common/config'
 import { db, DB } from 'backend/db'
+import { vanillaReviver } from 'common/utils'
 
 let httpServer: Server
 
@@ -86,7 +87,8 @@ describe('HTTP-SELECT', () => {
         })
         const body = await res.json()
 
-        expect(res.status).toEqual(200)
+        console.log('STATUS', res.status)
+        expect(res.status).toBe(200)
         expect(body).toHaveLength(3)
 
         // expect(res.headers["content-type"]).toMatch(/json/)
@@ -127,12 +129,9 @@ describe('SOCKET-BASED', () => {
             { id: null, name: 'tag-new1' }, { id: null, name: 'tag-new2' },
         ]
 
-        var inputItem: Omit<Item, 'id'> = {
+        var inputItem: InsertItem = {
             header: 'header-123',
-            body: { md: '', html: '' },
             created: DateTime.now().toJSDate(),
-            updated: null,
-            archived: false,
             category: inputCats,
             tags: inputTags
         }
@@ -150,7 +149,7 @@ describe('SOCKET-BASED', () => {
         // Perform assertions on the response
         await waitForSocketState(client, client.CLOSED)
         const [message] = messages
-        const result: Castable = JSON.parse(message)
+        const result: Castable = JSON.parse(message, vanillaReviver)
 
         expect(result.insert!.map(({ type }) => type)).toEqual(['cat', 'cat', 'tag', 'tag', 'item'])
         const metadata = [
@@ -162,7 +161,7 @@ describe('SOCKET-BASED', () => {
         expect(result.insert!.slice(0, 4)).toMatchObject(metadata)
 
         const outputItem = result.insert![4].value as Item
-        expect(outputItem.created.valueOf()).toBeCloseTo(inputItem.created.valueOf() | 0)
+        expect(outputItem.created.toISOString().substring(0, 16)).toBe(inputItem.created.toISOString().substring(0, 16))
         expect(outputItem.header).toEqual(inputItem.header)
 
     }, 5000)
@@ -224,7 +223,7 @@ describe('SOCKET-BASED', () => {
             { id: null, pid: null, name: 'Cat-Parent' },
             { id: null, pid: null, name: 'Cat-Child' }
         ]
-        const itemUpdate: UpdateItemMany = {
+        const item: UpdateItemMany = {
             created: new Date(),
             updated: null,
             archived: false,
@@ -236,7 +235,7 @@ describe('SOCKET-BASED', () => {
         // 3. SEND THE INPUT
         const res = await fetch(`http://localhost:${serverPort}/update`, {
             method: 'POST',
-            body: JSON.stringify({ ids, itemUpdate, op }),
+            body: JSON.stringify({ ids, item, op }),
             headers: { 'Content-Type': 'application/json' }
         })
         expect(res.status).toBe(200)

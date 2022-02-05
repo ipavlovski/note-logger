@@ -3,21 +3,20 @@ import { ItemRow, SqlParams, TagRow } from 'common/types'
 import { intersectionBy } from 'lodash'
 
 test('parse tag', () => {
-    const builder = new SqlBuilder()
 
     const tags1 = [[1, 5], [3, 7, 20]]
-    const params1 = builder["parseTags"](tags1)
+    const params1 = { q: '', args: []}
     expect(params1.q).toBe('GROUP BY item.id HAVING COUNT(tag.id IN (?, ?) OR NULL) = ? OR COUNT(tag.id IN (?, ?, ?) OR NULL) = ?')
     expect(params1.args).toStrictEqual([1, 5, 2, 3, 7, 20, 3])
 
     const tags2 = [[1, 5]]
-    const params2 = builder["parseTags"](tags2)
+    const params2 = { q: '', args: []}
+
     expect(params2.q).toBe('GROUP BY item.id HAVING COUNT(tag.id IN (?, ?) OR NULL) = ?')
     expect(params2.args).toStrictEqual([1, 5, 2])
 })
 
 test('the sum of rec and term cat query lines up', async () => {
-    const builder = new SqlBuilder()
 
     let sqlParams: SqlParams
     const testdb = new DB('db-test-main.sqlite', false)

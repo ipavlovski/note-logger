@@ -56,14 +56,15 @@ export type TagQuery = TagRow[][]
 
 // Should Describe<Item>, but seems like 'superstruct' has a strange bug
 // will need to report it later, for now remove the 'Describe' type
+const CoercedDate = coerce(date(), string(), (v) => new Date(v))
 export const InsertItemSchema: Describe<InsertItem> = object({
     header: nonempty(string()),
-    created: date(),
+    created: CoercedDate,
     body: optional(object({
         md: string(),
         html: string()
     })),
-    updated: optional(date()),
+    updated: optional(CoercedDate),
     archived: optional(boolean()),
     category: optional(nonempty(array(CatRowSchema))),
     tags: optional(nonempty(array(TagRowSchema)))
@@ -72,21 +73,21 @@ export const InsertItemSchema: Describe<InsertItem> = object({
 
 export const UpdateItemOneSchema: Describe<UpdateItemOne> = object({
     header: optional(nonempty(string())),
-    created: optional(date()),
+    created: optional(CoercedDate),
     body: optional(object({
         md: string(),
         html: string()
     })),
     archived: optional(boolean()),
-    updated: optional(nullable(date())),
+    updated: optional(nullable(CoercedDate)),
     category: optional(nullable(array(CatRowSchema))),
     tags: optional(nullable(array(TagRowSchema)))
 })
 
 export const UpdateItemManySchema: Describe<UpdateItemMany> = object({
-    created: optional(date()),
+    created: optional(CoercedDate),
     archived: optional(boolean()),
-    updated: optional(nullable(date())),
+    updated: optional(nullable(CoercedDate)),
     category: optional(nullable(array(CatRowSchema))),
     tags: optional(nullable(array(TagRowSchema)))
 })

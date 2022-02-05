@@ -67,7 +67,7 @@ class DB extends SQLite {
             FOREIGN KEY (item_id) REFERENCES item (id)  
         )`
 
-        for (const table in [category, tag, item, itemTag]) {
+        for (const table of [category, tag, item, itemTag]) {
             await this.run(table)
         }
     }
@@ -262,7 +262,7 @@ class DB extends SQLite {
         }
 
         // the 2 mandatory fields
-        const created = item.created.valueOf() | 0
+        const created = item.created.valueOf() / 1000 | 0
         const header = item.header
 
         // the 2 body fields - allowed to be blank, but not null/undefined
@@ -270,7 +270,7 @@ class DB extends SQLite {
         const html = item.body?.html ?? ''
 
         // updated field CAN be set (e.g. when creating back-dated items)
-        const updated = item.updated ? item.updated.valueOf() | 0 : null
+        const updated = item.updated ? item.updated.valueOf() / 1000 | 0 : null
 
         // archived must be false on item creation, regardless of input
         const archived = 0
@@ -326,12 +326,12 @@ class DB extends SQLite {
 
         if (item.created != null) {
             q.push('created = ?')
-            args.push(item.created.valueOf() | 0)
+            args.push(item.created.valueOf() / 1000 | 0)
         }
 
         if (item.updated != null) {
             q.push('updated = ?')
-            args.push(item.updated.valueOf() | 0)
+            args.push(item.updated.valueOf() / 1000 | 0)
         }
 
         if (item.archived != null) {
@@ -484,7 +484,7 @@ class DB extends SQLite {
 
 
 
-const db = new DB(dbPath, false)
+const db = new DB(dbPath!, false)
 db.init()
 
 export { DB, db }
