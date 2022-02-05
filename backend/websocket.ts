@@ -1,4 +1,5 @@
 import { exec } from 'child_process'
+import { Castable } from 'common/types'
 import { IncomingMessage, Server as HttpServer } from 'http'
 import internal from 'stream'
 import { Server as WSServer, WebSocket } from 'ws'
@@ -12,6 +13,12 @@ class WSS {
         this.wss = new WSServer({ noServer: true, clientTracking: true })
         httpServer.on('upgrade', this.onUpgradeHandler)
         this.wss.on('connection', this.onConnectionHandler)
+    }
+
+    // TODO: prep the callback to check for error in broadcast
+    broadcast(castable: Castable) {
+        console.log(`Broadacasting to %s sockets`, this.sockets.length)
+        this.sockets.map(socket => socket.send(JSON.stringify(castable)))
     }
 
     private onUpgradeHandler = (request: IncomingMessage, socket: internal.Duplex, head: Buffer) => {
@@ -35,14 +42,15 @@ class WSS {
                 socket.send('pong')
             }
 
-            if (msg.command == 'exec') {
-                const cmd = 'for i in {1..3}; do echo $i; sleep 1; done'
-                exec(cmd).on('exit', () => {
-                    socket.send(JSON.stringify('done'))
-                }).stdout.on('data', (v) => {
-                    socket.send(v)
-                })
-            }
+            // TODO: clean this up -> this was more of a test, doesnt need to be here
+            // if (msg.command == 'exec') {
+            //     const cmd = 'for i in {1..3}; do echo $i; sleep 1; done'
+            //     exec(cmd).on('exit', () => {
+            //         socket.send(JSON.stringify('done'))
+            //     }).stdout.on('data', (v) => {
+            //         socket.send(v)
+            //     })
+            // }
         })
 
         socket.on('close', (code) => {

@@ -1,19 +1,6 @@
-// recursive categorizied-map
-// {
-//     cat: 'cat-name',
-//     items: [1, 2, 3],
-//     subcat: {
-//         { 
-//             'sub-cat1': { cat: 'sub-cat1', items: [ 4, 5, 6], subcat: {}} 
-//         },
-//         { 
-//             'sub-cat2': { cat: 'sub-cat2', items: [ 7, 8, 9], subcat: {}} 
-//         }
-//     }
-// }
-
 import { DateTime } from 'luxon'
 
+//  ==========  OLD TYPES  ==========
 
 export interface EditEntry {
     id?: number
@@ -30,19 +17,6 @@ export interface CatItem {
     items: Item2[]
     subcat: CatMap
 }
-
-
-export interface Item {
-    id: number
-    header: string
-    body: { md: string, html: string }
-    created: DateTime
-    updated: DateTime
-    archived: boolean
-    category: CatRow[]
-    tags: TagRow[]
-}
-
 
 export interface Item2 {
     // summary header, category chain and tags array
@@ -88,27 +62,27 @@ export interface SortingOptions {
 }
 
 
+
+
+
+
+//  ==========  NEW TYPES  ==========
+
+
 export interface Query {
-    filter: {
-        categories: { rec: number[], term: number[] },
-        tags: number[][]
-        date: {
-            created: [number, number],
-            updated: [number, number]
-        },
-        archived: boolean
-    }
-
-    search: {
-        header: string,
-        body: string
-    },
-
-    pager: {
-        page: number,
-        size: number
-    }
+    type: 'full' | 'preview'
+    archived?: boolean
+    cats?: CatQuery | null
+    tags?: TagQuery | null
+    created?: [string, string | null]
+    updated?: [string, string | null] | null
+    search?: { header?: string, body?: string }
+    pager?: { page: number, size: number }
 }
+
+
+export type CatQuery = { rec: CatRow[], term: CatRow[] }
+export type TagQuery = TagRow[][]
 
 export interface SqlParams {
     q: string,
@@ -116,30 +90,52 @@ export interface SqlParams {
 }
 
 
-export type CatQuery = { rec: CatRow[], term: CatRow[] }
-export type TagQuery = TagRow[][]
-
-
-//  ==========  DB TYPES  ==========
-
-export interface CategoryLeaf extends CatRow {
-    children: CategoryLeaf[]
-}
-
-export interface RunResult {
-    changes: number
-    lastID: number
-}
-
-export interface CatRow {
+// an item ALWAYS has proper ID, HEADING and CREATED fields
+// an item ALWAYS has a body: even if it just empty strings
+export interface Item {
     id: number
-    pid: number
-    name: string
+    header: string
+    created: Date
+    body: { md: string, html: string }
+    archived: boolean
+    updated: Date | null
+    category: CatRow[] | null
+    tags: TagRow[] | null
 }
 
-export interface TagRow {
-    id: number
-    name: string
+// an InsertItem is coming from localStorage/splitPost
+// an insert item CANT have an ID -> it hasnt been created yet
+// it MUST have 2 fields: header + created
+// the other settings are optional
+export interface InsertItem {
+    header: string
+    created: Date
+    body?: { md: string, html: string }
+    updated?: Date
+    archived?: boolean
+    category?: CatRow[]
+    tags?: TagRow[]
+}
+
+// null value -> means 'remove'
+// undefined -> means 'dont touch'
+
+export interface UpdateItemOne {
+    header?: string
+    created?: Date
+    body?: { md: string, html: string }
+    archived?: boolean
+    updated?: Date | null
+    category?: CatRow[] | null
+    tags?: TagRow[] | null
+}
+
+export interface UpdateItemMany {
+    created?: Date
+    archived?: boolean
+    updated?: Date | null
+    category?: CatRow[] | null
+    tags?: TagRow[] | null
 }
 
 export interface ItemRow {
@@ -153,7 +149,62 @@ export interface ItemRow {
     category_id: number
 }
 
-export type  ItemUpdate = Omit<Partial<Item>, 'id'>
+
+
+export interface UpdateOneArgs {
+    id: number
+    item: UpdateItemOne
+}
+
+export interface UpdateManyArgs {
+    ids: number[]
+    item: UpdateItemMany
+    op: 'add' | 'remove' | 'replace'
+}
+
+export interface RenameArgs {
+    id: number
+    type: 'tag' | 'cat'
+    name: string
+}
+
+export interface ErrorMessage {
+    type: string
+    message: string
+}
+
+
+//  ==========  DB TYPES  ==========
+
+export interface CategoryLeaf extends CatRow {
+    children: CategoryLeaf[]
+}
+
+export interface RunResult {
+    changes: number
+    lastID: number
+}
+
+/**
+ * @id: when null, indicates that the CatRow is new
+ * @pid: when null, can be either:
+ * - new cat, will be assigned ID according to previously inserted cat in chain
+ *   has to have id == null also in this case
+ * - top-level cat, already has an ID
+ */
+export interface CatRow {
+    id: number | null
+    pid: number | null
+    name: string
+}
+
+/**
+ * @id: when null, indicates that the TagRow is new
+ */
+export interface TagRow {
+    id: number | null
+    name: string
+}
 
 //  ==========  WEBSOCKET  ==========
 

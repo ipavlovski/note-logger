@@ -9,6 +9,9 @@
       "moduleResolution": "Node",
       "lib": ["ES2020", "DOM"],
       "noImplicitAny": true,
+      "strictNullChecks": true,
+      "strictFunctionTypes":true,
+      "strict": true,
       "baseUrl": "."
       // "paths": {
       //     "frontend/*": ["frontend/*"],

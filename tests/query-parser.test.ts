@@ -1,5 +1,4 @@
 import { DB } from 'backend/db'
-import { SqlBuilder } from 'backend/sql-builder'
 import { ItemRow, SqlParams, TagRow } from 'common/types'
 import { intersectionBy } from 'lodash'
 

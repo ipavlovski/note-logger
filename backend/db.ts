@@ -1,24 +1,19 @@
-import sqlBuilder from 'backend/sql-builder'
+import parseQuery from 'backend/query-parser'
+import SQLite from 'backend/sqlite'
 import { dbPath } from 'common/config'
-import { Castable, CatRow, Item, ItemRow, ItemUpdate, Query, RunResult, SqlParams, TagRow } from 'common/types'
+import { Castable, CatRow, InsertItem, Item, ItemRow, Query, SqlParams, TagRow, UpdateManyArgs, UpdateOneArgs } from 'common/types'
 import { differenceBy } from 'lodash'
 import { DateTime } from 'luxon'
-import sqlite3 from 'sqlite3'
 
 
-class DB {
-    private db: sqlite3.Database
+class DB extends SQLite {
 
-    constructor(filename: string, debug: boolean) {
-        this.db = new sqlite3.Database(filename)
-        this.db.run("PRAGMA foreign_keys = ON")
-        if (debug) this.db.on('trace', (event) => console.log('TRACE:', event))
+    constructor(filename: string, debug = false) {
+        super(filename, debug)
     }
 
     async init() {
-        for (const table of ['category', 'tag', 'item', 'item_tag']) {
-            await this.run(sqlBuilder.getTable(table))
-        }
+        await this.createTables()
         return this
     }
 
@@ -32,65 +27,50 @@ class DB {
     }
 
     async clear() {
-        for (const table of ['item_tag', 'tag', 'item' ,'category' ]) {
+        for (const table of ['item_tag', 'tag', 'item', 'category']) {
             await this.run(`drop table ${table}`)
         }
-        // await new Promise((resolve, reject) => {
-        //     this.db.close( (err) => {
-        //         err ? reject(err) : resolve(true)
-        //     })
-        // })
     }
 
-    // insert/update/delete
-    // return changes/lastId
-    async run(q: string, args?: any[]): Promise<RunResult> {
-        return new Promise((resolve, reject) => {
-            this.db.run(q, args ?? [], function (err) {
-                err ? reject(err) : resolve({ changes: this.changes, lastID: this.lastID })
-            })
-        })
+    async createTables() {
+        const category = `CREATE TABLE IF NOT EXISTS category (
+            id INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT,
+            pid INTEGER, 
+            name TEXT, 
+            UNIQUE(pid, name),
+            FOREIGN KEY (pid) REFERENCES category (id)
+        )`
+
+        const tag = `CREATE TABLE IF NOT EXISTS tag (
+            id INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT,
+            name TEXT,
+            UNIQUE(name)
+        )`
+
+        const item = `CREATE TABLE IF NOT EXISTS item (
+            id INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT,
+            header TEXT,
+            md TEXT,
+            html TEXT,
+            created INTEGER, 
+            updated INTEGER,
+            archived INTEGER,
+            category_id INTEGER,
+            FOREIGN KEY (category_id) REFERENCES category (id)
+        )`
+
+        const itemTag = `CREATE TABLE IF NOT EXISTS item_tag (
+            tag_id INTEGER NOT NULL,
+            item_id INTEGER NOT NULL,
+            UNIQUE(tag_id, item_id),
+            FOREIGN KEY (tag_id) REFERENCES tag (id),
+            FOREIGN KEY (item_id) REFERENCES item (id)  
+        )`
+
+        for (const table in [category, tag, item, itemTag]) {
+            await this.run(table)
+        }
     }
-
-    // select multiple rows
-    async all<T>(q: string, args?: any[]): Promise<T[]> {
-        return new Promise<T[]>((resolve, reject) => {
-            this.db.all(q, args ?? [], (err, rows) => err ? reject(err) : resolve(rows))
-        })
-    }
-
-    // select single row
-    async get<T>(q: string, args?: any[]): Promise<T> {
-        return new Promise<T>((resolve, reject) => {
-            this.db.get(q, args ?? [], (err, row) => err ? reject(err) : resolve(row))
-        })
-    }
-
-
-    // NOT USED!?
-    async reconsructCategoryChain(catId: number) {
-
-        const acc: CatRow[] = []
-        let out = await this.categoryById(catId)
-        if (!out) throw new Error(`No category with id=${catId}`)
-        do {
-            acc.push(out)
-            if (out.pid == null) break
-            out = await this.categoryById(out.pid)
-            if (!out) throw new Error(`No category with id=${out.pid}`)
-        } while (true)
-
-        return acc.reverse()
-    }
-
-
-    // NOT USED!?
-    protected async getItemTags(itemId: number): Promise<string[]> {
-        const q = `select name from tag inner join item_tag on tag.id = item_tag.tag_id where item_tag.item_id = ?`
-        return await this.all<{ name: string }>(q, [itemId]).then(rows => rows.map(v => v.name))
-    }
-
-
 
 
 
@@ -150,7 +130,7 @@ class DB {
     // pid must exist -> if no element with id == pid, then will throw an error
     // return the RunResult of created item on success
     // throw error on failure
-    protected async categoryInsert(pid: number, name: string) {
+    protected async categoryInsert(pid: number | null, name: string) {
 
         // if pid=null, then category is considered to be top level
         // if an item already exists,
@@ -181,9 +161,10 @@ class DB {
         const acc: CatRow[] = []
         for (let ind = 0; ind < chain.length; ind++) {
             const curr = chain[ind]
+
             last = (curr.id != null) ? curr : (ind == 0) ?
                 await this.categoryInsert(null, curr.name) :
-                await this.categoryInsert(last.id, curr.name)
+                await this.categoryInsert(last!.id, curr.name)
             acc.push(last)
         }
         return acc
@@ -193,16 +174,16 @@ class DB {
 
     // should unpopulated categories/tags be nulls or empty arrays?
     // what to do about 'preview' vs. 'full' query mode?
-    private inflateItemRow(itemRow: ItemRow, cats?: CatRow[], tags?: TagRow[]) {
+    private inflateItemRow(itemRow: ItemRow, cats: CatRow[] | null, tags: TagRow[] | null) {
         const md = itemRow.md ?? ''
         const html = itemRow.html ?? ''
-        const updated = itemRow.updated ? DateTime.fromSeconds(itemRow.updated) : null
+        const updated = itemRow.updated ? DateTime.fromSeconds(itemRow.updated).toJSDate() : null
 
         const outputItem: Item = {
             id: itemRow.id,
             header: itemRow.header,
             body: { md, html },
-            created: DateTime.fromSeconds(itemRow.created),
+            created: DateTime.fromSeconds(itemRow.created).toJSDate(),
             updated: updated,
             archived: itemRow.archived ? true : false,
             category: cats != null ? cats : null,
@@ -217,10 +198,22 @@ class DB {
         if (!row) return null
         var acc: CatRow[] = [row]
         while (row != null && row.pid != null) {
-            row = allCats.find(v => v.id == row.pid)
+            row = allCats.find(v => v.id == row?.pid)
+            if (row == null) break
             acc.push(row)
         }
         return acc.reverse()
+    }
+
+
+    private tagsByItem(itemIds: number[]): SqlParams {
+        return {
+            q: `SELECT item.id as item_id, tag.id as id, tag.name as name from item
+            INNER JOIN item_tag ON item.id = item_tag.item_id 
+            INNER JOIN tag ON tag.id = item_tag.tag_id
+            WHERE item.id IN (${itemIds.map(_ => '?').join(',')})`,
+            args: itemIds
+        }
     }
 
     private getTagsForItem(itemId: number, itemTags: Array<{ item_id: number } & TagRow>): TagRow[] {
@@ -230,14 +223,14 @@ class DB {
 
     private async getItemTagJoin(itemRows: ItemRow[]) {
         var ids = itemRows.map(({ id }) => id)
-        var tagQuery = sqlBuilder.tagsByItem(ids)
+        var tagQuery = this.tagsByItem(ids)
         return await this.all<{ item_id: number } & TagRow>(tagQuery.q, tagQuery.args)
     }
 
-    async queryItems(query: Query, type: 'full' | 'preview'): Promise<Item[]> {
+    async queryItems(query: Query): Promise<Item[]> {
 
         // query#1 - items
-        const itemQuery: SqlParams = sqlBuilder.select(query, type)
+        const itemQuery: SqlParams = parseQuery(query)
         var itemRows = await this.all<ItemRow>(itemQuery.q, itemQuery.args)
 
         // query#2 - categories
@@ -250,7 +243,7 @@ class DB {
         return itemRows.map(row => {
             const cats = this.getCatChainForItem(row.id, allCatRows)
             const tags = this.getTagsForItem(row.id, itemTagJoin)
-            return this.inflateItemRow(row, cats, tags)            
+            return this.inflateItemRow(row, cats, tags)
         })
     }
 
@@ -259,7 +252,7 @@ class DB {
     // based on the items properties, generate an 'insert' statement
     // this is where the date are converted to integers
     // and default values are specified
-    async insertItem(item: Partial<Item>): Promise<Castable> {
+    async insertItem(item: InsertItem): Promise<Castable> {
 
         const output: Castable = { insert: [] }
 
@@ -269,7 +262,7 @@ class DB {
         }
 
         // the 2 mandatory fields
-        const created = item.created.toSeconds() | 0
+        const created = item.created.valueOf() | 0
         const header = item.header
 
         // the 2 body fields - allowed to be blank, but not null/undefined
@@ -277,23 +270,27 @@ class DB {
         const html = item.body?.html ?? ''
 
         // updated field CAN be set (e.g. when creating back-dated items)
-        const updated = item.updated ? item.updated.toSeconds() | 0 : null
+        const updated = item.updated ? item.updated.valueOf() | 0 : null
 
         // archived must be false on item creation, regardless of input
         const archived = 0
 
         // get the category id using category chain
-        const inputCats = (item.category?.length > 0) ? item.category : null
+        const inputCats =  item.category ?? null
         const outputCats = inputCats ? await this.getCatChain(inputCats) : null
         const catId = outputCats ? outputCats[outputCats.length - 1].id : null
-        const catDiff = differenceBy(outputCats, inputCats, 'id')
-        catDiff.forEach(catRow => output.insert.push({ type: 'cat', value: catRow }))
+        if (inputCats != null) {
+            const catDiff = differenceBy(outputCats, inputCats, 'id')
+            catDiff.forEach(catRow => output.insert!.push({ type: 'cat', value: catRow }))    
+        }
 
         // insert tags
-        const inputTags = (item.tags?.length > 0) ? item.tags : null
+        const inputTags = item.tags ?? null
         const outputTags = inputTags ? await this.getTagList(inputTags) : null
-        const tagDiff = differenceBy(outputTags, inputTags, 'id')
-        tagDiff.forEach(tagRow => output.insert.push({ type: 'tag', value: tagRow }))
+        if (inputTags != null) {
+            const tagDiff = differenceBy(outputTags, inputTags, 'id')
+            tagDiff.forEach(tagRow => output.insert!.push({ type: 'tag', value: tagRow }))    
+        }
 
         // insert item into db
         const q = `insert into item (header, md, html, created, updated, archived, category_id)
@@ -302,19 +299,54 @@ class DB {
         const itemRow = await this.get<ItemRow>(q, args)
         const outputItem: Item = this.inflateItemRow(itemRow, outputCats, outputTags)
 
-        output.insert.push({ type: 'item', value: outputItem })
+        output.insert!.push({ type: 'item', value: outputItem })
 
         // setup the mappings
-        await this.setItemTags(itemRow.id, outputTags)
+        if (outputTags != null) await this.setItemTags(itemRow.id, outputTags)
 
         return output
     }
 
 
-    async updateOne(id: number, item: ItemUpdate) {
+
+    private parseSetParams(item: Partial<Item>) {
+
+        const q: string[] = []
+        const args: any[] = []
+
+        if (item.header) {
+            q.push('header = ?')
+            args.push(item.header)
+        }
+
+        if (item.body != null) {
+            q.push('html = ?', 'md = ?')
+            args.push(item.body.html, item.body.md)
+        }
+
+        if (item.created != null) {
+            q.push('created = ?')
+            args.push(item.created.valueOf() | 0)
+        }
+
+        if (item.updated != null) {
+            q.push('updated = ?')
+            args.push(item.updated.valueOf() | 0)
+        }
+
+        if (item.archived != null) {
+            q.push('archived = ?')
+            args.push(item.archived ? 1 : 0)
+        }
+
+        return { q, args }
+    }
+
+
+    async updateOne({ id, item }: UpdateOneArgs) {
 
         const output: Castable = { insert: [], update: [] }
-        const sqlParams = sqlBuilder.parseSetParams(item)
+        const sqlParams = this.parseSetParams(item)
 
         // CATEGORIES
         let cats: CatRow[]
@@ -325,7 +357,7 @@ class DB {
             } else {
                 cats = await this.getCatChain(item.category)
                 const catDiff = differenceBy(cats, item.category, 'id')
-                catDiff.forEach(catRow => output.insert.push({ type: 'cat', value: catRow }))
+                catDiff.forEach(catRow => output.insert!.push({ type: 'cat', value: catRow }))
                 sqlParams.q.push('category_id = ?')
                 sqlParams.args.push(cats[cats.length - 1].id)
             }
@@ -339,7 +371,7 @@ class DB {
             } else {
                 tags = await this.getTagList(item.tags)
                 const tagDiff = differenceBy(tags, item.tags, 'id')
-                tagDiff.forEach(tagRow => output.insert.push({ type: 'tag', value: tagRow }))
+                tagDiff.forEach(tagRow => output.insert!.push({ type: 'tag', value: tagRow }))
                 await this.unsetAllItemTags(id)
                 await this.setItemTags(id, tags)
             }
@@ -351,16 +383,17 @@ class DB {
         const itemRow = await this.get<ItemRow>(Q, sqlParams.args)
 
         // generate item
-        const outputItem = this.inflateItemRow(itemRow, cats, tags)
-        output.update.push({ type: 'item', value: outputItem })
+        const outputItem = this.inflateItemRow(itemRow, cats!, tags!)
+        output.update!.push({ type: 'item', value: outputItem })
         return output
 
     }
 
-    async updateMany(ids: number[], item: Omit<ItemUpdate, 'header' | 'body'>, op: 'add' | 'remove' | 'replace') {
+    // async updateMany(item: UpdateItemMany[], op: 'add' | 'remove' | 'replace') {
+    async updateMany({ ids, item, op }: UpdateManyArgs) {
 
         const output: Castable = { insert: [], update: [] }
-        const sqlParams = sqlBuilder.parseSetParams(item)
+        const sqlParams = this.parseSetParams(item)
 
         // CATEGORIES
         let cats: CatRow[]
@@ -371,7 +404,7 @@ class DB {
             } else {
                 cats = await this.getCatChain(item.category)
                 const catDiff = differenceBy(cats, item.category, 'id')
-                catDiff.forEach(catRow => output.insert.push({ type: 'cat', value: catRow }))
+                catDiff.forEach(catRow => output.insert!.push({ type: 'cat', value: catRow }))
                 sqlParams.q.push('category_id = ?')
                 sqlParams.args.push(cats[cats.length - 1].id)
             }
@@ -385,7 +418,7 @@ class DB {
             } else {
                 tags = await this.getTagList(item.tags)
                 const tagDiff = differenceBy(tags, item.tags, 'id')
-                tagDiff.forEach(tagRow => output.insert.push({ type: 'tag', value: tagRow }))
+                tagDiff.forEach(tagRow => output.insert!.push({ type: 'tag', value: tagRow }))
 
                 if (op == null) throw new Error('Tag operation must be provided!')
                 switch (op) {
@@ -416,8 +449,8 @@ class DB {
         // NEED TO GET TAGS!
         for (const row of itemRows) {
             const tags = this.getTagsForItem(row.id, itemTagJoin)
-            const outputItem = this.inflateItemRow(row, cats, tags)
-            output.update.push({ type: 'item', value: outputItem })    
+            const outputItem = this.inflateItemRow(row, cats!, tags)
+            output.update!.push({ type: 'item', value: outputItem })
         }
         return output
 
@@ -429,7 +462,7 @@ class DB {
         const itemRow = await this.get<ItemRow>('delete from item where id = ? RETURNING *', [id])
         if (itemRow != null) {
             const outputItem = this.inflateItemRow(itemRow, null, null)
-            output.delete.push({ type: 'item', value: outputItem })
+            output.delete!.push({ type: 'item', value: outputItem })
         }
         return output
     }
@@ -437,20 +470,17 @@ class DB {
     async renameTag(id: number, name: string) {
         const output: Castable = { rename: [] }
         const tagRow = await this.get<TagRow>('update tag set name = ? where id = ? returning *', [name, id])
-        output.rename.push({ type: 'tag', value: tagRow })
+        output.rename!.push({ type: 'tag', value: tagRow })
         return output
     }
 
     async renameCat(id: number, name: string) {
         const output: Castable = { rename: [] }
         const catRow = await this.get<CatRow>('update category set name = ? where id = ? returning *', [name, id])
-        output.rename.push({ type: 'cat', value: catRow })
+        output.rename!.push({ type: 'cat', value: catRow })
         return output
     }
 }
-
-
-
 
 
 

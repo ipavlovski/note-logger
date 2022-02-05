@@ -1,7 +1,9 @@
 import { db } from 'backend/db'
 import { wss } from 'backend/server'
-import { Castable, Item, ItemUpdate, Query } from 'common/types'
+import { IdCoercion, InsertItemSchema, QuerySchema, RenameRouteSchema, UpdateItemOneSchema, UpdateRouteSchema } from 'backend/validation'
+import { ExceptionHandler } from 'common/errors'
 import { Router } from 'express'
+import { create } from 'superstruct'
 
 
 const routes = Router()
@@ -13,61 +15,54 @@ const routes = Router()
 // on failure, send 400 with a JSON message on what went wrong (from try-catch)
 // no websocket action - purely synchronous http request/response
 routes.post('/select', async (req, res) => {
-    // body contains the query object
-    const query: Query = req.body
-
     try {
-        const results = await db.queryItems(query, 'preview')
+        const query = create(req.body, QuerySchema)
+        const results = await db.queryItems(query)
         return res.json(results)
     } catch (error) {
-        return res.status(400).json({ error: error.name, message: error.message })
+        const msg = new ExceptionHandler(error).toJSON()
+        return res.status(400).json(msg)
     }
 })
 
 // create a new site
 // receive item-contents (no id), and try to create the item
-// on success send-out 201 (created), on failure send out 400 (bad request)
-// broadcast the created item through websocket (single sql query)
+// header + created : mandatory
 routes.put('/insert', async (req, res) => {
-    // body contains item object
-    const item = req.body
-    console.log('Number of clients:', wss.wss.clients.size)
-
-    const castable = await db.insertItem(item)
-
-    wss.sockets.map(socket => socket.send(JSON.stringify(castable)))
-    res.sendStatus(201)
+    try {
+        const item = create(req.body, InsertItemSchema)
+        const castable = await db.insertItem(item)
+        wss.broadcast(castable)
+        return res.sendStatus(201)
+    } catch (error) {
+        const msg = new ExceptionHandler(error).toJSON()
+        return res.status(400).json(msg)
+    }
 })
 
-// this is where content, dates, tags, categories, archived are changed
-// on success, send 200 code (no json)
-// on failure, send 400 code with json messsage
-// websocket - use the RETURNING clause to get all affected items
-// UPDATE ONE
-routes.post('/update/:id', async (req, res) => {
-    const item: Item = req.body
-    const id = parseInt(req.params.id)
 
+routes.post('/update/:id', async (req, res) => {
     try {
-        const castable = await db.updateOne(id, item)
-        wss.sockets.map(socket => socket.send(JSON.stringify(castable)))
+        const id = create(req.params.id, IdCoercion)
+        const item = create(req.body, UpdateItemOneSchema)
+        const castable = await db.updateOne({ id, item })
+        wss.broadcast(castable)
         return res.sendStatus(200)
     } catch (error) {
-        return res.status(400).json({ error: error.name, message: error.message })
+        const msg = new ExceptionHandler(error).toJSON()
+        return res.status(400).json(msg)
     }
 })
 
 routes.post('/update', async (req, res) => {
-    const ids: number[] = req.body.ids
-    const itemUpdate: Omit<ItemUpdate, 'header' | 'body'> = req.body.itemUpdate
-    const op = req.body.op
-
     try {
-        const castable = await db.updateMany(ids, itemUpdate, op)
-        wss.sockets.map(socket => socket.send(JSON.stringify(castable)))
+        const { ids, item, op } = create(req.body, UpdateRouteSchema)
+        const castable = await db.updateMany({ ids, item, op })
+        wss.broadcast(castable)
         return res.sendStatus(200)
     } catch (error) {
-        return res.status(400).json({ error: error.name, message: error.message })
+        const msg = new ExceptionHandler(error).toJSON()
+        return res.status(400).json(msg)
     }
 })
 
@@ -77,14 +72,14 @@ routes.post('/update', async (req, res) => {
 // on failure, sedn 400 code with json message
 // websocket : send out a json with info on deleted ID
 routes.delete('/delete/:id', async (req, res) => {
-    const id = parseInt(req.params.id)
-
     try {
+        const id = create(req.params.id, IdCoercion)
         const castable = await db.deleteItem(id)
-        wss.sockets.map(socket => socket.send(JSON.stringify(castable)))
+        wss.broadcast(castable)
         return res.sendStatus(200)
     } catch (error) {
-        return res.status(400).json({ error: error.name, message: error.message })
+        const msg = new ExceptionHandler(error).toJSON()
+        return res.status(400).json(msg)
     }
 })
 
@@ -94,16 +89,15 @@ routes.delete('/delete/:id', async (req, res) => {
 // on failure, send 400 with json-message
 // websocket: send out a json with renaming info
 routes.post('/rename', async (req, res) => {
-    const body: { id: number, type: 'tag' | 'cat', name: 'string' } = req.body
-    const { id, type, name } = body
-
     try {
+        const { id, type, name } = create(req.body, RenameRouteSchema)
         const castable = (type == 'tag') ?
             await db.renameTag(id, name) : await db.renameCat(id, name)
         wss.sockets.map(socket => socket.send(JSON.stringify(castable)))
         return res.sendStatus(200)
     } catch (error) {
-        return res.status(400).json({ error: error.name, message: error.message })
+        const msg = new ExceptionHandler(error).toJSON()
+        return res.status(400).json(msg)
     }
 })
 

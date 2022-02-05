@@ -30,7 +30,7 @@
             "preLaunchTask": "tmux-switch",
             "skipFiles": ["<node_internals>/**"],
             "console": "integratedTerminal",
-            "internalConsoleOptions": "openOnSessionStart",
+            "internalConsoleOptions": "openOnFirstSessionStart",
             "resolveSourceMapLocations": ["${workspaceFolder}/**", "!**/node_modules/**"]
         }
 

@@ -1,13 +1,11 @@
 import { server } from 'backend/server'
-import { CatRow, TagRow, Item, Castable, CatQuery, TagQuery, ItemUpdate, ItemRow } from 'common/types'
+import { CatRow, TagRow, Item, Castable, CatQuery, TagQuery, ItemRow, Query, UpdateItemOne, UpdateItemMany } from 'common/types'
 import { Server } from 'http'
 import { DateTime } from 'luxon'
 import { WebSocket } from 'ws'
 import fetch from 'node-fetch'
-import { jsonReviver } from 'common/utils'
 import { serverPort } from 'common/config'
 import { db, DB } from 'backend/db'
-import QueryBuilder from 'common/query-builder'
 
 let httpServer: Server
 
@@ -73,7 +71,11 @@ describe('HTTP-SELECT', () => {
             await testdb.all<TagRow>('select * from tag where id=7'),
         ]
 
-        var query = new QueryBuilder().tags(tagInput).categories(catInput).toJSON()
+        const query: Query = {
+            type: 'preview',
+            tags: tagInput,
+            cats: catInput
+        }
 
         // await db.populate('./db-test-main.sqlite')
 
@@ -128,7 +130,7 @@ describe('SOCKET-BASED', () => {
         var inputItem: Omit<Item, 'id'> = {
             header: 'header-123',
             body: { md: '', html: '' },
-            created: DateTime.now(),
+            created: DateTime.now().toJSDate(),
             updated: null,
             archived: false,
             category: inputCats,
@@ -148,19 +150,19 @@ describe('SOCKET-BASED', () => {
         // Perform assertions on the response
         await waitForSocketState(client, client.CLOSED)
         const [message] = messages
-        const result: Castable = JSON.parse(message, jsonReviver)
+        const result: Castable = JSON.parse(message)
 
-        expect(result.insert.map(({ type }) => type)).toEqual(['cat', 'cat', 'tag', 'tag', 'item'])
+        expect(result.insert!.map(({ type }) => type)).toEqual(['cat', 'cat', 'tag', 'tag', 'item'])
         const metadata = [
             { type: "cat", value: { id: 301, pid: null, name: "Cat-New1", }, },
             { type: "cat", value: { id: 302, pid: 301, name: "Cat-New2", }, },
             { type: "tag", value: { id: 21, name: "tag-new1", }, },
             { type: "tag", value: { id: 22, name: "tag-new2", }, },
         ]
-        expect(result.insert.slice(0, 4)).toMatchObject(metadata)
+        expect(result.insert!.slice(0, 4)).toMatchObject(metadata)
 
-        const outputItem = result.insert[4].value as Item
-        expect(outputItem.created.toSeconds()).toBeCloseTo(inputItem.created.toSeconds() | 0)
+        const outputItem = result.insert![4].value as Item
+        expect(outputItem.created.valueOf()).toBeCloseTo(inputItem.created.valueOf() | 0)
         expect(outputItem.header).toEqual(inputItem.header)
 
     }, 5000)
@@ -176,10 +178,10 @@ describe('SOCKET-BASED', () => {
             { id: null, pid: null, name: 'Cat-Parent' },
             { id: null, pid: null, name: 'Cat-Child' }
         ]
-        var item: ItemUpdate = {
+        var item: UpdateItemOne = {
             header: 'header-123',
             body: { md: '', html: '' },
-            created: DateTime.now(),
+            created: new Date(),
             updated: null,
             archived: false,
             category: inputCats,
@@ -199,7 +201,7 @@ describe('SOCKET-BASED', () => {
         // 4. WAIT FOR OUTPUT
         await waitForSocketState(client, client.CLOSED)
         const [message] = messages
-        const result: Castable = JSON.parse(message, jsonReviver)
+        const result: Castable = JSON.parse(message)
         expect(result.insert).toHaveLength(3)
         expect(result.update).toHaveLength(1)
 
@@ -222,8 +224,8 @@ describe('SOCKET-BASED', () => {
             { id: null, pid: null, name: 'Cat-Parent' },
             { id: null, pid: null, name: 'Cat-Child' }
         ]
-        const itemUpdate:  Omit<ItemUpdate, 'header' | 'body'> = {
-            created: DateTime.now(),
+        const itemUpdate: UpdateItemMany = {
+            created: new Date(),
             updated: null,
             archived: false,
             category: inputCats,
@@ -242,7 +244,7 @@ describe('SOCKET-BASED', () => {
         // 4. WAIT FOR OUTPUT
         await waitForSocketState(client, client.CLOSED)
         const [message] = messages
-        const result: Castable = JSON.parse(message, jsonReviver)
+        const result: Castable = JSON.parse(message)
         expect(result.insert).toHaveLength(3)
         expect(result.update).toHaveLength(3)
 
@@ -270,7 +272,7 @@ describe('SOCKET-BASED', () => {
         // 4. WAIT FOR OUTPUT
         await waitForSocketState(client, client.CLOSED)
         const [message] = messages
-        const result: Castable = JSON.parse(message, jsonReviver)
+        const result: Castable = JSON.parse(message)
         expect(result.delete).toHaveLength(1)
 
         var finishedState = await db.get<ItemRow>(`select * from item where id = ${id}`)
@@ -283,7 +285,7 @@ describe('SOCKET-BASED', () => {
         const [client, messages] = await createSocketClient()
 
         // 2. PREP THE INPUT
-        const input = { id: 41, name: 'new-cat1', type: 'cat'}
+        const input = { id: 41, name: 'new-cat1', type: 'cat' }
 
         const stateBefore = await db.get<CatRow>(`select * from category where id = ${input.id}`)
         expect(stateBefore.id).toBe(input.id)
@@ -300,7 +302,7 @@ describe('SOCKET-BASED', () => {
         // 4. WAIT FOR OUTPUT
         await waitForSocketState(client, client.CLOSED)
         const [message] = messages
-        const result: Castable = JSON.parse(message, jsonReviver)
+        const result: Castable = JSON.parse(message)
         expect(result.rename).toHaveLength(1)
 
         const stateAfter = await db.get<CatRow>(`select * from category where id = ${input.id}`)
