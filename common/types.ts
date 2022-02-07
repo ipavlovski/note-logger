@@ -91,20 +91,11 @@ export interface FlatSection {
     level: number
 }
 
-
-export interface ViewSortDate {
-    primary: 'date'
-    secondary: 'date' | 'cat'
+export interface ViewSort {
+    by: 'date' | 'cat'
     depth: number | null
-    date: 'created' | 'updated'
+    useUpdated: boolean
 }
-export interface ViewSortCat {
-    primary: 'category'
-    secondary: 'name' | 'date'
-    date: 'created' | 'updated'
-}
-
-
 
 
 //  ==========  NEW TYPES  ==========

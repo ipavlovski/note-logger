@@ -6,19 +6,16 @@
 // - add/update/remove node: modify individual nodes
 // - findById: get the element based on the id
 
-import { FlatNode, Item, ViewNode, ViewSortDate, ViewSortCat } from 'common/types'
+import { FlatNode, Item, ViewNode, ViewSort } from 'common/types'
 import { DateTime } from 'luxon'
 
 
 export default class View {
     nodes: ViewNode[]
 
-    constructor(items: Item[], sort: ViewSortDate | ViewSortCat) {
-        this.nodes = sort.primary == 'date' ?
-            this.sortByDate(items, sort) : this.sortByCat(items, sort)
+    constructor(items: Item[], sort: ViewSort) {
+        this.nodes = sort.by == 'date' ? this.sortByDate(items, sort) : this.sortByCat(items, sort)
     }
-
-    // how to recursively organize these items into ViewNodes:
 
     // takes care of 'centering the day between bounds'
     // so that 2am still belongs to the 'previous day'
@@ -33,9 +30,9 @@ export default class View {
     // 2 things still left to do:
     // choose whetther to sort by item.created vs. item.updated
     // sort items by date descending (if not being processed further)
-    groupByDate(items: Item[], sort: 'created' | 'updated') {
+    groupByDate(items: Item[], useUpdated: boolean) {
         return items.reduce((acc: ViewNode[], item: Item) => {
-            const date = sort == 'created' ? item.created : item.updated ?? item.created
+            const date = useUpdated ? (item.updated ?? item.created) : item.created
             const dateString = this.dateToString(date)
             const node = acc.find(v => v.name == dateString);
             (node == null) ?
@@ -94,7 +91,7 @@ export default class View {
 
 
     flatten(nodes: ViewNode[]) {
-        var acc: FlatNode[] = []
+        const acc: FlatNode[] = []
         const recurse = (node: ViewNode, level: number, parent: string) => {
             acc.push({ type: 'section', node: node.name, parent, level })
             node.items.forEach(item => {
@@ -107,7 +104,7 @@ export default class View {
         return acc
     }
 
-    recurseSort(nodes: ViewNode[], sort: 'created' | 'updated', asc = true, rec = true) {
+    recurseSort(nodes: ViewNode[], useUpdated: boolean, asc = true, rec = true) {
         // sort this levels nodes
         const sorted = nodes.sort((a, b) => {
             const v1 = a.name.toUpperCase()
@@ -116,39 +113,43 @@ export default class View {
         })
         // sort underlying nodes items
         sorted.forEach(node => node.items = node.items.sort((a, b) => {
-            const d1 = sort == 'created' ? a.created : a.updated ?? a.created
-            const d2 = sort == 'created' ? b.created : b.updated ?? b.created
+            const d1 = useUpdated ? (a.updated ?? a.created) : a.created
+            const d2 = useUpdated ? (b.updated ?? b.created) : b.created
             return d1 < d2 ? 1 : d1 > d2 ? -1 : 0
         }))
         // recurse
         sorted.forEach(node => {
             if (node.children.length > 0 && rec)
-                node.children = this.recurseSort(node.children, sort)
+                node.children = this.recurseSort(node.children, useUpdated)
         })
         return nodes
     }
 
-    sortByDate(items: Item[], sort: ViewSortDate): ViewNode[] {
-        let nodes = this.groupByDate(items, sort.date)
-        if (sort.secondary == 'cat') {
+    sortByDate(items: Item[], sort: ViewSort): ViewNode[] {
+        let nodes = this.groupByDate(items, sort.useUpdated)
+
+        if (sort.depth == null || sort.depth > 0)
             nodes = nodes.map(dateNode => this.groupByTopCat(dateNode))
-            if (sort.depth != 0) nodes.map(dateNode => {
-                return dateNode.children.map(catNode => this.recurseByCat(catNode, 0, sort.depth))
-            })
-        }
 
-        nodes = this.recurseSort(nodes, sort.date, false, false)
-        nodes.forEach(node => node.children = this.recurseSort(node.children, sort.date))
+        if (sort.depth == null || sort.depth > 1) nodes.map(dateNode => {
+            const depth = sort.depth == null ? null : sort.depth - 1
+            return dateNode.children.map(catNode => this.recurseByCat(catNode, 0, depth))
+        })
 
-        return this.recurseSort(nodes, sort.date)
+        nodes = this.recurseSort(nodes, sort.useUpdated, false, false)
+        nodes.forEach(node => node.children = this.recurseSort(node.children, sort.useUpdated))
+
+        return nodes
     }
 
-    sortByCat(items: Item[], sort: ViewSortCat): ViewNode[] {
-        var topNode = this.groupByTopCat({ name: 'top', items: items, children: [] })
-        topNode.children.map(catNode => this.recurseByCat(catNode, 0, null))
+    sortByCat(items: Item[], sort: ViewSort): ViewNode[] {
+        const topNode = this.groupByTopCat({ name: 'top', items: items, children: [] })
+        if (sort.depth != 0)
+            topNode.children.map(catNode => this.recurseByCat(catNode, 0, sort.depth))
+
         if (topNode.items.length > 0)
             topNode.children.push({ name: 'default', items: topNode.items, children: [] })
 
-        return this.recurseSort(topNode.children, sort.date)
+        return this.recurseSort(topNode.children, sort.useUpdated)
     }
 }
