@@ -1,9 +1,9 @@
 import { BroadcastReceiver, HttpClient } from 'frontend/code/state/network'
-import { View } from 'frontend/code/state/view'
-import Content from 'frontend/code/ui/content'
+import { View } from 'frontend/code/state/view2'
+// import Content from 'frontend/code/ui/content'
 import Editor from 'frontend/code/ui/editor'
-import Omnibar from 'frontend/code/ui/omnibar'
-import Sidebar from 'frontend/code/ui/sidebar'
+// import Omnibar from 'frontend/code/ui/omnibar'
+// import Sidebar from 'frontend/code/ui/sidebar'
 import hotkeys from 'hotkeys-js'
 import { serverHost, serverPort } from 'common/config'
 
@@ -21,9 +21,9 @@ export default class App {
 
     // view components
     editor: Editor
-    content: Content
-    sidebar: Sidebar
-    omnibar: Omnibar
+    // content: Content
+    // sidebar: Sidebar
+    // omnibar: Omnibar
 
     // network components
     broadcastReceiver: BroadcastReceiver
@@ -37,10 +37,10 @@ export default class App {
         this.broadcastReceiver = new BroadcastReceiver(`ws://${serverHost}:${serverPort}`)
         this.httpClient = new HttpClient(`http://${serverHost}:${serverPort}`)
 
-        this.omnibar = new Omnibar()
+        // this.omnibar = new Omnibar()
         this.editor = new Editor()
-        this.content = new Content()
-        this.sidebar = new Sidebar()
+        // this.content = new Content()
+        // this.sidebar = new Sidebar()
 
         this.handleGlobalEvents()
         this.handleShortcuts()

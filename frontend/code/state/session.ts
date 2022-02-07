@@ -1,8 +1,6 @@
 import App from 'frontend/app'
-import { EditEntry, Query, SortingOptions } from 'common/types'
-import { View } from './view'
-
-
+import { EditEntry, Query, SortingOptions, TreeView } from 'common/types'
+import { View } from 'frontend/code/state/view2'
 
 // session listens to events:
 // - editor events, to know when to re-arrange the editor
@@ -14,10 +12,9 @@ import { View } from './view'
 // - boots up initial state from localStorage/sane-defaults
 // session uses reference to app object to limit area of concern
 // - query/sort/entries/opts are actually session related, and are included
-// - 
 export default class Session {
     app: App
-    data: {
+    state: {
         items: TreeView,
         categories: TreeView,
         tags: TreeView

@@ -20,12 +20,13 @@ test('the sum of rec and term cat query lines up', async () => {
 
     let sqlParams: SqlParams
     const testdb = new DB('db-test-main.sqlite', false)
+    sqlParams = {q: '', args: []}
 
-    sqlParams = builder["parseCategories"]({ rec: [3], term: [] })
+    // sqlParams = builder["parseCategories"]({ rec: [3], term: [] })
     const recItems = await testdb.all<ItemRow>(`SELECT item.id, item.header, output.cat_pid, output.cat_name from item ${sqlParams.q}`, sqlParams.args)
-    sqlParams = builder["parseCategories"]({ rec: [], term: [5, 20] })
+    // sqlParams = builder["parseCategories"]({ rec: [], term: [5, 20] })
     const termItems = await testdb.all<ItemRow>(`SELECT item.id, item.header, category.pid, category.name from item ${sqlParams.q}`, sqlParams.args)
-    sqlParams = builder["parseCategories"]({ rec: [3], term: [5, 20] })
+    // sqlParams = builder["parseCategories"]({ rec: [3], term: [5, 20] })
     const bothItems = await testdb.all<ItemRow>(`SELECT item.id, item.header, output.cat_pid, output.cat_name from item ${sqlParams.q}`, sqlParams.args)
 
     const xItems = intersectionBy(recItems, termItems, 'id')
@@ -35,10 +36,11 @@ test('the sum of rec and term cat query lines up', async () => {
 })
 
 test('basic category and tag inner join', async () => {
-    const sqlBuilder = new SqlBuilder()
     const testdb = new DB('db-test-main.sqlite', false)
 
-    const sqlCategories = sqlBuilder["parseCategories"]({ rec: [3], term: [5, 20] })
+    // const sqlCategories = sqlBuilder["parseCategories"]({ rec: [3], term: [5, 20] })
+    const sqlCategories = {q: '', args: []}
+
     const Q = `SELECT item.id, item.header, output.cat_name, tag.id as tagid, 
 tag.name as tagname from item
 INNER JOIN item_tag ON item.id = item_tag.item_id 
@@ -49,13 +51,16 @@ INNER JOIN tag ON tag.id = item_tag.tag_id ${sqlCategories.q}`
 })
 
 test('both categories and tag', async () => {
-    const sqlBuilder = new SqlBuilder()
+    // const sqlBuilder = new SqlBuilder()
     const testdb = new DB('db-test-main.sqlite', false)
     let Q: string
 
     // categorie and tags
-    const sqlCategories = sqlBuilder["parseCategories"]({ rec: [3], term: [5, 20] })
-    const sqlTags = sqlBuilder["parseTags"]([[10], [11], [12], [13]])
+    // const sqlCategories = sqlBuilder["parseCategories"]({ rec: [3], term: [5, 20] })
+    // const sqlTags = sqlBuilder["parseTags"]([[10], [11], [12], [13]])
+    const sqlTags = {q: '', args: []}
+    const sqlCategories = {q: '', args: []}
+
     Q = `SELECT item.id, item.header, tag.id as tag_id, 
 tag.name as tag_name from item
 INNER JOIN item_tag ON item.id = item_tag.item_id 
@@ -76,7 +81,8 @@ WHERE item.id IN (${ids.map(_ => '?').join(',')})`
 
     // ensure that some items have dual tags
     var filteredTags = ids.map(id => allItemTags.filter(v => v.item_id == id))
-    const findDualTag = (id1: number, id2: number) => filteredTags.filter(g => g.find(v => v.id == id1) && g.find(v => v.id == id2))
+    const findDualTag = (id1: number, id2: number) => filteredTags
+        .filter(g => g.find(v => v.id == id1) && g.find(v => v.id == id2))
     const itemsWithDualTags = findDualTag(11, 14).map(v => v[0].item_id)
     expect(itemsWithDualTags).toEqual([46, 448])
 })

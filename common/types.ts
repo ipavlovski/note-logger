@@ -61,7 +61,48 @@ export interface SortingOptions {
     maxLevel?: number
 }
 
+export interface TreeView {
+    name: string
+}
 
+
+
+
+
+export interface ViewNode {
+    name: string
+    items: Item[]
+    children: ViewNode[]
+}
+
+export type FlatNode = FlatItem | FlatSection
+
+export interface FlatItem {
+    type: 'item'
+    node: Item
+    parent: string
+    level: number
+}
+
+export interface FlatSection {
+    type: 'section'
+    node: string
+    parent: string
+    level: number
+}
+
+
+export interface ViewSortDate {
+    primary: 'date'
+    secondary: 'date' | 'cat'
+    depth: number | null
+    date: 'created' | 'updated'
+}
+export interface ViewSortCat {
+    primary: 'category'
+    secondary: 'name' | 'date'
+    date: 'created' | 'updated'
+}
 
 
 

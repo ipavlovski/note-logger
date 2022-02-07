@@ -1,0 +1,11 @@
+{
+  "extends": "./tsconfig",
+  "compilerOptions": {
+    "sourceMap": true
+  },
+  "exclude": [
+    "**/*.test.ts",
+    "node_modules",
+    "frontend/code/ui/**.ts"
+  ]
+}

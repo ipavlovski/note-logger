@@ -19,7 +19,7 @@ export default class Editor extends EventTarget {
 
     constructor() {
         super()
-        this.el = document.getElementById("editor")
+        this.el = document.getElementById("editor")!
         this.editor = monaco.editor.create(this.el as HTMLElement, {
             value: '',
             language: "markdwown",
@@ -31,7 +31,7 @@ export default class Editor extends EventTarget {
 
         
         const obs = new Observable(observer => {
-            this.editor.getModel().onDidChangeContent((event) => {
+            this.editor.getModel()!.onDidChangeContent((event) => {
                 observer.next(event)
             })
         })

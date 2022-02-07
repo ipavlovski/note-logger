@@ -15,10 +15,10 @@ module.exports = {
                 use: [{
                     loader: 'ts-loader',
                     options: {
-                        configFile: "tsconfig.json"
+                        configFile: "tsconfig.webpack.json"
                     }
                 }],
-                exclude: [/node_modules/, /server.ts/]
+                exclude: [/node_modules/, /server.ts/, `${__dirname}/tests`]
             },
             {
                 test: /\.css$/,
