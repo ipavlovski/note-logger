@@ -1,17 +1,15 @@
-import { BroadcastReceiver, HttpClient } from 'frontend/code/state/network'
-import { View } from 'frontend/code/state/view2'
-// import Content from 'frontend/code/ui/content'
+import { HttpClient } from 'frontend/code/state/client'
+import { BroadcastReceiver } from 'frontend/code/state/socket'
+import Content from 'frontend/code/ui/content'
 import Editor from 'frontend/code/ui/editor'
-// import Omnibar from 'frontend/code/ui/omnibar'
-// import Sidebar from 'frontend/code/ui/sidebar'
+import Omnibar from 'frontend/code/ui/omnibar'
+import Sidebar from 'frontend/code/ui/sidebar'
 import hotkeys from 'hotkeys-js'
 import { serverHost, serverPort } from 'common/config'
 
 import 'frontend/styles/modal.css'
 import 'frontend/styles/styles.css'
 import Session from 'frontend/code/state/session'
-
-
 
 
 export default class App {
@@ -21,26 +19,18 @@ export default class App {
 
     // view components
     editor: Editor
-    // content: Content
-    // sidebar: Sidebar
-    // omnibar: Omnibar
-
-    // network components
-    broadcastReceiver: BroadcastReceiver
-    httpClient: HttpClient
-
+    content: Content
+    sidebar: Sidebar
+    omnibar: Omnibar
 
     // get all the data from localStorage
     constructor() {
         console.log("Creating an app instance @ %s", new Date().toISOString())
 
-        this.broadcastReceiver = new BroadcastReceiver(`ws://${serverHost}:${serverPort}`)
-        this.httpClient = new HttpClient(`http://${serverHost}:${serverPort}`)
-
-        // this.omnibar = new Omnibar()
+        this.omnibar = new Omnibar()
         this.editor = new Editor()
-        // this.content = new Content()
-        // this.sidebar = new Sidebar()
+        this.content = new Content()
+        this.sidebar = new Sidebar()
 
         this.handleGlobalEvents()
         this.handleShortcuts()

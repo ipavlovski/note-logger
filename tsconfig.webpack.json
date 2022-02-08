@@ -6,6 +6,6 @@
   "exclude": [
     "**/*.test.ts",
     "node_modules",
-    "frontend/code/ui/**.ts"
+    "scratch.ts"
   ]
 }

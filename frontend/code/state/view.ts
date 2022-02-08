@@ -93,9 +93,9 @@ export default class View {
     flatten(nodes: ViewNode[]) {
         const acc: FlatNode[] = []
         const recurse = (node: ViewNode, level: number, parent: string) => {
-            acc.push({ type: 'section', node: node.name, parent, level })
+            acc.push({ type: 'section', section: node.name, parent, level })
             node.items.forEach(item => {
-                acc.push({ type: 'item', node: item, parent: node.name, level })
+                acc.push({ type: 'item', item: item, parent: node.name, level })
             })
             if (node.children.length > 0)
                 node.children.forEach(childNode => recurse(childNode, level + 1, node.name))
@@ -126,7 +126,8 @@ export default class View {
     }
 
     sortByDate(items: Item[], sort: ViewSort): ViewNode[] {
-        let nodes = this.groupByDate(items, sort.useUpdated)
+        const useUpdated = sort.useUpdated ?? false
+        let nodes = this.groupByDate(items, useUpdated)
 
         if (sort.depth == null || sort.depth > 0)
             nodes = nodes.map(dateNode => this.groupByTopCat(dateNode))
@@ -136,13 +137,14 @@ export default class View {
             return dateNode.children.map(catNode => this.recurseByCat(catNode, 0, depth))
         })
 
-        nodes = this.recurseSort(nodes, sort.useUpdated, false, false)
-        nodes.forEach(node => node.children = this.recurseSort(node.children, sort.useUpdated))
+        nodes = this.recurseSort(nodes, useUpdated, false, false)
+        nodes.forEach(node => node.children = this.recurseSort(node.children, useUpdated))
 
         return nodes
     }
 
     sortByCat(items: Item[], sort: ViewSort): ViewNode[] {
+        const useUpdated = sort.useUpdated ?? false
         const topNode = this.groupByTopCat({ name: 'top', items: items, children: [] })
         if (sort.depth != 0)
             topNode.children.map(catNode => this.recurseByCat(catNode, 0, sort.depth))
@@ -150,6 +152,6 @@ export default class View {
         if (topNode.items.length > 0)
             topNode.children.push({ name: 'default', items: topNode.items, children: [] })
 
-        return this.recurseSort(topNode.children, sort.useUpdated)
+        return this.recurseSort(topNode.children, useUpdated)
     }
 }

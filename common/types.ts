@@ -79,14 +79,14 @@ export type FlatNode = FlatItem | FlatSection
 
 export interface FlatItem {
     type: 'item'
-    node: Item
+    item: Item
     parent: string
     level: number
 }
 
 export interface FlatSection {
     type: 'section'
-    node: string
+    section: string
     parent: string
     level: number
 }
@@ -94,7 +94,7 @@ export interface FlatSection {
 export interface ViewSort {
     by: 'date' | 'cat'
     depth: number | null
-    useUpdated: boolean
+    useUpdated?: boolean
 }
 
 

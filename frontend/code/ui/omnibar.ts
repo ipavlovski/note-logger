@@ -9,8 +9,9 @@ export default class Omnibar {
     hinting: boolean
 
     constructor() {
-        this.el = document.querySelector(".omnibar-full")
-        this.input = document.querySelector(".omnibar-input")
+        this.el = document.querySelector(".omnibar-full")!
+        this.input = document.querySelector(".omnibar-input")!
+        this.hinting = false
 
         document.addEventListener('click', (event) => {
             if (event.target as HTMLElement == this.el) this.closeOmnibar()
@@ -54,7 +55,7 @@ export default class Omnibar {
             event.preventDefault()
             this.toggleHint()
 
-            const hint = this.el.querySelector('.omnibar-input')
+            const hint = this.el.querySelector('.omnibar-input')!
             hint.classList.add('wiggle')
             setTimeout(() => hint.classList.remove('wiggle'), 200)
 
@@ -106,10 +107,10 @@ export default class Omnibar {
 
         if (this.hinting) {
             this.hinting = false
-            this.el.querySelector('.hinting').remove()
+            this.el.querySelector('.hinting')!.remove()
         } else {
             this.hinting = true
-            const content = this.el.querySelector('.omnibar-content')
+            const content = this.el.querySelector('.omnibar-content')!
             const hint = document.createElement('ul')
             hintArray.forEach(v => {
                 const li = document.createElement('li')

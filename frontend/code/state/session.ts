@@ -1,6 +1,7 @@
 import App from 'frontend/app'
-import { EditEntry, Query, SortingOptions, TreeView } from 'common/types'
-import { View } from 'frontend/code/state/view2'
+import { EditEntry, Query, SortingOptions, TreeView, ViewSort } from 'common/types'
+import View from 'frontend/code/state/view'
+import { httpClient } from 'frontend/code/state/client'
 
 // session listens to events:
 // - editor events, to know when to re-arrange the editor
@@ -13,52 +14,62 @@ import { View } from 'frontend/code/state/view2'
 // session uses reference to app object to limit area of concern
 // - query/sort/entries/opts are actually session related, and are included
 export default class Session {
+    // state: { cats, tags }
+    name: string
     app: App
-    state: {
-        items: TreeView,
-        categories: TreeView,
-        tags: TreeView
-    }
     view: View
-
-    // a query is sent over to backend
     query: Query
-    
-    // sort controls how the resulting data is organized for viewing
-    sort: SortingOptions
+    sort: ViewSort
 
     // entries fill-in the editor with content
-    entries = {
-        default: null as EditEntry,
-        active: null as EditEntry
-    }
+    updating: boolean
 
     // opts control miscellaneious features
-    opts = {
-        scrollPosition: null as number,
+    // TODO: get these opts from saved JSON. Setup a type for easy json typings
+    opts: { scrollPos: number | null, showPreview: boolean, savedQueries: string[] } = {
+        scrollPos: null,
         showPreview: true,
-        savedQueries: [] as string[]
+        savedQueries: []
     }
-
 
     constructor(sessionName: string, app: App) {
+        this.name = sessionName
         this.app = app
-        this.loadSavedState(sessionName)
-        this.init()
-    }
 
+        // content - pre-init state
+        this.sort = { by: 'date', depth: null }
+        this.view = new View([], this.sort)
+        this.query = { type: 'full' }
 
-    async init() {
-        // send the query to the backend
-        // receive the reply
-        // create the view object from it
-        // render the view object using content and sidebar: this.app.content.render
-        const items = await this.app.httpClient.all(this.query)
-        
-    }
+        // editor - pre-init state
+        this.updating = false
 
-    private initListeners() {
+        // listeners
         this.createItemListener()
+
+        // init all
+        this.initContent()
+        this.initEditor()
+    }
+
+    private getLocal<T>(key: string): T | null {
+        const state = localStorage.getItem(`${this.name}:${key}`)
+        return state != null ? JSON.parse(state) : null
+    }
+
+    async initContent() {
+        const defaultSort: ViewSort = { by: 'date', depth: 1 }
+        this.sort = this.getLocal<ViewSort>('sort') ?? defaultSort
+
+        const defaultQuery: Query = { type: 'full' }
+        this.query = this.getLocal<Query>('query') ?? defaultQuery
+        const items = await httpClient.getItems(this.query) ?? []
+        this.view = new View(items, this.sort)
+    }
+
+    async initEditor() {
+        this.updating = this.getLocal<boolean>('active') ?? false
+        // TODO: how to init editor?
     }
 
 
@@ -66,38 +77,15 @@ export default class Session {
         // todo: what exactly is this 'event data'?
         this.app.editor.addEventListener('create-item', async (event) => {
             try {
-                const itemProps = this.validateNewItem(event.data)
-                const response = await this.app.httpClient.createItem(itemProps)
-                console.log(`Create site status: ${response.status}`)
+                console.log('INSERT ITEM!')
+                // const itemProps = this.validateNewItem(event.data)
+                // const response = await httpClient.createItem(itemProps)
+                // console.log(`Create site status: ${response.status}`)
             } catch (err) {
                 console.error(err)
-                this.app.omnibar.showWarningMessage(err.message)
+                // this.app.omnibar.showWarningMessage(err.message)
             }
         })
-    }
-
-    // check that the content is ok
-    private validateNewItem(itemProps) {
-        if (itemProps == 'are ok') {
-            return {} as Item
-        } else {
-            throw new Error('An issue with prepping!')
-        }
-    }
-
-
-    private loadSavedState(sessionName: string) {
-        const savedSort = localStorage.getItem(`${sessionName}:sort`)
-        const sort = JSON.parse(savedSort)
-        this.sort = sort
-
-        const savedEntries = localStorage.getItem(`${sessionName}:entries`)
-        const entries = JSON.parse(savedEntries)
-        this.entries = entries 
-    }
-
-    private validateEntries() {
-
     }
 
 }
