@@ -53,7 +53,7 @@ export default class App {
 
 
     private latestSession(): Session {
-        return new Session('name', this)
+        return new Session('session1', this)
     }
 
 

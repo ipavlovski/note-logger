@@ -90,7 +90,7 @@ export default class View {
     }
 
 
-    flatten(nodes: ViewNode[]) {
+    flatten() {
         const acc: FlatNode[] = []
         const recurse = (node: ViewNode, level: number, parent: string) => {
             acc.push({ type: 'section', section: node.name, parent, level })
@@ -100,7 +100,7 @@ export default class View {
             if (node.children.length > 0)
                 node.children.forEach(childNode => recurse(childNode, level + 1, node.name))
         }
-        nodes.forEach(topNode => recurse(topNode, 0, 'top'))
+        this.nodes.forEach(topNode => recurse(topNode, 0, 'top'))
         return acc
     }
 

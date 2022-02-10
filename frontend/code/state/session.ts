@@ -61,10 +61,16 @@ export default class Session {
         const defaultSort: ViewSort = { by: 'date', depth: 1 }
         this.sort = this.getLocal<ViewSort>('sort') ?? defaultSort
 
-        const defaultQuery: Query = { type: 'full' }
+        const defaultQuery: Query = {
+            type: 'full', tags: [[{ id: 11, name: 'tag10' }, { id: 12, name: 'tag11' }]]
+        }
         this.query = this.getLocal<Query>('query') ?? defaultQuery
         const items = await httpClient.getItems(this.query) ?? []
         this.view = new View(items, this.sort)
+
+        console.log('VIEW LEN:', this.view.nodes.length)
+        this.app.content.renderAll(this.view.flatten())
+        this.app.sidebar.renderAll(this.view.flatten())
     }
 
     async initEditor() {
