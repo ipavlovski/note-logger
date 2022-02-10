@@ -11,8 +11,26 @@ export default class Content {
         this.el = document.getElementById("content")!
     }
 
+
+
+    private filterConsecutiveSections(nodes: FlatNode[]) {
+        return nodes.reduce((acc: FlatNode[], curr: FlatNode, ind) => {
+            if (ind == 0) return acc.concat(curr)
+
+            const last = acc[acc.length - 1]
+            if (curr.type == 'section' && last.type == 'section') {
+                // replace the latest element with the current one
+                acc[acc.length - 1] = curr
+                return acc
+            } else {
+                return acc.concat(curr)
+            }
+        }, [])
+    }
+
     renderAll(nodes: FlatNode[]) {
-        nodes.forEach(n => n.type == 'item' ? this.renderItem(n) : this.renderSection(n))
+        const filteredNodes = this.filterConsecutiveSections(nodes)
+        filteredNodes.forEach(n => n.type == 'item' ? this.renderItem(n) : this.renderSection(n))
         // is this really necessary?
         hljs.highlightAll()
     }

@@ -69,7 +69,7 @@ module.exports = {
         alias: {
             frontend: `${__dirname}/frontend`,
             backend: `${__dirname}/backend`,
-            utils: `${__dirname}/utils`            
+            common: `${__dirname}/common`            
         }
     },
 

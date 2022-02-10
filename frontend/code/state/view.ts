@@ -105,6 +105,11 @@ export default class View {
                     recurse(childNode, level + 1, section))
         }
         this.nodes.forEach(topNode => recurse(topNode, 0, ['top']))
+        acc.forEach(flatNode => {
+            if (flatNode.type == 'section') {
+                flatNode.section = flatNode.section.slice(1)
+            }
+        })
         return acc
     }
 

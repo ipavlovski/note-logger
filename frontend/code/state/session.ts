@@ -58,7 +58,8 @@ export default class Session {
     }
 
     async initContent() {
-        const defaultSort: ViewSort = { by: 'date', depth: 1 }
+        // const defaultSort: ViewSort = { by: 'date', depth: 1 }
+        const defaultSort: ViewSort = { by: 'cat', depth: 2 }
         this.sort = this.getLocal<ViewSort>('sort') ?? defaultSort
 
         const defaultQuery: Query = {

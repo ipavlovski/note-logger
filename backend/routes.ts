@@ -18,7 +18,7 @@ routes.post('/select', async (req, res) => {
     try {
         const query = create(req.body, QuerySchema)
         const results = await db.queryItems(query)
-        return res.json(results)
+        return res.status(200).send(JSON.stringify(results))
     } catch (error) {
         const msg = new ExceptionHandler(error).toJSON()
         return res.status(400).json(msg)
