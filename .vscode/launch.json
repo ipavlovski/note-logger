@@ -1,38 +1,69 @@
 {
-    "version": "0.2.0",
-    "configurations": [
-        {
-            "name": "Current TS File",
-            "type": "node",
-            "request": "launch",
-            "args": ["${relativeFile}"],
-            "runtimeArgs": [
-                "--nolazy", 
-                "-r", "${workspaceRoot}/node_modules/ts-node/register",
-                "-r", "${workspaceRoot}/node_modules/module-alias/register"
-            ],
-            "skipFiles": ["<node_internals>/**"],
-            "sourceMaps": true,
-            "cwd": "${workspaceRoot}",
-            "protocol": "inspector",
-            "envFile": "${workspaceFolder}/.env",
-        },
-        {
-            "name": "vscode-jest-tests",
-            "type": "pwa-node",
-            "request": "launch",
-            "runtimeArgs": [
-                "--inspect-brk", "${workspaceRoot}/node_modules/.bin/jest",
-                "--runInBand", "--detectOpenHandles", "--coverage", "false",
-                "-i", "--no-cache", "--bail", "--silent", "false",
-                "${fileBasename}"
-            ],
-            "preLaunchTask": "tmux-switch",
-            "skipFiles": ["<node_internals>/**", "${workspaceFolder}/node_modules/**",],
-            "console": "integratedTerminal",
-            "internalConsoleOptions": "openOnFirstSessionStart",
-            "resolveSourceMapLocations": ["${workspaceFolder}/**", "!**/node_modules/**"]
-        }
-
-    ]
+  "version": "0.2.0",
+  "configurations": [
+    {
+        "name": "Current TS File",
+        "type": "node",
+        "request": "launch",
+        "args": ["${relativeFile}"],
+        "runtimeArgs": [
+            "--nolazy", 
+            "-r", "${workspaceRoot}/node_modules/ts-node/register",
+            "-r", "${workspaceRoot}/node_modules/module-alias/register"
+        ],
+        "skipFiles": ["<node_internals>/**"],
+        "sourceMaps": true,
+        "cwd": "${workspaceRoot}",
+        "protocol": "inspector",
+        "envFile": "${workspaceFolder}/.env",
+    },
+    {
+        "name": "vscode-jest-tests",
+        "type": "pwa-node",
+        "request": "launch",
+        "runtimeArgs": [
+            "--inspect-brk", "${workspaceRoot}/node_modules/.bin/jest",
+            "--runInBand", "--detectOpenHandles", "--coverage", "false",
+            "-i", "--no-cache", "--bail", "--silent", "false",
+            "${fileBasename}"
+        ],
+        "preLaunchTask": "tmux-switch",
+        "skipFiles": ["<node_internals>/**", "${workspaceFolder}/node_modules/**",],
+        "console": "integratedTerminal",
+        "internalConsoleOptions": "openOnFirstSessionStart",
+        "resolveSourceMapLocations": ["${workspaceFolder}/**", "!**/node_modules/**"]
+    },
+    // NOTE: 
+    // FIRST need to run chrome with custom profile:
+    // google-chrome-stable --user-data-dir=/tmp/google-chrome-dev --remote-debugging-port=9222
+    // THEN need to 'requist: launch' and then 'request: attach' the app 
+    {
+      "type": "pwa-chrome",
+      "request": "attach",
+      "name": "Chrome TS debugger",
+      "url": "http://homelab:3002/",
+      "webRoot": "${workspaceFolder}/",
+      "sourceMaps": true,
+      "runtimeExecutable": "google-chrome-stable",
+      "address": "127.0.0.1",
+      "port": 9222,
+      "timeout": 5000,
+      "outFiles": [
+        "${workspaceFolder}/dist/*",
+        "!**/node_modules/**"
+      ],
+      
+      // "webRoot": "${workspaceFolder}/frontend",
+      // "runtimeArgs": [" --remote-debugging-port=9222"],
+      // "address": "192.168.2.241",
+      // "browserLaunchLocation": "ui",
+      // "trace": true,
+      // "sourceMapPathOverrides": {
+        // "webpack:///./~/*": "${workspaceFolder}/node_modules/*",
+        // "webpack://?:*/*": "${workspaceFolder}/dist/*",
+        // "webpack:///./*": "${workspaceFolder}/*",
+        // "*": "${webRoot}/*",
+      // },
+    }
+  ]
 }

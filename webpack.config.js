@@ -78,7 +78,8 @@ module.exports = {
         filename: 'bundle.js'
     },
 
-    devtool: 'inline-source-map',
+    // devtool: 'inline-source-map',
+    devtool: 'eval-cheap-module-source-map',
 
     devServer: {
         static: { directory: './frontend/code' },
