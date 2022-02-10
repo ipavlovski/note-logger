@@ -28,7 +28,7 @@ export default class Content {
 
     renderSection(node: FlatSection) {
         const div = document.createElement('div')
-        div.innerHTML = node.section
+        div.innerHTML = node.section.join(' > ')
         div.classList.add('entry-cat', `level-${node.level}`)
         div.addEventListener('click', this.clickHandler)
         this.el.appendChild(div)

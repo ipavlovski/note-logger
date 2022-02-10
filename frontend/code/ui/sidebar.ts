@@ -30,7 +30,7 @@ export default class Sidebar {
         }
 
         const p = document.createElement('p')
-        p.innerHTML = node.section
+        p.innerHTML = node.section[node.section.length -1 ]
         p.classList.add('side-cat', `level-${node.level}`)
         // p.addEventListener('click', this.clickHandler)
 

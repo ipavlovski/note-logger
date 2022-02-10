@@ -86,7 +86,7 @@ export interface FlatItem {
 
 export interface FlatSection {
     type: 'section'
-    section: string
+    section: string[]
     parent: string
     level: number
 }
