@@ -1,24 +1,21 @@
-import MarkdownIt from 'markdown-it'
+import { marked } from 'marked'
 import hljs from 'highlight.js'
 
-var options: MarkdownIt.Options = {
-    html: false,
-    breaks: false,
-    typographer: false,
-    langPrefix: 'language-',
-    linkify: true,
-    highlight: function (str, lang) {
-        // console.log("HIGHLIGHTING!")
-        // return hljs.highlight(str, { language: lang }).value
-        if (lang && hljs.getLanguage(lang)) {
-            return hljs.highlight(str, { language: lang }).value
-        } else {
-            return str
-        }
-    }
-}
+marked.setOptions({
+    renderer: new marked.Renderer(),
+    highlight: function (code, lang) {
+        const language = hljs.getLanguage(lang) ? lang : 'plaintext'
+        return hljs.highlight(code, { language }).value
+    },
+    langPrefix: 'hljs language-', // highlight.js css expects a top-level 'hljs' class.
+    pedantic: false,
+    gfm: true,
+    breaks: true,
+    sanitize: false,
+    smartLists: true,
+    smartypants: false,
+    xhtml: false
+})
 
-const md = new MarkdownIt(options)
+const md = marked
 export default md
-
-

@@ -22,11 +22,12 @@ export default class Editor extends EventTarget {
         this.el = document.getElementById("editor")!
         this.editor = monaco.editor.create(this.el as HTMLElement, {
             value: '',
-            language: "markdwown",
+            language: "markdown",
             fontSize: 16,
             minimap: { enabled: false },
             theme: "vs-dark",
-            automaticLayout: true 
+            automaticLayout: true, 
+            quickSuggestions: false
         })
 
         
@@ -37,7 +38,7 @@ export default class Editor extends EventTarget {
         })
         obs.pipe(
             debounce(() => timer(300))
-        ).subscribe(() => this.dispatchEvent(new Event('create-item')))
+        ).subscribe(() => this.dispatchEvent(new Event('editor-change-event')))
     }
 
     setContents(text: string) {

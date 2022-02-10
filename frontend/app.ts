@@ -22,6 +22,7 @@ export default class App {
     content: Content
     sidebar: Sidebar
     omnibar: Omnibar
+    preview: HTMLElement
 
     // get all the data from localStorage
     constructor() {
@@ -31,6 +32,7 @@ export default class App {
         this.editor = new Editor()
         this.content = new Content()
         this.sidebar = new Sidebar()
+        this.preview = document.getElementById('preview')!
 
         this.handleGlobalEvents()
         this.handleShortcuts()

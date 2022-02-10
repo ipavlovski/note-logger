@@ -2,6 +2,7 @@ import App from 'frontend/app'
 import { EditEntry, Query, SortingOptions, TreeView, ViewSort } from 'common/types'
 import View from 'frontend/code/state/view'
 import { httpClient } from 'frontend/code/state/client'
+import md from 'frontend/code/ui/md'
 
 // session listens to events:
 // - editor events, to know when to re-arrange the editor
@@ -80,11 +81,20 @@ export default class Session {
     }
 
 
+
+
+
+
     private createItemListener() {
         // todo: what exactly is this 'event data'?
-        this.app.editor.addEventListener('create-item', async (event) => {
+        this.app.editor.addEventListener('editor-change-event', async (event) => {
             try {
-                console.log('INSERT ITEM!')
+                console.log('CHANGE DETECTED!')
+
+                const val = this.app.editor.editor.getValue()
+                this.app.preview.innerHTML = md.parse(val)
+                
+
                 // const itemProps = this.validateNewItem(event.data)
                 // const response = await httpClient.createItem(itemProps)
                 // console.log(`Create site status: ${response.status}`)

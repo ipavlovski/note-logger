@@ -37,7 +37,7 @@ export default class Content {
 
     renderItem(node: FlatItem) {
         const div = document.createElement('div')
-        div.innerHTML = md.render(node.item.body.md)
+        div.innerHTML = md.parse(node.item.body.md)
         div.classList.add("entry")
         div.setAttribute('data-id', `${node.item.id}`)
         this.el.appendChild(div)
