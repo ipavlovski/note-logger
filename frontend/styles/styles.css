@@ -124,6 +124,10 @@ pre code {
     height: 45vh;
     width: 35vw;
 
+    overflow: auto;
+    /* scrollbar-width: none;
+    overflow-y: scroll;
+    scrollbar-width: none; */
 
     border: solid;
     border-color: rgba(64, 44, 110, 0.287);
@@ -133,6 +137,10 @@ pre code {
     border-radius: 30px;
 
 }
+
+#preview::-webkit-scrollbar {
+    display: none;
+  }
 
 
 hr.rounded {
