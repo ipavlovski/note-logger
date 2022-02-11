@@ -19,7 +19,7 @@ export default class Editor extends EventTarget {
 
     constructor() {
         super()
-        this.el = document.getElementById("editor")!
+        this.el = document.getElementById("monaco-editor")!
         this.editor = monaco.editor.create(this.el as HTMLElement, {
             value: '',
             language: "markdown",

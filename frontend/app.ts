@@ -10,6 +10,7 @@ import { serverHost, serverPort } from 'common/config'
 import 'frontend/styles/modal.css'
 import 'frontend/styles/styles.css'
 import Session from 'frontend/code/state/session'
+import Metabar from 'frontend/code/ui/metabar'
 
 
 export default class App {
@@ -23,6 +24,7 @@ export default class App {
     sidebar: Sidebar
     omnibar: Omnibar
     preview: HTMLElement
+    metabar: Metabar
 
     // get all the data from localStorage
     constructor() {
@@ -32,6 +34,7 @@ export default class App {
         this.editor = new Editor()
         this.content = new Content()
         this.sidebar = new Sidebar()
+        this.metabar = new Metabar()
         this.preview = document.getElementById('preview')!
 
         this.handleGlobalEvents()
