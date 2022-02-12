@@ -1,13 +1,16 @@
 import { CatRow, Item, TagRow } from 'common/types'
+import App from 'frontend/app'
 import { debounce, fromEvent, timer } from 'rxjs'
 
 type PartialItem = Partial<Omit<Item, 'id' | 'body' | 'archived'>>
 
 export default class Metabar {
     el: HTMLInputElement
+    app: App
     private showingError = false
 
-    constructor() {
+    constructor(app: App) {
+        this.app = app
         this.el = document.querySelector("input.meta-input")!
 
         fromEvent(this.el, 'keyup').pipe(
@@ -94,7 +97,7 @@ export default class Metabar {
         if (!str.match('^\'') || !str.match('\'$'))
             throw new Error("The header field needs to be surrounded by single quotes.")
 
-        if (str == '') 
+        if (str == '')
             throw new Error("The header field cannot be empty.")
 
         return str.slice(1, -1)
@@ -114,15 +117,29 @@ export default class Metabar {
     }
 
     parseCats(val: string): CatRow[] {
-        // check that the updated is AFTER created
-        // keywords: now, null
-        return [{ id: 123, name: 'adf', pid: 11 }]
+        var catNames = val.split('>')
+        const cats = this.app.session.meta.catTree.walk(catNames)
+        if (catNames.length != cats.length)
+            throw new Error(`Cat '${catNames[cats.length - 1]}' doesn't exist`)
+
+        return cats
     }
 
     parseTags(val: string): TagRow[] {
-        // check that the updated is AFTER created
-        // keywords: now, null
-        return [{ id: 123, name: 'tag100' }]
+        var tagNames = val.split(',')
+        const tags: TagRow[] = []
+        for (const tagName of tagNames) {
+            const match = this.app.session.meta.tags.find(tag => tag.name == tagName)
+            if (match == null && /!$/.test(tagName)) {
+                tags.push({ id: null, name: tagName })
+            } else if (match == null && ! /!$/.test(tagName)) {
+                throw new Error(`Tag '${tagName}' doesn't exist`)
+            } else {
+                tags.push(match!)
+            }
+        }
+
+        return tags
 
     }
 

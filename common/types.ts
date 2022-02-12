@@ -208,8 +208,8 @@ export interface ErrorMessage {
 
 //  ==========  DB TYPES  ==========
 
-export interface CategoryLeaf extends CatRow {
-    children: CategoryLeaf[]
+export interface CatNode extends CatRow {
+    children: CatNode[]
 }
 
 export interface RunResult {

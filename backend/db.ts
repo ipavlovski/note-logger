@@ -480,6 +480,12 @@ class DB extends SQLite {
         output.rename!.push({ type: 'cat', value: catRow })
         return output
     }
+
+    async getMetadata(): Promise<{ cats: CatRow[]; tags: TagRow[] }>  {
+        const cats = await this.all<CatRow>('select * from category')
+        const tags = await this.all<TagRow>('select * from tag')
+        return { cats, tags }
+    }
 }
 
 

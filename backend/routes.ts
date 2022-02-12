@@ -105,8 +105,14 @@ routes.post('/rename', async (req, res) => {
 // process orphaned categories/tags
 // send-out JSON objects of categories/tags
 // maybe do it through the websockets?
-routes.get('/refresh', async (req, res) => {
-    res.sendStatus(200)
+routes.get('/metadata', async (req, res) => {
+    try {
+        const results = await db.getMetadata()
+        return res.status(200).json(results)
+    } catch (error) {
+        const msg = new ExceptionHandler(error).toJSON()
+        return res.status(400).json(msg)
+    }
 })
 
 export default routes

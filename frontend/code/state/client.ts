@@ -1,8 +1,24 @@
-import { Item, Query } from 'common/types'
+import { CatRow, Item, Query, TagRow } from 'common/types'
 import { vanillaReviver } from 'common/utils'
 
 
 export class HttpClient {
+
+    async getMetadata() {
+        try {
+            const res = await fetch('/metadata', {
+                method: 'GET',
+                headers: { 'Content-Type': 'application/json' },
+            })
+            if (res.status != 200) throw new Error('ERROR!!!')
+            var meta: { cats: CatRow[]; tags: TagRow[] } = await res.json()
+            return meta
+        } catch (err) {
+            // should display a tost!
+            console.error(err)
+            return { cats: [], tags: [] }
+        }
+    }
 
     async getItems(query: Query) {
         try {

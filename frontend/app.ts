@@ -34,7 +34,7 @@ export default class App {
         this.editor = new Editor()
         this.content = new Content()
         this.sidebar = new Sidebar()
-        this.metabar = new Metabar()
+        this.metabar = new Metabar(this)
         this.preview = document.getElementById('preview')!
 
         this.handleGlobalEvents()

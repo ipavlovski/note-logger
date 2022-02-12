@@ -1,8 +1,9 @@
 import App from 'frontend/app'
-import { EditEntry, Query, SortingOptions, TreeView, ViewSort } from 'common/types'
+import { CatRow, EditEntry, Query, SortingOptions, TagRow, TreeView, ViewSort } from 'common/types'
 import View from 'frontend/code/state/view'
 import { httpClient } from 'frontend/code/state/client'
 import md from 'frontend/code/ui/md'
+import CatTree from 'backend/cats'
 
 // session listens to events:
 // - editor events, to know when to re-arrange the editor
@@ -15,7 +16,7 @@ import md from 'frontend/code/ui/md'
 // session uses reference to app object to limit area of concern
 // - query/sort/entries/opts are actually session related, and are included
 export default class Session {
-    // state: { cats, tags }
+    meta: { catTree: CatTree, tags: TagRow[] } 
     name: string
     app: App
     view: View
@@ -41,6 +42,7 @@ export default class Session {
         this.sort = { by: 'date', depth: null }
         this.view = new View([], this.sort)
         this.query = { type: 'full' }
+        this.meta = { catTree: null!, tags: [] }
 
         // editor - pre-init state
         this.updating = false
@@ -51,6 +53,9 @@ export default class Session {
         // init all
         this.initContent()
         this.initEditor()
+
+        // get metadata
+        this.getMetadata()
     }
 
     private getLocal<T>(key: string): T | null {
@@ -80,6 +85,10 @@ export default class Session {
         // TODO: how to init editor?
     }
 
+    async getMetadata() {
+        const meta = await httpClient.getMetadata() ?? []
+        this.meta = { catTree: new CatTree(meta.cats), tags: meta.tags }
+    }
 
 
 
