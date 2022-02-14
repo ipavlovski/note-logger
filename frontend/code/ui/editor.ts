@@ -26,11 +26,15 @@ export default class Editor extends EventTarget {
             fontSize: 16,
             minimap: { enabled: false },
             theme: "vs-dark",
-            automaticLayout: true, 
+            automaticLayout: true,
             quickSuggestions: false
         })
 
-        
+        this.configureChangeEvent()
+        this.configureShortcutEvents()
+    }
+
+    configureChangeEvent() {
         const obs = new Observable(observer => {
             this.editor.getModel()!.onDidChangeContent((event) => {
                 observer.next(event)
@@ -41,16 +45,36 @@ export default class Editor extends EventTarget {
         ).subscribe(() => this.dispatchEvent(new Event('editor-change-event')))
     }
 
-    setContents(text: string) {
-        this.editor.setValue(text)
+    configureShortcutEvents() {
+
+        const ctrlm = monaco.KeyMod.CtrlCmd | monaco.KeyCode.KeyM
+        const ctrlshiftm = monaco.KeyMod.CtrlCmd | monaco.KeyMod.Shift | monaco.KeyCode.KeyM
+
+        this.editor.addCommand(ctrlm, () => {
+
+            this.dispatchEvent(new Event('editor-ctrlm'))
+        })
+
+        this.editor.addCommand(ctrlshiftm, () => {
+            this.dispatchEvent(new Event('editor-ctrlshiftm'))
+
+        })
     }
 
-    clearFull() {
-        // todo: remove ALL text
+    getSelection() {
+        // get the selection objet
+        var selection = this.editor.getSelection()
+        if (selection == null) return null
+
+        // extract selected text using selection object
+        return this.editor.getModel()!.getValueInRange(selection)
     }
 
-    clearPArtial() {
-        // todo: remove SOME text
+    delete() {
+        // monaco.KeyCode.Backspace
+        this.editor.trigger('', 'deleteLeft', null)
+        // this.editor.trigger(null, 'type' , { text: '' })
     }
+
 
 }

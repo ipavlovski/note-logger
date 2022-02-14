@@ -1,8 +1,7 @@
-import { CatRow, Item, TagRow } from 'common/types'
+import { CatRow, Item, MetabarProps, TagRow } from 'common/types'
 import App from 'frontend/app'
+import { DateTime } from 'luxon'
 import { debounce, fromEvent, timer } from 'rxjs'
-
-type PartialItem = Partial<Omit<Item, 'id' | 'body' | 'archived'>>
 
 export default class Metabar {
     el: HTMLInputElement
@@ -14,7 +13,7 @@ export default class Metabar {
         this.el = document.querySelector("input.meta-input")!
 
         fromEvent(this.el, 'keyup').pipe(
-            debounce(() => timer(150))
+            debounce(() => timer(250))
         ).subscribe(() => {
             const result = this.parse(this.el.value, false)
             this.updateBoxColor(result)
@@ -28,7 +27,7 @@ export default class Metabar {
         })
     }
 
-    updateBoxColor(result: null | PartialItem) {
+    private updateBoxColor(result: null | MetabarProps) {
         let color: string
         result == null ? color = '#970000' : color = '#185300'
         //  || result?.header == null || result?.created == null
@@ -39,27 +38,45 @@ export default class Metabar {
     }
 
 
-    flashError(error: string) {
+    flashError(msg: string) {
         if (this.showingError == true) return
         const currValue = this.el.value
         this.showingError = true
         this.el.setAttribute('readonly', 'readonly')
-        this.el.value = error
+        this.el.value = msg
+
+        this.el.classList.add('wiggle')
+        setTimeout(() => this.el.classList.remove('wiggle'), 100)
+
         setTimeout(() => {
             this.el.removeAttribute('readonly')
             this.el.value = currValue
             this.showingError = false
-        }, 1400)
+        }, 1500)
+    }
+
+    clear() {
+        this.el.value = ""
+        this.updateBoxColor(null)
+    }
+
+    getValues(): MetabarProps | null {
+        return this.parse(this.el.value, true)
     }
 
 
     // var input = "D:now H:'this is a header' C:a>b>c>d>e>f T:tag1,tag2:tag5,tag3"
-    parse(input: string, showError: boolean): null | PartialItem {
+    private parse(input: string, showError: boolean): null | MetabarProps {
         var trimmed = input.split(/(\b\w:)/g).filter(v => v != '').map(v => v.trim())
-        const output: PartialItem = {}
+        const output: MetabarProps = {}
 
-        if (trimmed.length < 2) {
-            if (showError) this.flashError('Cant identify more then 2 elements in the string')
+        // if (trimmed.length < 2) {
+        //     if (showError) this.flashError('Cant identify more then 2 elements in the string')
+        //     return null
+        // }
+
+        if (trimmed.length % 2 != 0) {
+            if (showError) this.flashError('Must provide a value for each identifier')
             return null
         }
 
@@ -74,8 +91,8 @@ export default class Metabar {
             try {
                 switch (key) {
                     case 'H:': output.header = this.parseHeader(val); break
-                    case 'D:': output.created = this.parseCreated(val); break
-                    case 'U:': output.updated = this.parseUpdated(val); break
+                    case 'D:': output.created = this.parseDate(val, 'created'); break
+                    case 'U:': output.updated = this.parseDate(val, 'updated'); break
                     case 'C:': output.category = this.parseCats(val); break
                     case 'T:': output.tags = this.parseTags(val); break
                     default:
@@ -89,11 +106,15 @@ export default class Metabar {
                 return null
             }
         }
+
+        // if (output.header == null) throw new Error("Header field (H:) is required")
+        // if (output.created == null) throw new Error("Created field (D:) is required")
+
         return output
     }
 
 
-    parseHeader(str: string): string {
+    private parseHeader(str: string): string {
         if (!str.match('^\'') || !str.match('\'$'))
             throw new Error("The header field needs to be surrounded by single quotes.")
 
@@ -103,30 +124,25 @@ export default class Metabar {
         return str.slice(1, -1)
     }
 
-    parseCreated(val: string): Date {
-        // check that the date 
-        // keywords: now
-        return new Date()
+    private parseDate(str: string, type: 'created' | 'updated'): Date {
+        if (str == 'now') return new Date()
+        const dt = DateTime.fromISO(str)
+        if (!dt.isValid) throw new Error(`The '${type}' field couldn't be parsed.`)
+        return dt.toJSDate()
     }
 
-    parseUpdated(val: string): Date {
-        // check that the updated is AFTER created
-        // keywords: now, null
-        return new Date()
-
-    }
-
-    parseCats(val: string): CatRow[] {
-        var catNames = val.split('>')
+    private parseCats(str: string): CatRow[] {
+        var catNames = str.split('>')
         const cats = this.app.session.meta.catTree.walk(catNames)
-        if (catNames.length != cats.length)
-            throw new Error(`Cat '${catNames[cats.length - 1]}' doesn't exist`)
+        if (catNames.length != cats.length) {
+            throw new Error(`Cat '${catNames[cats.length]}' doesn't exist`)
+        }
 
         return cats
     }
 
-    parseTags(val: string): TagRow[] {
-        var tagNames = val.split(',')
+    private parseTags(str: string): TagRow[] {
+        var tagNames = str.split(',')
         const tags: TagRow[] = []
         for (const tagName of tagNames) {
             const match = this.app.session.meta.tags.find(tag => tag.name == tagName)

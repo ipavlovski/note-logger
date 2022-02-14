@@ -121,6 +121,8 @@ export interface SqlParams {
     args: any[]
 }
 
+export type MetabarProps = Partial<Omit<Item, 'id' | 'body' | 'archived'>>
+
 
 // an item ALWAYS has proper ID, HEADING and CREATED fields
 // an item ALWAYS has a body: even if it just empty strings

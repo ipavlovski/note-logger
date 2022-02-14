@@ -29,6 +29,7 @@ export class BroadcastReceiver {
     }
 
     socketMessageHandler(msg: MessageEvent) {
+        console.log('MSG RECEIVED!')
         if (msg.data == 'done') {
             console.log('DONE!!!')
             return
@@ -36,4 +37,4 @@ export class BroadcastReceiver {
     }
 }
 
-export const receiver = new BroadcastReceiver(`ws://${serverHost}:${serverPort}`)
+// export const receiver = new BroadcastReceiver(`ws://${serverHost}:${serverPort}`)

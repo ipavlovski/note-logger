@@ -1,4 +1,4 @@
-import { CatRow, Item, Query, TagRow } from 'common/types'
+import { CatRow, InsertItem, Item, Query, TagRow } from 'common/types'
 import { vanillaReviver } from 'common/utils'
 
 
@@ -37,6 +37,42 @@ export class HttpClient {
             return []
         }
     }
+
+    async insertItem(item: InsertItem) {
+        try {
+            const res = await fetch('/insert', {
+                method: 'PUT',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(item)
+            })
+            if (res.status != 201) throw new Error('ERROR!!!')
+            return true
+        } catch (err) {
+            // should display a tost!
+            console.error(err)
+            return false
+        }
+    }
+
+    // how to update the body only?
+    async updateItemBody(id: number, item: InsertItem) {
+
+
+        try {
+            const res = await fetch(`/update/${id}`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(item)
+            })
+            if (res.status != 200) throw new Error('ERROR!!!')
+            return true
+        } catch (err) {
+            // should display a tost!
+            console.error(err)
+            return false
+        }
+    }
+
 
 }
 
