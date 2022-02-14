@@ -12,7 +12,6 @@ export class BroadcastReceiver {
         this.socket.addEventListener('error', this.socketErrorHandler)
         this.socket.addEventListener('open', this.socketOpenHandler)
         this.socket.addEventListener('close', this.socketCloseHandler)
-        this.socket.addEventListener('message', this.socketMessageHandler)
     }
 
     socketOpenHandler() {
@@ -28,13 +27,6 @@ export class BroadcastReceiver {
         console.error(err)
     }
 
-    socketMessageHandler(msg: MessageEvent) {
-        console.log('MSG RECEIVED!')
-        if (msg.data == 'done') {
-            console.log('DONE!!!')
-            return
-        }
-    }
 }
 
 // export const receiver = new BroadcastReceiver(`ws://${serverHost}:${serverPort}`)

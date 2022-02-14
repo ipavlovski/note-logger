@@ -1,5 +1,5 @@
 import CatTree from 'backend/cats'
-import { InsertItem, MetabarProps, Query, TagRow, ViewSort } from 'common/types'
+import { Castable, InsertItem, MetabarProps, Query, TagRow, ViewSort } from 'common/types'
 import App from 'frontend/app'
 import { httpClient } from 'frontend/code/state/client'
 import View from 'frontend/code/state/view'
@@ -63,6 +63,7 @@ export default class Session {
         this.editorChangeListener()
         this.createItemListener()
         this.splitItemListener()
+        this.socketListener()
 
         // init all
         this.initContent()
@@ -243,7 +244,16 @@ export default class Session {
         })
     }
 
-
+    private socketListener() {
+        this.receiver.socket.addEventListener('message', (msg: MessageEvent) => {
+            console.log('MSG RECEIVED!')
+            const castable: Castable = JSON.parse(msg.data.toString())
+            
+            // insert, update, delete
+            // handle insert of different types
+            
+        })
+    }
 }
 
 
