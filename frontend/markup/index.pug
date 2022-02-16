@@ -12,7 +12,10 @@ html(lang='en')
     .omnibar-full
       .omnibar-content
         //  <span class="close">x</span>
-        input.omnibar-input(type='text' placeholder='Enter search text...')
+        input.omnibar-input(type='text' spellcheck="false" placeholder='Enter search text...')
+        div.hinting
+          h3.hinting-header
+          ul.hinting-list
     .grid-container
       #editor
         input(class="meta-input", type="text", value="", spellcheck="false", placeholder="Metadata: header / cats / tags / dates")

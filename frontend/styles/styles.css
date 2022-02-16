@@ -265,7 +265,8 @@ hr.rounded {
 .omnibar-input:focus {
     outline: none;
     border: 1px solid #a0d18c;
-    color: #2d9fd9;
+    color: #000e14;
+    font-weight: bolder;
 }
 
 @keyframes wiggle {

@@ -73,12 +73,12 @@ export default class Session {
         this.getMetadata()
     }
 
-    private getLocal<T>(key: string): T | null {
+    getLocal<T>(key: string): T | null {
         const state = localStorage.getItem(`${this.name}:${key}`)
         return state != null ? JSON.parse(state) : null
     }
 
-    private setLocal(key: string, val: any) {
+    setLocal(key: string, val: any) {
         localStorage.setItem(`${this.name}:${key}`, JSON.stringify(val))
     }
 

@@ -30,17 +30,20 @@ export default class App {
     constructor() {
         console.log("Creating an app instance @ %s", new Date().toISOString())
 
-        this.omnibar = new Omnibar()
         this.editor = new Editor()
         this.content = new Content()
         this.sidebar = new Sidebar()
-        this.metabar = new Metabar(this)
-        this.preview = document.getElementById('preview')!
+
 
         this.handleGlobalEvents()
         this.handleShortcuts()
 
         this.session = this.latestSession()
+
+        this.metabar = new Metabar(this)
+        this.omnibar = new Omnibar(this)
+        this.preview = document.getElementById('preview')!
+
     }
 
     //when switching sessions, previous session is fully saved in localStorage
