@@ -1,46 +1,42 @@
+import { DATE_REGEX } from 'common/config'
+import { CatQuery, Query, TagQuery, TagRow } from 'common/types'
+import { dateParser } from 'common/utils'
 import App from 'frontend/app'
 import hotkeys from 'hotkeys-js'
-import { DATE_REGEX, DAY_OFFSET_HOURS } from 'common/config'
-import { dateParser } from 'common/utils'
 import { DateTime } from 'luxon'
-import { ViewSort } from 'common/types'
 
-// Omnibar: popup modal to provide a command pallette
-// emit events with data as primary source of interaction
-// no public methods - all interaction happens through shortcuts
 interface Hint {
     header: string
     hints: [string, string][]
+    key?: string
+    value?: Omit<Query, 'type'> | null
 }
 
 export default class Omnibar {
+    app: App
     el: HTMLElement
     input: HTMLInputElement
-    hint: HTMLDivElement
-    hintHeader: HTMLElement
-    hintList: HTMLUListElement
-    app: App
     saved: [string, string][]
     components: [string, string][]
+    validHints: [string, Hint][]
 
     constructor(app: App) {
-        this.el = document.querySelector(".omnibar-full")!
-        this.hintHeader = this.el.querySelector('.hinting-header')!
-        this.hintList = this.el.querySelector('.hinting-list')!
-        this.hint = this.el.querySelector('.hinting')!
-        this.input = document.querySelector(".omnibar-input")!
         this.app = app
+        this.el = document.querySelector(".omnibar-full")!
+        this.input = document.querySelector(".omnibar-input")!
         this.saved = app.session.getLocal('saved-searches') ?? []
         this.components = []
+        this.validHints = []
 
-
-        document.addEventListener('click', (event) => {
-            if (event.target as HTMLElement == this.el) this.closeOmnibar()
-        })
-
+        this.configureEvents()
         this.configureShortcuts()
     }
 
+    private configureEvents() {
+        document.addEventListener('click', (event) => {
+            if (event.target as HTMLElement == this.el) this.closeOmnibar()
+        })
+    }
 
     private configureShortcuts() {
         hotkeys.setScope('main')
@@ -55,13 +51,6 @@ export default class Omnibar {
             this.closeOmnibar()
         })
 
-        // enter hotkey
-        hotkeys('enter', { scope: 'omnibar' }, (event) => {
-            event.preventDefault()
-            // when pressing enter -> take the string from the input, and 'validate' it
-            console.log('pressed enter')
-        })
-
         hotkeys('escape', { scope: 'omnibar' }, (event) => {
             event.preventDefault()
             this.closeOmnibar()
@@ -72,6 +61,18 @@ export default class Omnibar {
 
             console.log('TAB!')
 
+        })
+
+        // enter hotkey
+        hotkeys('enter', { scope: 'omnibar' }, (event) => {
+            event.preventDefault()
+            const hint = this.parseOmnibarInput(this.input.value)
+            if (hint.value && hint.key != '') {
+                this.validHints.push([this.input.value, hint])
+                this.input.value = ''
+            } else {
+                this.wiggle()
+            }
         })
 
         hotkeys.filter = (event: Event) => {
@@ -91,6 +92,10 @@ export default class Omnibar {
         }
     }
 
+    private wiggle() {
+        this.input.classList.add('wiggle')
+        setTimeout(() => this.input.classList.remove('wiggle'), 250)
+    }
 
     private openOmnibar() {
         this.el.style.display = "block"
@@ -108,17 +113,32 @@ export default class Omnibar {
 
 
     private showHint(hint: Hint) {
-        this.hintHeader.innerHTML = ""
-        this.hintList.innerHTML = ""
+        const hintSelected: HTMLHeadElement = this.el.querySelector('.hinting-selected')!
+        const hintValidated: HTMLUListElement = this.el.querySelector('.hinting-validated')!
+        const hintHeader: HTMLHeadElement = this.el.querySelector('.hinting-header')!
+        const hintList: HTMLUListElement = this.el.querySelector('.hinting-list')!
+
+        hintSelected.innerHTML = ""
+        hintValidated.innerHTML = ""
+        hintHeader.innerHTML = ""
+        hintList.innerHTML = ""
+
+        if (this.validHints.length > 0) {
+            this.validHints.forEach(([, hint]) => {
+                const li = document.createElement('li')
+                li.innerHTML = `<b>${hint.key}</b> ${hint.header}`
+                hintValidated.appendChild(li)
+            })
+        }
 
         // header
-        this.hintHeader.innerHTML = `<b>${hint.header}</b>`
+        hintHeader.innerHTML = `<b>${hint.header}</b>`
 
         // hints
         hint.hints.map(([title, desc]) => {
             const li = document.createElement('li')
             li.innerHTML = `<b>${title}</b> ${desc}`
-            this.hintList.appendChild(li)
+            hintList.appendChild(li)
         })
     }
 
@@ -154,14 +174,15 @@ export default class Omnibar {
         switch (match![1]) {
             case 'sort-by:': hint = this.getSortSuggestions(match[2]); break
             case 'archived:': hint = this.getArchivedSuggestions(match[2]); break
-            case 'created:': hint = this.getDateSuggestions(match[2]); break
-            case 'updated:': hint = this.getDateSuggestions(match[2]); break
+            case 'created:': hint = this.getDateSuggestions(match[2], match![1]); break
+            case 'updated:': hint = this.getDateSuggestions(match[2], match![1]); break
             case 'search:': hint = this.getSearchSuggestions(match[2]); break
             case 'saved:': hint = this.getSavedSuggestions(match[2]); break
             case 'cats:': hint = this.getCatSuggestions(match[2]); break
             case 'tags:': hint = this.getTagSuggestions(match[2]); break
             default: hint = { header: 'Unmatched key got through', hints: [] }
         }
+        hint.key = match![1]
         return hint
     }
 
@@ -176,7 +197,8 @@ export default class Omnibar {
 
         return {
             header: 'Handling saved searches',
-            hints: hints
+            hints: hints,
+            key: ''
         }
     }
 
@@ -192,7 +214,7 @@ export default class Omnibar {
         const output: string[] = []
 
         if (split.length < 1 || !(['date', 'cat'].includes(split[0]))) {
-            return { header: 'e.g.: "date"    "cat,2"    "date,null,true"', hints: hints }
+            return { header: 'e.g.: "date"  "cat,2"  "date,null,true"', hints: hints, key: '' }
         } else {
             output.push(`by=${split[0]}`)
         }
@@ -211,7 +233,7 @@ export default class Omnibar {
         }
     }
 
-    private getDateSuggestions(inputStr: string): Hint {
+    private getDateSuggestions(inputStr: string, key: string): Hint {
 
         const examples: [string, string][] = [
             ["shorthand", "1d, 3w, 2m, 4y"],
@@ -228,7 +250,11 @@ export default class Omnibar {
 
         const valStart = start.match(wordRegex) || start.match(numRegex)
         const valEnd = (end != null) ? (end.match(wordRegex) || end.match(numRegex)) : true
-        if (!(valStart && valEnd)) return { header: 'Improper date formatting', hints: examples }
+        if (!(valStart && valEnd)) return {
+            header: 'Improper date formatting',
+            hints: examples,
+            value: null
+        }
 
         const results = dateParser([start, end])
         const isoStart = DateTime.fromSeconds(results[0])
@@ -236,20 +262,38 @@ export default class Omnibar {
         const isoEnd = DateTime.fromSeconds(results[1])
             .toISO({ suppressMilliseconds: true, suppressSeconds: true, includeOffset: false })
 
+            
+        const value: Pick<Query, 'created'> | Pick<Query, 'updated'> = (key == 'created:') ?
+            ({ created: end == null ? [start, null] : [start, end] }) :
+            ({ updated: end == null ? [start, null] : [start, end] })
+
         return {
             header: `${isoStart} - ${isoEnd}`,
-            hints: examples
+            hints: examples,
+            value: value
         }
     }
 
     private getSearchSuggestions(inputStr: string): Hint {
-        return { header: `search string: ${inputStr}`, hints: [] }
+        const value = inputStr == '' ? null : inputStr
+        return {
+            header: `${inputStr}`,
+            hints: [],
+            value: value != null ? { search: { body: value, header: value } } : null
+        }
     }
 
     private getArchivedSuggestions(inputStr: string): Hint {
         const header = (inputStr == 'true' || inputStr == 'false') ? inputStr : ''
         const hints: [string, string][] = [['', 'true'], ['', 'false']]
-        return { header, hints }
+
+        const value: boolean = (header == '') ? null : JSON.parse(header)
+
+        return {
+            header,
+            hints,
+            value: value != null ? { archived: value } : null
+        }
 
     }
 
@@ -257,11 +301,23 @@ export default class Omnibar {
     private getTagSuggestions(inputStr: string): Hint {
         const tagGroups = inputStr.split(',').map(v => v.split('+'))
         const allTags = this.app.session.meta.tags
-        const filtered = tagGroups.map(group =>
-            group.filter(tagName => allTags.find(tag => tag.name == tagName)))
+
+
+        let unmatched = false
+        const filtered: TagQuery = tagGroups.map(group => {
+            const groupTags = group.map(tagName => allTags.find(tag => tag.name == tagName))
+            const filteredTags = groupTags.filter(tagRow => tagRow != null) as TagRow[]
+            if (groupTags.length != filteredTags.length) unmatched = true
+            return filteredTags
+        })
+
+        const value: TagQuery | undefined =
+            (unmatched || filtered.map(v => v.length).some(v => v == 0)) ? undefined : filtered
+
         return {
-            header: filtered.map(group => group.join('+')).join(', '),
-            hints: allTags.map((v) => ['', v.name])
+            header: filtered.map(group => group.map(v => v.name).join('+')).join(', '),
+            hints: allTags.map((v) => ['', v.name]),
+            value: value != null ? { tags: value } : null
         }
     }
 
@@ -281,9 +337,26 @@ export default class Omnibar {
             return [name, subcats]
         })
 
+
+        let value: CatQuery | undefined = { term: [], rec: [] }
+        try {
+            inputStr.split(',').map(group => group.split('>')).map(chain => {
+                if (chain.length == 0) throw new Error()
+                const isTerm = /.*\$$ /.test(chain[chain.length - 1])
+                if (isTerm) chain[chain.length - 1] = chain[chain.length - 1].split('$')[0]
+                const walk = catTree.walk(chain)
+                if (walk.length != chain.length) throw new Error()
+                isTerm ? value?.term.push(walk[walk.length - 1]) :
+                    value?.rec.push(walk[walk.length - 1])
+            })
+        } catch {
+            value = undefined
+        }
+
         return {
             header: walkChain.map(v => v.name).join(' > '),
-            hints: suggestions
+            hints: suggestions,
+            value: value != null ? { cats: value } : null
         }
     }
 
@@ -294,6 +367,7 @@ export default class Omnibar {
         const hints: [string, string][] = [
             ['#last', 'insert the last command into omnibar'],
             ['#save', 'save the current command into array'],
+            ['#clear', 'clear the current input'],
             ['#deselect', 'deselect all currently selected items'],
             ['#switch-session', 'change the session'],
             ['#rename-tag', 'rename tag-name1->tag-name2'],
