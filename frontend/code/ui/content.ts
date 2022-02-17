@@ -28,6 +28,10 @@ export default class Content {
         }, [])
     }
 
+    clear() {
+        this.el.innerHTML = ""
+    }
+
     renderAll(nodes: FlatNode[]) {
         const filteredNodes = this.filterConsecutiveSections(nodes)
         filteredNodes.forEach(n => n.type == 'item' ? this.renderItem(n) : this.renderSection(n))

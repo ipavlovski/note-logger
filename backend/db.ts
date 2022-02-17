@@ -241,7 +241,7 @@ class DB extends SQLite {
 
         // now, putting it all together
         return itemRows.map(row => {
-            const cats = this.getCatChainForItem(row.id, allCatRows)
+            const cats = this.getCatChainForItem(row.category_id, allCatRows)
             const tags = this.getTagsForItem(row.id, itemTagJoin)
             return this.inflateItemRow(row, cats, tags)
         })

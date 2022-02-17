@@ -36,6 +36,11 @@ export default class Sidebar {
 
         this.el.appendChild(p)
     }
+    
+    clear() {
+        this.el.innerHTML = ""
+    }
+
 
     // getSideLinkById(id: string): HTMLElement {
     //     return this.el.querySelector(`p[data-id="${id}"]`)!

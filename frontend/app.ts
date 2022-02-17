@@ -38,11 +38,13 @@ export default class App {
         this.handleGlobalEvents()
         this.handleShortcuts()
 
-        this.session = this.latestSession()
-
+        
         this.metabar = new Metabar(this)
-        this.omnibar = new Omnibar(this)
         this.preview = document.getElementById('preview')!
+        
+        this.session = this.latestSession()
+        this.omnibar = new Omnibar(this)
+
 
     }
 

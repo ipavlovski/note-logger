@@ -1,5 +1,5 @@
 import { DATE_REGEX } from 'common/config'
-import { CatQuery, Query, TagQuery, TagRow } from 'common/types'
+import { CatQuery, Query, TagQuery, TagRow, ViewSort } from 'common/types'
 import { dateParser } from 'common/utils'
 import App from 'frontend/app'
 import hotkeys from 'hotkeys-js'
@@ -10,6 +10,7 @@ interface Hint {
     hints: [string, string][]
     key?: string
     value?: Omit<Query, 'type'> | null
+    sort?: ViewSort
 }
 
 export default class Omnibar {
@@ -17,7 +18,6 @@ export default class Omnibar {
     el: HTMLElement
     input: HTMLInputElement
     saved: [string, string][]
-    components: [string, string][]
     validHints: [string, Hint][]
 
     constructor(app: App) {
@@ -25,7 +25,6 @@ export default class Omnibar {
         this.el = document.querySelector(".omnibar-full")!
         this.input = document.querySelector(".omnibar-input")!
         this.saved = app.session.getLocal('saved-searches') ?? []
-        this.components = []
         this.validHints = []
 
         this.configureEvents()
@@ -63,11 +62,18 @@ export default class Omnibar {
 
         })
 
-        // enter hotkey
+
+        hotkeys('ctrl+enter', { scope: 'omnibar' }, (event) => {
+            event.preventDefault()
+            this.showResults()
+
+        })
+
         hotkeys('enter', { scope: 'omnibar' }, (event) => {
             event.preventDefault()
             const hint = this.parseOmnibarInput(this.input.value)
-            if (hint.value && hint.key != '') {
+
+            if ((hint.value || hint.sort) && hint.key != '') {
                 this.validHints.push([this.input.value, hint])
                 this.input.value = ''
             } else {
@@ -92,6 +98,7 @@ export default class Omnibar {
         }
     }
 
+
     private wiggle() {
         this.input.classList.add('wiggle')
         setTimeout(() => this.input.classList.remove('wiggle'), 250)
@@ -110,6 +117,24 @@ export default class Omnibar {
         this.el.style.display = "none"
     }
 
+
+    private showResults() {
+        // clone the object first
+        const hints = [...this.validHints]
+        const ind = hints.findIndex(([, hint]) => hint.key == 'sort:')
+        const sort = (ind != -1) ? hints.splice(ind, 1)[0][1].sort! : null
+
+        const query: Query = hints.length == 0 ? null :
+            Object.assign({ type: 'full' }, ...hints.map(v => v[1].value))
+
+        this.closeOmnibar()
+
+        // display the contents of the query
+        this.app.session.updateContent(query, sort)
+
+        // reset the sort
+        this.validHints = []
+    }
 
 
     private showHint(hint: Hint) {
@@ -152,12 +177,12 @@ export default class Omnibar {
         }
 
         const primaryKeyPairs: [string, string][] = [
-            ['sort-by:', 'sorting string'],
+            ['sort:', 'sorting string'],
+            ['saved:', 'saved vals'],
             ['archived:', 'true/false'],
             ['created:', 'date expression'],
             ['updated:', 'date expression'],
             ['search:', 'search-string'],
-            ['saved:', 'saved vals'],
             ['cats:', 'cat1>cat2>cat3,catN>catJ$'],
             ['tags:', 'tag1+tag2,tag3,tag4'],
             ['#', 'execute command']
@@ -172,12 +197,12 @@ export default class Omnibar {
 
         let hint: Hint
         switch (match![1]) {
-            case 'sort-by:': hint = this.getSortSuggestions(match[2]); break
+            case 'sort:': hint = this.getSortSuggestions(match[2]); break
+            case 'saved:': hint = this.getSavedSuggestions(match[2]); break
             case 'archived:': hint = this.getArchivedSuggestions(match[2]); break
             case 'created:': hint = this.getDateSuggestions(match[2], match![1]); break
             case 'updated:': hint = this.getDateSuggestions(match[2], match![1]); break
             case 'search:': hint = this.getSearchSuggestions(match[2]); break
-            case 'saved:': hint = this.getSavedSuggestions(match[2]); break
             case 'cats:': hint = this.getCatSuggestions(match[2]); break
             case 'tags:': hint = this.getTagSuggestions(match[2]); break
             default: hint = { header: 'Unmatched key got through', hints: [] }
@@ -211,25 +236,30 @@ export default class Omnibar {
             ["updated", "false (default) or true"]
         ]
         const split = inputStr.split(',')
-        const output: string[] = []
+        const header: string[] = []
+        const sort: ViewSort = { by: 'date', depth: null }
 
         if (split.length < 1 || !(['date', 'cat'].includes(split[0]))) {
             return { header: 'e.g.: "date"  "cat,2"  "date,null,true"', hints: hints, key: '' }
         } else {
-            output.push(`by=${split[0]}`)
+            header.push(`by=${split[0]}`)
+            sort.by = split[0] as 'date' | 'cat'
         }
 
         if (split.length >= 2 && (parseInt(split[1]) >= 0 || split[1] == 'null')) {
-            output.push(`depth=${split[1]}`)
+            header.push(`depth=${split[1]}`)
+            sort.depth = split[1] == 'null' ? null : parseInt(split[1])
         }
 
         if (split.length >= 3 && (['true', 'false'].includes(split[2]))) {
-            output.push(`updated=${split[2]}`)
+            header.push(`updated=${split[2]}`)
+            sort.useUpdated = JSON.parse(split[2])
         }
 
         return {
-            header: output.join(' '),
-            hints: hints
+            header: header.join(' '),
+            hints: hints,
+            sort: sort
         }
     }
 
@@ -262,7 +292,7 @@ export default class Omnibar {
         const isoEnd = DateTime.fromSeconds(results[1])
             .toISO({ suppressMilliseconds: true, suppressSeconds: true, includeOffset: false })
 
-            
+
         const value: Pick<Query, 'created'> | Pick<Query, 'updated'> = (key == 'created:') ?
             ({ created: end == null ? [start, null] : [start, end] }) :
             ({ updated: end == null ? [start, null] : [start, end] })

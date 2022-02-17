@@ -6,6 +6,7 @@ import View from 'frontend/code/state/view'
 import md from 'frontend/code/ui/md'
 import { BroadcastReceiver } from 'frontend/code/state/socket'
 import { serverHost, serverPort } from 'common/config'
+import { vanillaReviver } from 'common/utils'
 
 // session listens to events:
 // - editor events, to know when to re-arrange the editor
@@ -75,7 +76,7 @@ export default class Session {
 
     getLocal<T>(key: string): T | null {
         const state = localStorage.getItem(`${this.name}:${key}`)
-        return state != null ? JSON.parse(state) : null
+        return state != null ? JSON.parse(state, vanillaReviver) : null
     }
 
     setLocal(key: string, val: any) {
@@ -85,20 +86,43 @@ export default class Session {
     async initContent() {
         // const defaultSort: ViewSort = { by: 'date', depth: 1 }
         const defaultSort: ViewSort = { by: 'cat', depth: 2 }
-        this.sort = this.getLocal<ViewSort>('sort') ?? defaultSort
+        const sort = this.getLocal<ViewSort>('sort') ?? defaultSort
 
         const defaultQuery: Query = {
             type: 'full', tags: [[{ id: 11, name: 'tag10' }, { id: 12, name: 'tag11' }]]
         }
-        this.query = this.getLocal<Query>('query') ?? defaultQuery
-        const items = await httpClient.getItems(this.query) ?? []
-        this.view = new View(items, this.sort)
+        const query = this.getLocal<Query>('query') ?? defaultQuery
 
-        this.app.content.renderAll(this.view.flatten())
-        this.app.sidebar.renderAll(this.view.flatten())
+        await this.updateContent(query, sort)
     }
 
-    async initEditor() {
+    async updateContent(query: Query | null, sort: ViewSort | null) {
+        if (query == null) {
+            query = this.query
+        } else {
+            this.query = query
+        }
+
+        if (sort == null) {
+            sort = this.sort
+        } else {
+            this.sort = sort
+        }
+        // TODO: save to local storage (after some checking that things work...)
+        // may do this with try/catch
+
+        const items = await httpClient.getItems(query!)
+        this.view = new View(items, sort!)
+        const flatView = this.view.flatten()
+
+        this.app.content.clear()
+        this.app.sidebar.clear()
+
+        this.app.content.renderAll(flatView)
+        this.app.sidebar.renderAll(flatView)
+    }
+
+    initEditor() {
         // an update item has 4 pieces of information: 2 stored and 2 embedded
         // 2 stored - id and date-created : saved into the currUpdateItem object
         // 2 ebedded : meta stored in metabar, and md stored in Editor value
@@ -248,10 +272,10 @@ export default class Session {
         this.receiver.socket.addEventListener('message', (msg: MessageEvent) => {
             console.log('MSG RECEIVED!')
             const castable: Castable = JSON.parse(msg.data.toString())
-            
+
             // insert, update, delete
             // handle insert of different types
-            
+
         })
     }
 }
