@@ -32,28 +32,70 @@ export default class Content {
         this.el.innerHTML = ""
     }
 
+    addItem(itemId: number, nodes: FlatNode[]) {
+        const filteredNodes = this.filterConsecutiveSections(nodes)
+        const matchInd = filteredNodes.findIndex(v => v.type == 'item' && v.item.id == itemId)
+        const nodeAbove = filteredNodes[matchInd - 1]
+
+        const renderedElement = this.renderItem(filteredNodes[matchInd] as FlatItem)
+
+        if (nodeAbove.type == 'item') {
+            const match = this.el.querySelector(`[data-id="${nodeAbove.item.id}"]`)!
+            match.insertAdjacentElement('afterend', renderedElement)
+        } else {
+            const sectionMatch = this.el.querySelector(`[data-id="${nodeAbove.section.join('>')}"]`)
+            if (sectionMatch) {
+                sectionMatch.insertAdjacentElement('afterend', renderedElement)
+            } else {
+                const renderedSection = this.renderSection(nodeAbove as FlatSection)
+                const nodeAboveAbove = filteredNodes[matchInd - 2]
+                if (nodeAboveAbove == null) {
+                    this.el.insertAdjacentElement('afterbegin', renderedElement)
+                    this.el.insertAdjacentElement('afterbegin', renderedSection)
+                } else if (nodeAboveAbove.type == 'item') {
+                    const match = this.el.querySelector(`[data-id="${nodeAboveAbove.item.id}"]`)!
+                    match.insertAdjacentElement('afterend', renderedElement)
+                    match.insertAdjacentElement('afterend', renderedSection)
+                }
+            }
+        }
+
+    }
+
     renderAll(nodes: FlatNode[]) {
         const filteredNodes = this.filterConsecutiveSections(nodes)
-        filteredNodes.forEach(n => n.type == 'item' ? this.renderItem(n) : this.renderSection(n))
+        filteredNodes.forEach(n => {
+            const div = n.type == 'item' ? this.renderItem(n) : this.renderSection(n)
+            this.el.appendChild(div)
+        })
         // is this really necessary?
         hljs.highlightAll()
     }
 
-    renderItem(node: FlatItem) {
+    renderItem(node: FlatItem): HTMLDivElement {
         const div = document.createElement('div')
         div.innerHTML = md.parse(node.item.body.md)
+        const tagText = node.item.tags!?.length > 0 ? 
+            `<p>tags: ${node.item.tags!?.map(v=> v.name).join(', ')}</p>` : ''
+        const catText = node.item.category!?.length > 0 ? 
+            `<p>cats: ${node.item.category!?.map(v=> v.name).join(' > ')}</p>` : ''
+        div.insertAdjacentHTML('afterbegin', `
+        <h3>${node.item.header}</h3>${catText}${tagText}<hr>
+        `)
+
         div.classList.add("entry")
         div.setAttribute('data-id', `${node.item.id}`)
-        this.el.appendChild(div)
+        return div
     }
 
 
-    renderSection(node: FlatSection) {
+    renderSection(node: FlatSection): HTMLDivElement {
         const div = document.createElement('div')
         div.innerHTML = node.section.join(' > ')
         div.classList.add('entry-cat', `level-${node.level}`)
         div.addEventListener('click', this.clickHandler)
-        this.el.appendChild(div)
+        div.setAttribute('data-id', `${node.section.join('>')}`)
+        return div
     }
 
     // getEntryById(id: string): HTMLElement {

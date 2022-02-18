@@ -1,5 +1,5 @@
 import CatTree from 'backend/cats'
-import { Castable, InsertItem, MetabarProps, Query, TagRow, ViewSort } from 'common/types'
+import { Castable, FlatNode, InsertItem, Item, MetabarProps, Query, TagRow, ViewSort } from 'common/types'
 import App from 'frontend/app'
 import { httpClient } from 'frontend/code/state/client'
 import View from 'frontend/code/state/view'
@@ -7,17 +7,7 @@ import md from 'frontend/code/ui/md'
 import { BroadcastReceiver } from 'frontend/code/state/socket'
 import { serverHost, serverPort } from 'common/config'
 import { vanillaReviver } from 'common/utils'
-
-// session listens to events:
-// - editor events, to know when to re-arrange the editor
-// - omnibar events, to know when to change query/re-render 
-// - socket events, to know when to update contents
-// session also performs data-related tasks:
-// - sends query to backend using httpClient (create, update, etc)
-// - saves session state to localStorage
-// - boots up initial state from localStorage/sane-defaults
-// session uses reference to app object to limit area of concern
-// - query/sort/entries/opts are actually session related, and are included
+import { differenceWith } from 'lodash'
 
 interface StorageState {
     id?: number
@@ -27,12 +17,14 @@ interface StorageState {
 }
 
 export default class Session {
-    meta: { catTree: CatTree, tags: TagRow[] }
+    meta!: { catTree: CatTree, tags: TagRow[] }
     name: string
     app: App
-    view: View
-    query: Query
-    sort: ViewSort
+    view!: View
+
+    items: Item[]
+    query!: Query
+    sort!: ViewSort
 
     receiver = new BroadcastReceiver(`ws://${serverHost}:${serverPort}`)
 
@@ -47,15 +39,19 @@ export default class Session {
         savedQueries: []
     }
 
+    defaults: { sort: ViewSort, query: Query } = {
+        sort: { by: 'cat', depth: 2 },
+        query: {
+            type: 'full',
+            tags: [[{ id: 11, name: 'tag10' }, { id: 12, name: 'tag11' }]]
+        }
+    }
+
     constructor(sessionName: string, app: App) {
         this.name = sessionName
         this.app = app
 
-        // content - pre-init state
-        this.sort = { by: 'date', depth: null }
-        this.view = new View([], this.sort)
-        this.query = { type: 'full' }
-        this.meta = { catTree: null!, tags: [] }
+        this.items = []
 
         // editor - pre-init state
         this.currUpdateItem = null
@@ -84,16 +80,16 @@ export default class Session {
     }
 
     async initContent() {
-        // const defaultSort: ViewSort = { by: 'date', depth: 1 }
-        const defaultSort: ViewSort = { by: 'cat', depth: 2 }
-        const sort = this.getLocal<ViewSort>('sort') ?? defaultSort
+        try {
+            const sort = this.getLocal<ViewSort>('sort') ?? this.defaults.sort
+            const query = this.getLocal<Query>('query') ?? this.defaults.query
+            await this.updateContent(query, sort)  
 
-        const defaultQuery: Query = {
-            type: 'full', tags: [[{ id: 11, name: 'tag10' }, { id: 12, name: 'tag11' }]]
+        } catch (error) {
+            console.log('AN ERROR OCCURED DURING INIT: reverting to defaults...')
+            console.log(error)
+            await this.updateContent(this.defaults.query, this.defaults.sort)    
         }
-        const query = this.getLocal<Query>('query') ?? defaultQuery
-
-        await this.updateContent(query, sort)
     }
 
     async updateContent(query: Query | null, sort: ViewSort | null) {
@@ -101,18 +97,18 @@ export default class Session {
             query = this.query
         } else {
             this.query = query
+            this.setLocal('query', query)
         }
 
         if (sort == null) {
             sort = this.sort
         } else {
             this.sort = sort
+            this.setLocal('sort', sort)
         }
-        // TODO: save to local storage (after some checking that things work...)
-        // may do this with try/catch
 
-        const items = await httpClient.getItems(query!)
-        this.view = new View(items, sort!)
+        this.items = await httpClient.getItems(query)
+        this.view = new View(this.items, sort)
         const flatView = this.view.flatten()
 
         this.app.content.clear()
@@ -134,8 +130,7 @@ export default class Session {
             this.app.editor.editor.setValue(updateState.md)
             this.renderPreview(updateState.md)
         } else {
-            const defaultState = this.getLocal<StorageState>('state:default') ??
-                { md: '', meta: '' }
+            const defaultState = this.getLocal<StorageState>('state:default') ?? { md: '', meta: '' }
             this.app.metabar.el.value = defaultState.meta
             this.renderPreview(defaultState.md)
             this.app.editor.editor.setValue(defaultState.md)
@@ -272,12 +267,39 @@ export default class Session {
         this.receiver.socket.addEventListener('message', (msg: MessageEvent) => {
             console.log('MSG RECEIVED!')
             const castable: Castable = JSON.parse(msg.data.toString())
+            if (castable.insert!?.length > 0) this.receiveInsertMessage(castable.insert)
 
             // insert, update, delete
             // handle insert of different types
 
         })
     }
+
+    private receiveInsertMessage(castable: Castable['insert']) {
+        console.log(`insert length: ${castable!.length}`)
+        castable?.map(cast => {
+            switch (cast.type) {
+                case 'item':
+                    const oldFlatView = this.view.flatten()
+                    this.items.push(cast.value)
+                    this.view = new View(this.items, this.sort)
+                    const flatView = this.view.flatten()
+                    this.app.content.addItem(cast.value.id, flatView)
+                    this.app.sidebar.addItems(oldFlatView, flatView)
+
+                    break
+                case 'cat':
+                    this.meta.catTree.add(cast.value)
+                    break
+                case 'tag':
+                    this.meta.tags.push(cast.value)
+                    break
+            }
+        })
+    }
+
+
+
 }
 
 

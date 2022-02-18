@@ -50,6 +50,17 @@ export default class CatTree {
         }
         return cats
     }
+
+    add(catRow: CatRow) {
+        const catNode: CatNode = { ...catRow, children: []}
+        
+        if (catRow.pid == null) {
+            this.tree.push(catNode)
+        } else {
+            const nodeChain =  this.get(catRow.pid)
+            nodeChain[nodeChain.length - 1].children.push(catNode)    
+        }
+    }
 }
 
 

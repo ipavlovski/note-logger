@@ -398,8 +398,10 @@ export default class Omnibar {
             ['#last', 'insert the last command into omnibar'],
             ['#save', 'save the current command into array'],
             ['#clear', 'clear the current input'],
+            ['#selectall', 'select all displayed items'],
             ['#deselect', 'deselect all currently selected items'],
             ['#switch-session', 'change the session'],
+            ['#new-session', 'create a session'],
             ['#rename-tag', 'rename tag-name1->tag-name2'],
             ['#rename-cat', 'rename cat-chain1->cat-chain2']
         ]
@@ -417,8 +419,6 @@ export default class Omnibar {
         this.saved?.push([name, value])
         this.app.session.setLocal('saved-searches', this.saved)
     }
-
-
 
 
 }
