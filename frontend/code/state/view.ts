@@ -24,7 +24,9 @@ export default class View {
         const HOUR_OFFSET = 5
         const dateTime = DateTime.fromJSDate(date)
         const offset = parseInt(dateTime.toFormat("Z")) - HOUR_OFFSET
-        return dateTime.setZone('UTC' + (offset <= 0 ? "" : "+") + offset).toFormat("y-MM-dd cccc")
+        const zonedTime = dateTime.setZone('UTC' + (offset <= 0 ? "" : "+") + offset)
+        const formattedTIme = zonedTime.toFormat("y-MM-dd cccc")
+        return formattedTIme
     }
 
     // 2 things still left to do:

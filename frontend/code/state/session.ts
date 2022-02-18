@@ -266,7 +266,7 @@ export default class Session {
     private socketListener() {
         this.receiver.socket.addEventListener('message', (msg: MessageEvent) => {
             console.log('MSG RECEIVED!')
-            const castable: Castable = JSON.parse(msg.data.toString())
+            const castable: Castable = JSON.parse(msg.data.toString(), vanillaReviver)
             if (castable.insert!?.length > 0) this.receiveInsertMessage(castable.insert)
 
             // insert, update, delete
