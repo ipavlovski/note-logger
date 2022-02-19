@@ -40,11 +40,8 @@ export default class Session {
     }
 
     defaults: { sort: ViewSort, query: Query } = {
-        sort: { by: 'cat', depth: 2 },
-        query: {
-            type: 'full',
-            tags: [[{ id: 11, name: 'tag10' }, { id: 12, name: 'tag11' }]]
-        }
+        sort: { by: 'date', depth: 1 },
+        query: { type: 'full', created: ['1m', null] }
     }
 
     constructor(sessionName: string, app: App) {
@@ -83,12 +80,12 @@ export default class Session {
         try {
             const sort = this.getLocal<ViewSort>('sort') ?? this.defaults.sort
             const query = this.getLocal<Query>('query') ?? this.defaults.query
-            await this.updateContent(query, sort)  
+            await this.updateContent(query, sort)
 
         } catch (error) {
             console.log('AN ERROR OCCURED DURING INIT: reverting to defaults...')
             console.log(error)
-            await this.updateContent(this.defaults.query, this.defaults.sort)    
+            await this.updateContent(this.defaults.query, this.defaults.sort)
         }
     }
 

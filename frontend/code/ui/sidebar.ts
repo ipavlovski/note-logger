@@ -1,10 +1,13 @@
 import { FlatItem, FlatNode, FlatSection, Item } from 'common/types'
+import App from 'frontend/app'
 import { differenceWith } from 'lodash'
 
 export default class Sidebar {
     el: Element
+    app: App
 
-    constructor() {
+    constructor(app: App) {
+        this.app = app
         this.el = document.querySelector("#sidebar .sleeve")!
     }
 
@@ -20,8 +23,8 @@ export default class Sidebar {
         const p = document.createElement('p')
         p.innerHTML = node.item.header
         p.classList.add("side-link", `level-${node.level}`)
-        // p.addEventListener('click', this.clickHandler)
         p.setAttribute('data-id', `${node.item.id}`)
+        this.setupClickHandlers(p, 'item')
 
         return p
     }
@@ -37,7 +40,7 @@ export default class Sidebar {
         p.innerHTML = node.section[node.section.length - 1]
         p.classList.add('side-cat', `level-${node.level}`)
         p.setAttribute('data-id', `${node.section.join('>')}`)
-        // p.addEventListener('click', this.clickHandler)
+        this.setupClickHandlers(p, 'section')
 
         return p
     }
@@ -64,71 +67,28 @@ export default class Sidebar {
         }
     }
 
-        // addItem(itemId: number, nodes: FlatNode[]) {
-        //     const matchInd = nodes.findIndex(v => v.type == 'item' && v.item.id == itemId)
-        //     const nodeAbove = nodes[matchInd - 1]
+    clear() {
+        this.el.innerHTML = ""
+    }
 
-        //     const renderedElement = this.renderItem(nodes[matchInd] as FlatItem)
-
-        //     // if an item above is a section
-        //     if (nodeAbove.type == 'item') {
-        //         const match = this.el.querySelector(`[data-id="${nodeAbove.item.id}"]`)!
-        //         match.insertAdjacentElement('afterend', renderedElement)
-
-        //     } else {
-        //         let adjacentElement: HTMLElement | null = null
-        //         const acc: FlatNode[] = []
-        //         for (let ind = (matchInd - 1); ind >= 0; ind--) {
-        //             const nodeN = nodes[ind]
-        //             if (nodeN.type == 'item') {
-        //                 adjacentElement = this.el.querySelector(`[data-id="${nodeN.item.id}"]`)!
-        //                 break
-        //             }
-        //             const sectionMatch = this.el.querySelector(`[data-id="${nodeN.section.join('>')}"]`)
-        //             if (sectionMatch != null)  {
-
-        //             }
-        //             // this is the TOP of the node array, top-most category
-        //             if (ind == 0) {
-        //                 // need to push a node prior to this?
-        //                 break
-        //             }
-        //         }
-
-        //         if (adjacentElement == null) {
-        //             this.el.insertAdjacentElement('afterbegin', renderedElement)
-        //             acc.forEach(v => {
-        //                 const renderedSection = this.renderSection(v as FlatSection)
-        //                 this.el.insertAdjacentElement('afterbegin', renderedSection)
-        //             })
-        //         } else {
-        //             adjacentElement.insertAdjacentElement('afterend', renderedElement)
-        //             acc.forEach(v => {
-        //                 const renderedSection = this.renderSection(v as FlatSection)
-        //                 adjacentElement!.insertAdjacentElement('afterend', renderedSection)
-        //             })
-        //         }
-        //     }
-
-        // }
+    getNodeById(id: string): HTMLElement {
+        return this.el.querySelector(`p[data-id="${id}"]`)!
+    }
 
 
-        clear() {
-            this.el.innerHTML = ""
-        }
+    setupClickHandlers(el: HTMLElement, type: 'item' | 'section') {
+        // if section, may use slitghtly differnt logic (e.g. select ALL)
+        el.addEventListener('click', this.clickHandler)
+    }
 
-
-        // getSideLinkById(id: string): HTMLElement {
-        //     return this.el.querySelector(`p[data-id="${id}"]`)!
-        // }
-
-        // clickHandler = (event: Event) => {
-        //     const target = event.target as HTMLElement
-        //     const id = target.getAttribute('data-id')!
-        //     const sideLink = this.getSideLinkById(id)
-        //     const entry = this.app.content.getEntryById(id)
-        //     entry.scrollIntoView({ behavior: "smooth" })
-        // }
-
+    clickHandler = (event: Event) => {
+        const target = event.target as HTMLElement
+        const id = target.getAttribute('data-id')!
+        const sideLink = this.getNodeById(id)
+        const entry = this.app.content.getNodeById(id)
+        if (entry) entry.scrollIntoView({ behavior: "smooth", block: 'center' })
 
     }
+
+
+}

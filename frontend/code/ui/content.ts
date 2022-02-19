@@ -1,4 +1,5 @@
 import { FlatItem, FlatNode, FlatSection } from 'common/types'
+import App from 'frontend/app'
 import md from 'frontend/code/ui/md'
 import hljs from 'highlight.js'
 
@@ -6,9 +7,11 @@ import hljs from 'highlight.js'
 
 export default class Content {
     el: HTMLElement
+    app: App
 
-    constructor() {
+    constructor(app: App) {
         this.el = document.getElementById("content")!
+        this.app = app
     }
 
 
@@ -75,16 +78,17 @@ export default class Content {
     renderItem(node: FlatItem): HTMLDivElement {
         const div = document.createElement('div')
         div.innerHTML = md.parse(node.item.body.md)
-        const tagText = node.item.tags!?.length > 0 ? 
-            `<p>tags: ${node.item.tags!?.map(v=> v.name).join(', ')}</p>` : ''
-        const catText = node.item.category!?.length > 0 ? 
-            `<p>cats: ${node.item.category!?.map(v=> v.name).join(' > ')}</p>` : ''
+        const tagText = node.item.tags!?.length > 0 ?
+            `<p>tags: ${node.item.tags!?.map(v => v.name).join(', ')}</p>` : ''
+        const catText = node.item.category!?.length > 0 ?
+            `<p>cats: ${node.item.category!?.map(v => v.name).join(' > ')}</p>` : ''
         div.insertAdjacentHTML('afterbegin', `
         <h3>${node.item.header}</h3>${catText}${tagText}<hr>
         `)
 
         div.classList.add("entry")
         div.setAttribute('data-id', `${node.item.id}`)
+        this.setupClickHandlers(div, 'item')
         return div
     }
 
@@ -93,14 +97,48 @@ export default class Content {
         const div = document.createElement('div')
         div.innerHTML = node.section.join(' > ')
         div.classList.add('entry-cat', `level-${node.level}`)
-        div.addEventListener('click', this.clickHandler)
         div.setAttribute('data-id', `${node.section.join('>')}`)
+        this.setupClickHandlers(div, 'section')
         return div
     }
 
-    // getEntryById(id: string): HTMLElement {
-    //     return this.el.querySelector(`div[data-id="${id}"]`)
-    // }
+
+    setupClickHandlers(el: HTMLElement, type: 'item' | 'section') {
+        // if section, may use slitghtly differnt logic (e.g. select ALL)
+        el.addEventListener('dblclick', this.dblclickHandler)
+
+        el.addEventListener('click', (event) => {
+            if (event.shiftKey) {
+                this.shiftClickHandler(event)
+            }
+        })
+    }
+
+    shiftClickHandler = (event: MouseEvent) => {
+        var sel = window.getSelection()
+        if (sel != null) sel.empty()
+        console.log('SHIFT CLICKED:', event.currentTarget)
+
+        const contentItem = event.currentTarget! as HTMLElement
+        contentItem.classList.toggle('content-selected')
+        
+        const id = contentItem.getAttribute('data-id')
+        const sideLink =  this.app.sidebar.el.querySelector(`p[data-id="${id}"]`)!
+        sideLink.classList.toggle('sidebar-selected')
+    }
+
+
+    dblclickHandler = (event: Event) => {
+        const target = event.target as HTMLElement
+        const id = target.getAttribute('data-id')!
+        const sideLink = this.app.sidebar.getNodeById(id)
+        if (sideLink) sideLink.scrollIntoView({ behavior: "smooth", block: 'center' })
+
+    }
+
+    getNodeById(id: string): HTMLElement {
+        return this.el.querySelector(`div[data-id="${id}"]`)!
+    }
 
     clickHandler() {
         console.log('CLICKED!!!')

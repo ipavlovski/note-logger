@@ -31,8 +31,8 @@ export default class App {
         console.log("Creating an app instance @ %s", new Date().toISOString())
 
         this.editor = new Editor()
-        this.content = new Content()
-        this.sidebar = new Sidebar()
+        this.content = new Content(this)
+        this.sidebar = new Sidebar(this)
 
 
         this.handleGlobalEvents()
