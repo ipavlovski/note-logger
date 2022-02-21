@@ -73,22 +73,18 @@ export default class Session {
     private configureShortcuts() {
         hotkeys('shift+e', { scope: 'main' }, (event) => {
             event.preventDefault()
-            console.log('shift-E clicked!')
             this.startUpdateEditing()
         })
 
         hotkeys('shift+d', { scope: 'main' }, (event) => {
             event.preventDefault()
-            console.log('shift-A clicked!')
             this.deleteItem()
         })
 
         hotkeys('shift+a', { scope: 'main' }, (event) => {
             event.preventDefault()
-            console.log('shift-D clicked!')
             this.archiveItem()
         })
-
 
     }
 
@@ -330,11 +326,19 @@ export default class Session {
                             level: parseInt(contentElement.getAttribute('data-level')!),
                             parent: contentElement.getAttribute('data-parent')!
                         }
-                        const renderedContent = this.app.content.renderItem(flatItem)
-                        contentElement.replaceWith(renderedContent)
-
-                        const renderedSidelink = this.app.sidebar.renderItem(flatItem)
-                        this.app.sidebar.getNodeById(id)!.replaceWith(renderedSidelink)
+                        if (! item.archived) {
+                            
+                            const renderedContent = this.app.content.renderItem(flatItem)
+                            contentElement.replaceWith(renderedContent)
+    
+                            const renderedSidelink = this.app.sidebar.renderItem(flatItem)
+                            this.app.sidebar.getNodeById(id)!.replaceWith(renderedSidelink)
+    
+                        } else {
+                            console.log('item is archived!')
+                            this.app.content.getNodeById(id).remove()
+                            this.app.sidebar.getNodeById(id).remove()   
+                        }
                     }
 
                     break
@@ -375,7 +379,8 @@ export default class Session {
         castable?.map(cast => {
             if (cast.type == 'item') {
                 this.app.content.getNodeById(cast.value.id).remove()
-                this.app.sidebar.getNodeById(cast.value.id).remove()        
+                this.app.sidebar.getNodeById(cast.value.id).remove()    
+                this.view.removeById(cast.value.id)
             } else {
                 console.log('Deleting non-items in receiving not implemented.')
             }
@@ -433,8 +438,20 @@ export default class Session {
 
     }
 
-    private archiveItem() {
-        // send an update request
+    private async archiveItem() {
+        const items = document.querySelectorAll('.content-selected')
+
+        // if no item is selected
+        if (items.length != 1) {
+            this.app.metabar.flashError(`To archive item, one item must be selected: ${items.length} items`)
+            return
+        }
+        const id = parseInt(items[0].getAttribute('data-id')!)
+
+        const success = await httpClient.updateOneItem(id, { archived: true })
+        if (! success) this.app.metabar.flashError('Failed to archive item')
+
+
     }
 
 }

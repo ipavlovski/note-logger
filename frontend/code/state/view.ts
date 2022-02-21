@@ -180,4 +180,26 @@ export default class View {
         recurse(this.nodes)
         return outItem
     }
+
+    removeById(id: number): boolean {
+        let outNode: ViewNode | null = null
+        const recurse = (nodes: ViewNode[]) => {
+            for (const node of nodes) {
+                for (const item of node.items) {
+                    if (item.id == id) { outNode = node; break }
+                }
+                if (outNode != null) break
+                if (node.children.length > 0) recurse(node.children)
+            }
+        }
+        recurse(this.nodes)
+        if (outNode != null) {
+            const node = outNode as ViewNode
+            const ind = node.items.findIndex(item => item.id == id)
+            node.items.splice(ind, 1)
+            return true
+        } else {
+            return false
+        }
+    }
 }
