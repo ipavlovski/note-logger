@@ -56,14 +56,24 @@ export class HttpClient {
 
     // how to update the body only?
     async updateOneItem(id: number, item: UpdateItemOne) {
-
-
         try {
             const res = await fetch(`/update/${id}`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify(item)
             })
+            if (res.status != 200) throw new Error('ERROR!!!')
+            return true
+        } catch (err) {
+            // should display a tost!
+            console.error(err)
+            return false
+        }
+    }
+
+    async deleteItem(id: number) {
+        try {
+            const res = await fetch(`/delete/${id}`, { method: 'DELETE' })
             if (res.status != 200) throw new Error('ERROR!!!')
             return true
         } catch (err) {

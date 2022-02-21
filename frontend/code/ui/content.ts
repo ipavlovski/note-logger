@@ -143,7 +143,7 @@ export default class Content {
 
     }
 
-    getNodeById(id: string): HTMLElement {
+    getNodeById(id: string | number): HTMLElement {
         return this.el.querySelector(`div[data-id="${id}"]`)!
     }
 

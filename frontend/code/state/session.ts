@@ -75,8 +75,20 @@ export default class Session {
             event.preventDefault()
             console.log('shift-E clicked!')
             this.startUpdateEditing()
-
         })
+
+        hotkeys('shift+d', { scope: 'main' }, (event) => {
+            event.preventDefault()
+            console.log('shift-A clicked!')
+            this.deleteItem()
+        })
+
+        hotkeys('shift+a', { scope: 'main' }, (event) => {
+            event.preventDefault()
+            console.log('shift-D clicked!')
+            this.archiveItem()
+        })
+
 
     }
 
@@ -299,13 +311,11 @@ export default class Session {
             const castable: Castable = JSON.parse(msg.data.toString(), vanillaReviver)
             if (castable.insert!?.length > 0) this.receiveInsertMessage(castable.insert)
             if (castable.update!?.length > 0) this.receiveUpdateMessage(castable.update)
-            // TODO: handle update, delete
-
+            if (castable.delete!?.length > 0) this.receiveDeleteMessage(castable.delete)
         })
     }
 
     private receiveUpdateMessage(castable: Castable['update']) {
-        console.log(`insert length: ${castable!.length}`)
         castable?.map(cast => {
             switch (cast.type) {
                 case 'item':
@@ -313,7 +323,7 @@ export default class Session {
                     const item = this.view.getById(id)
                     if (item != null) {
                         Object.assign(item, cast.value)
-                        const contentElement = this.app.content.el.querySelector(`div[data-id="${id}"]`)!
+                        const contentElement = this.app.content.getNodeById(id)!
                         const flatItem: FlatItem = {
                             type: 'item',
                             item: item,
@@ -323,10 +333,8 @@ export default class Session {
                         const renderedContent = this.app.content.renderItem(flatItem)
                         contentElement.replaceWith(renderedContent)
 
-                        // TODO: replace sidebar too?
-                        // const sideLink = this.app.sidebar.el.querySelector(`p[data-id="${id}"]`)!
-                        // sideLink.replaceWith()
-
+                        const renderedSidelink = this.app.sidebar.renderItem(flatItem)
+                        this.app.sidebar.getNodeById(id)!.replaceWith(renderedSidelink)
                     }
 
                     break
@@ -342,7 +350,6 @@ export default class Session {
 
 
     private receiveInsertMessage(castable: Castable['insert']) {
-        console.log(`insert length: ${castable!.length}`)
         castable?.map(cast => {
             switch (cast.type) {
                 case 'item':
@@ -364,9 +371,21 @@ export default class Session {
         })
     }
 
+    private receiveDeleteMessage(castable: Castable['delete']) {
+        castable?.map(cast => {
+            if (cast.type == 'item') {
+                this.app.content.getNodeById(cast.value.id).remove()
+                this.app.sidebar.getNodeById(cast.value.id).remove()        
+            } else {
+                console.log('Deleting non-items in receiving not implemented.')
+            }
+        })
+
+    }
+
 
     private startUpdateEditing() {
-        var items = document.querySelectorAll('.content-selected')
+        const items = document.querySelectorAll('.content-selected')
 
         // if no item is selected
         if (items.length != 1) {
@@ -393,6 +412,30 @@ export default class Session {
     }
 
 
+    private async deleteItem() {
+        const items = document.querySelectorAll('.content-selected')
+
+        // if no item is selected
+        if (items.length != 1) {
+            this.app.metabar.flashError(`To edit item, one item must be selected: ${items.length} items`)
+            return
+        }
+        const id = parseInt(items[0].getAttribute('data-id')!)
+
+        if (this.currUpdateItem?.id == id) {
+            this.app.metabar.flashError('Cannot delete item being edited')
+            return
+        }
+
+        const success = await httpClient.deleteItem(id)
+        if (! success) this.app.metabar.flashError('Failed to delete item')
+        // the rest happens in the socket!
+
+    }
+
+    private archiveItem() {
+        // send an update request
+    }
 
 }
 

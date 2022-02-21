@@ -24,6 +24,7 @@ export default class Sidebar {
         p.innerHTML = node.item.header
         p.classList.add("side-link", `level-${node.level}`)
         p.setAttribute('data-id', `${node.item.id}`)
+        
         this.setupClickHandlers(p, 'item')
 
         return p
@@ -71,7 +72,7 @@ export default class Sidebar {
         this.el.innerHTML = ""
     }
 
-    getNodeById(id: string): HTMLElement {
+    getNodeById(id: string | number): HTMLElement {
         return this.el.querySelector(`p[data-id="${id}"]`)!
     }
 
