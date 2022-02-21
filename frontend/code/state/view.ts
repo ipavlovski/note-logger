@@ -96,14 +96,14 @@ export default class View {
         const acc: FlatNode[] = []
         const recurse = (node: ViewNode, level: number, parents: string[]) => {
             const section = parents.concat(node.name)
-            acc.push({ 
+            acc.push({
                 type: 'section', section: section, parent: parents[parents.length - 1], level
-             })
+            })
             node.items.forEach(item => {
                 acc.push({ type: 'item', item: item, parent: node.name, level })
             })
             if (node.children.length > 0)
-                node.children.forEach(childNode => 
+                node.children.forEach(childNode =>
                     recurse(childNode, level + 1, section))
         }
         this.nodes.forEach(topNode => recurse(topNode, 0, ['top']))
@@ -164,5 +164,20 @@ export default class View {
             topNode.children.push({ name: 'default', items: topNode.items, children: [] })
 
         return this.recurseSort(topNode.children, useUpdated)
+    }
+
+    getById(id: number): Item | null {
+        let outItem: Item | null = null
+        const recurse = (nodes: ViewNode[]) => {
+            for (const node of nodes) {
+                for (const item of node.items) {
+                    if (item.id == id) { outItem = item; break }
+                }
+                if (outItem != null) break
+                if (node.children.length > 0) recurse(node.children)
+            }
+        }
+        recurse(this.nodes)
+        return outItem
     }
 }

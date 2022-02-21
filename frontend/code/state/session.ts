@@ -1,5 +1,5 @@
 import CatTree from 'backend/cats'
-import { Castable, FlatNode, InsertItem, Item, MetabarProps, Query, TagRow, ViewSort } from 'common/types'
+import { Castable, FlatNode, InsertItem, Item, MetabarProps, Query, TagRow, UpdateItemOne, ViewSort } from 'common/types'
 import App from 'frontend/app'
 import { httpClient } from 'frontend/code/state/client'
 import View from 'frontend/code/state/view'
@@ -8,6 +8,7 @@ import { BroadcastReceiver } from 'frontend/code/state/socket'
 import { serverHost, serverPort } from 'common/config'
 import { vanillaReviver } from 'common/utils'
 import { differenceWith } from 'lodash'
+import hotkeys from 'hotkeys-js'
 
 interface StorageState {
     id?: number
@@ -53,6 +54,9 @@ export default class Session {
         // editor - pre-init state
         this.currUpdateItem = null
 
+        // various hotkeys
+        this.configureShortcuts()
+
         // listeners
         this.editorChangeListener()
         this.createItemListener()
@@ -61,7 +65,7 @@ export default class Session {
 
         // init all
         this.initContent()
-        this.initEditor()
+        this.updateEditor()
 
         // get metadata
         this.getMetadata()
@@ -115,7 +119,7 @@ export default class Session {
         this.app.sidebar.renderAll(flatView)
     }
 
-    initEditor() {
+    updateEditor() {
         // an update item has 4 pieces of information: 2 stored and 2 embedded
         // 2 stored - id and date-created : saved into the currUpdateItem object
         // 2 ebedded : meta stored in metabar, and md stored in Editor value
@@ -169,6 +173,10 @@ export default class Session {
     }
 
 
+
+
+
+
     // the basic 'ctrlm' acts as a split
     private splitItemListener() {
         this.app.editor.addEventListener('editor-ctrlm', async (event) => {
@@ -178,9 +186,15 @@ export default class Session {
             const item = this.prepItemForSplit(vals, selection)
             if (item == null) return
 
-            this.currUpdateItem == null ?
-                await this.splitDefaultItem(item) :
-                await this.splitUpdateItem(item)
+            const success = await httpClient.insertItem(item)
+            if (success) {
+                this.app.editor.delete()
+                this.app.metabar.clear()
+            } else {
+                this.app.metabar.flashError('Failed to create item')
+            }
+
+
 
         })
     }
@@ -226,38 +240,46 @@ export default class Session {
 
     }
 
-    private async splitDefaultItem(item: InsertItem) {
-
-        // the new item should show up using the socket
-        const success = await httpClient.insertItem(item)
-        if (success) {
-            this.app.editor.delete()
-            this.app.metabar.clear()
-        } else {
-            this.app.metabar.flashError('Failed to create item')
-        }
-    }
-
-    private async splitUpdateItem(item: InsertItem) {
-        // the new item should show up using the socket
-        const insertSuccess = await httpClient.insertItem(item)
-        const updateSuccess = await httpClient.updateItemBody(this.currUpdateItem?.id!, item)
-
-        // UPDATE
-        if (insertSuccess && updateSuccess) {
-            this.app.editor.delete()
-            this.app.metabar.clear()
-        } else {
-            this.app.metabar.flashError('Failed to create item')
-        }
-    }
-
-
+    // this is ctrl+shift+m command
+    // ctrlShiftM sends an 'update item' request
+    // if the metabar is empty -> only update body, with update
     private createItemListener() {
         this.app.editor.addEventListener('editor-ctrlshiftm', async (event) => {
-            const vals = this.app.metabar.getValues()
-            const selection = this.app.editor.getSelection()
+            this.currUpdateItem == null ?
+                await this.createFullDefaultItem() :
+                await this.saveAndExitUpdatingItem()
         })
+    }
+
+    private async createFullDefaultItem() {
+        this.app.metabar.flashError('default ctrl-shift-m not implemented yet!')
+    }
+
+    private async saveAndExitUpdatingItem() {
+        const vals = this.app.metabar.getValues()
+        const str = this.app.editor.editor.getValue()
+
+         const item: UpdateItemOne= { 
+            body: { md: str, html: md.parse(str) },
+            updated: new Date()
+        }
+        if (vals?.updated != null) item.updated = vals.updated
+
+        if (vals?.header != null) item.header = vals.header
+        if (vals?.created != null) item.created = vals.created
+        if (vals?.category != null) item.category = vals.category
+        if (vals?.tags != null) item.tags = vals.tags
+
+        const updateSuccess = await httpClient.updateOneItem(this.currUpdateItem?.id!, item)
+        if (updateSuccess) {
+            this.app.editor.delete()
+            this.app.metabar.clear()
+            this.currUpdateItem = null
+            this.setLocal('state:update', null)
+            this.updateEditor()
+        } else {
+            this.app.metabar.flashError('Failed to update item')
+        }
     }
 
     private socketListener() {
@@ -265,9 +287,8 @@ export default class Session {
             console.log('MSG RECEIVED!')
             const castable: Castable = JSON.parse(msg.data.toString(), vanillaReviver)
             if (castable.insert!?.length > 0) this.receiveInsertMessage(castable.insert)
-
-            // insert, update, delete
-            // handle insert of different types
+            if (castable.update!?.length > 0) console.log('receved updated item!')
+            // TODO: handle update, delete
 
         })
     }
@@ -293,6 +314,40 @@ export default class Session {
                     break
             }
         })
+    }
+
+
+    private configureShortcuts() {
+        hotkeys('shift+e', { scope: 'main' }, (event) => {
+            event.preventDefault()
+            console.log('shift-E clicked!')
+            var items = document.querySelectorAll('.content-selected')
+
+            // if no item is selected
+            if (items.length != 1) {
+                this.app.metabar.flashError('To edit item, one item must be selected!')
+                return
+            }
+
+            // if already editing
+            if (this.currUpdateItem != null) {
+                this.app.metabar.flashError('Already editing an item')
+                return
+            }
+
+            const id = parseInt(items[0].getAttribute('data-id')!)
+            const item = this.view.getById(id)!
+
+            this.currUpdateItem = { id: item.id!, created: item.created.toISOString()! }
+            // this.app.metabar.el.value = updateState.meta
+            this.app.editor.editor.setValue(item.body.md)
+            this.renderPreview(item.body.md)
+            // need to load all of the data for the item
+
+
+        })
+
+
     }
 
 

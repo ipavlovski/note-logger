@@ -1,4 +1,4 @@
-import { CatRow, InsertItem, Item, Query, TagRow } from 'common/types'
+import { CatRow, InsertItem, Item, Query, TagRow, UpdateItemOne } from 'common/types'
 import { vanillaReviver } from 'common/utils'
 
 
@@ -55,7 +55,7 @@ export class HttpClient {
     }
 
     // how to update the body only?
-    async updateItemBody(id: number, item: InsertItem) {
+    async updateOneItem(id: number, item: UpdateItemOne) {
 
 
         try {
