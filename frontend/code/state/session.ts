@@ -1,13 +1,12 @@
 import CatTree from 'backend/cats'
-import { Castable, FlatNode, InsertItem, Item, MetabarProps, Query, TagRow, UpdateItemOne, ViewSort } from 'common/types'
+import { serverHost, serverPort } from 'common/config'
+import { Castable, InsertItem, Item, MetabarProps, Query, TagRow, UpdateItemOne, ViewSort } from 'common/types'
+import { vanillaReviver } from 'common/utils'
 import App from 'frontend/app'
 import { httpClient } from 'frontend/code/state/client'
+import { BroadcastReceiver } from 'frontend/code/state/socket'
 import View from 'frontend/code/state/view'
 import md from 'frontend/code/ui/md'
-import { BroadcastReceiver } from 'frontend/code/state/socket'
-import { serverHost, serverPort } from 'common/config'
-import { vanillaReviver } from 'common/utils'
-import { differenceWith } from 'lodash'
 import hotkeys from 'hotkeys-js'
 
 interface StorageState {
@@ -71,6 +70,16 @@ export default class Session {
         this.getMetadata()
     }
 
+    private configureShortcuts() {
+        hotkeys('shift+e', { scope: 'main' }, (event) => {
+            event.preventDefault()
+            console.log('shift-E clicked!')
+            this.startUpdateEditing()
+
+        })
+
+    }
+
     getLocal<T>(key: string): T | null {
         const state = localStorage.getItem(`${this.name}:${key}`)
         return state != null ? JSON.parse(state, vanillaReviver) : null
@@ -129,6 +138,7 @@ export default class Session {
             this.currUpdateItem = { id: updateState.id!, created: updateState.created! } || null
             this.app.metabar.el.value = updateState.meta
             this.app.editor.editor.setValue(updateState.md)
+            document.querySelector<HTMLHRElement>('hr.active-item')!.style.display = 'block'
             this.renderPreview(updateState.md)
         } else {
             const defaultState = this.getLocal<StorageState>('state:default') ?? { md: '', meta: '' }
@@ -277,6 +287,7 @@ export default class Session {
             this.currUpdateItem = null
             this.setLocal('state:update', null)
             this.updateEditor()
+            document.querySelector<HTMLHRElement>('hr.active-item')!.style.display = 'none'
         } else {
             this.app.metabar.flashError('Failed to update item')
         }
@@ -317,37 +328,31 @@ export default class Session {
     }
 
 
-    private configureShortcuts() {
-        hotkeys('shift+e', { scope: 'main' }, (event) => {
-            event.preventDefault()
-            console.log('shift-E clicked!')
-            var items = document.querySelectorAll('.content-selected')
+    private startUpdateEditing() {
+        var items = document.querySelectorAll('.content-selected')
 
-            // if no item is selected
-            if (items.length != 1) {
-                this.app.metabar.flashError('To edit item, one item must be selected!')
-                return
-            }
+        // if no item is selected
+        if (items.length != 1) {
+            this.app.metabar.flashError(`To edit item, one item must be selected: ${items.length} items`)
+            return
+        }
 
-            // if already editing
-            if (this.currUpdateItem != null) {
-                this.app.metabar.flashError('Already editing an item')
-                return
-            }
+        // if already editing
+        if (this.currUpdateItem != null) {
+            this.app.metabar.flashError('Already editing an item')
+            return
+        }
 
-            const id = parseInt(items[0].getAttribute('data-id')!)
-            const item = this.view.getById(id)!
+        const id = parseInt(items[0].getAttribute('data-id')!)
+        const item = this.view.getById(id)!
 
-            this.currUpdateItem = { id: item.id!, created: item.created.toISOString()! }
-            // this.app.metabar.el.value = updateState.meta
-            this.app.editor.editor.setValue(item.body.md)
-            this.renderPreview(item.body.md)
-            // need to load all of the data for the item
+        this.currUpdateItem = { id: item.id!, created: item.created.toISOString()! }
+        // this.app.metabar.el.value = updateState.meta
+        this.app.editor.editor.setValue(item.body.md)
+        this.renderPreview(item.body.md)
 
-
-        })
-
-
+        document.querySelector<HTMLHRElement>('hr.active-item')!.style.display = 'block'
+        
     }
 
 

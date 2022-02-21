@@ -79,11 +79,13 @@ export default class Content {
         const div = document.createElement('div')
         div.innerHTML = md.parse(node.item.body.md)
         const tagText = node.item.tags!?.length > 0 ?
-            `<p>tags: ${node.item.tags!?.map(v => v.name).join(', ')}</p>` : ''
-        const catText = node.item.category!?.length > 0 ?
-            `<p>cats: ${node.item.category!?.map(v => v.name).join(' > ')}</p>` : ''
+            `<span class='item-tags'>(${node.item.tags!?.map(v => v.name).join(', ')})</span>` : ''
+        // const catText = node.item.category!?.length > 0 ?
+        //     `<p>cats: ${node.item.category!?.map(v => v.name).join(' > ')}</p>` : ''
+
+
         div.insertAdjacentHTML('afterbegin', `
-        <h3>${node.item.header}</h3>${catText}${tagText}<hr>
+        <h3 class='item-header'>${node.item.header} ${tagText}</h3><hr>
         `)
 
         div.classList.add("entry")
@@ -94,8 +96,9 @@ export default class Content {
 
 
     renderSection(node: FlatSection): HTMLDivElement {
+        const divider = '&#183;'
         const div = document.createElement('div')
-        div.innerHTML = node.section.join(' > ')
+        div.innerHTML = node.section.join(` ${divider} `)
         div.classList.add('entry-cat', `level-${node.level}`)
         div.setAttribute('data-id', `${node.section.join('>')}`)
         this.setupClickHandlers(div, 'section')
@@ -121,9 +124,9 @@ export default class Content {
 
         const contentItem = event.currentTarget! as HTMLElement
         contentItem.classList.toggle('content-selected')
-        
+
         const id = contentItem.getAttribute('data-id')
-        const sideLink =  this.app.sidebar.el.querySelector(`p[data-id="${id}"]`)!
+        const sideLink = this.app.sidebar.el.querySelector(`p[data-id="${id}"]`)!
         sideLink.classList.toggle('sidebar-selected')
     }
 
