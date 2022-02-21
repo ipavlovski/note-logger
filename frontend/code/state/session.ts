@@ -1,6 +1,6 @@
 import CatTree from 'backend/cats'
 import { serverHost, serverPort } from 'common/config'
-import { Castable, InsertItem, Item, MetabarProps, Query, TagRow, UpdateItemOne, ViewSort } from 'common/types'
+import { Castable, FlatItem, InsertItem, Item, MetabarProps, Query, TagRow, UpdateItemOne, ViewSort } from 'common/types'
 import { vanillaReviver } from 'common/utils'
 import App from 'frontend/app'
 import { httpClient } from 'frontend/code/state/client'
@@ -269,7 +269,7 @@ export default class Session {
         const vals = this.app.metabar.getValues()
         const str = this.app.editor.editor.getValue()
 
-         const item: UpdateItemOne= { 
+        const item: UpdateItemOne = {
             body: { md: str, html: md.parse(str) },
             updated: new Date()
         }
@@ -298,11 +298,48 @@ export default class Session {
             console.log('MSG RECEIVED!')
             const castable: Castable = JSON.parse(msg.data.toString(), vanillaReviver)
             if (castable.insert!?.length > 0) this.receiveInsertMessage(castable.insert)
-            if (castable.update!?.length > 0) console.log('receved updated item!')
+            if (castable.update!?.length > 0) this.receiveUpdateMessage(castable.update)
             // TODO: handle update, delete
 
         })
     }
+
+    private receiveUpdateMessage(castable: Castable['update']) {
+        console.log(`insert length: ${castable!.length}`)
+        castable?.map(cast => {
+            switch (cast.type) {
+                case 'item':
+                    const id = cast.value.id
+                    const item = this.view.getById(id)
+                    if (item != null) {
+                        Object.assign(item, cast.value)
+                        const contentElement = this.app.content.el.querySelector(`div[data-id="${id}"]`)!
+                        const flatItem: FlatItem = {
+                            type: 'item',
+                            item: item,
+                            level: parseInt(contentElement.getAttribute('data-level')!),
+                            parent: contentElement.getAttribute('data-parent')!
+                        }
+                        const renderedContent = this.app.content.renderItem(flatItem)
+                        contentElement.replaceWith(renderedContent)
+
+                        // TODO: replace sidebar too?
+                        // const sideLink = this.app.sidebar.el.querySelector(`p[data-id="${id}"]`)!
+                        // sideLink.replaceWith()
+
+                    }
+
+                    break
+                case 'cat':
+                    console.log('NOT IMPLEMENTED')
+                    break
+                case 'tag':
+                    console.log('NOT IMPLEMPLEMENTED')
+                    break
+            }
+        })
+    }
+
 
     private receiveInsertMessage(castable: Castable['insert']) {
         console.log(`insert length: ${castable!.length}`)
@@ -352,7 +389,7 @@ export default class Session {
         this.renderPreview(item.body.md)
 
         document.querySelector<HTMLHRElement>('hr.active-item')!.style.display = 'block'
-        
+
     }
 
 

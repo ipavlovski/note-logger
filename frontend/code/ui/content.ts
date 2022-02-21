@@ -90,6 +90,8 @@ export default class Content {
 
         div.classList.add("entry")
         div.setAttribute('data-id', `${node.item.id}`)
+        div.setAttribute('data-parent', `${node.parent}`)
+        div.setAttribute('data-level', `${node.level}`)
         this.setupClickHandlers(div, 'item')
         return div
     }
@@ -101,6 +103,8 @@ export default class Content {
         div.innerHTML = node.section.join(` ${divider} `)
         div.classList.add('entry-cat', `level-${node.level}`)
         div.setAttribute('data-id', `${node.section.join('>')}`)
+        div.setAttribute('data-parent', `${node.parent}`)
+        div.setAttribute('data-level', `${node.level}`)
         this.setupClickHandlers(div, 'section')
         return div
     }
