@@ -22,8 +22,6 @@ type OmniCollection = {
     sort: OmniInput[]
 }
 
-// query prop: key, input, value -> should really just use that object...
-// type QueryProp = [string, string, Partial<Query>]
 interface QueryProp {
     key: string
     input: string
@@ -36,9 +34,10 @@ interface QuickAccessState {
 }
 
 class CatInput implements OmniInput {
-    key: [string, string] = ['category', 'cat1>cat2>cat3,catN>catJ$']
+    key: [string, string] = ['cat', 'cat1>cat2>cat3,catN>catJ$']
 
     hint(this: Omnibar, input: string): Hint {
+        input = input ?? ''
         const catTree = this.app.session.meta.catTree
         const commaSplit = input.split(',')
         const catSplit = commaSplit[commaSplit.length - 1].split('>')
@@ -61,6 +60,7 @@ class CatInput implements OmniInput {
     }
 
     action(this: Omnibar, input: string): boolean {
+        input = input ?? ''
         const catTree = this.app.session.meta.catTree
         let value: CatQuery | undefined = { term: [], rec: [] }
 
@@ -74,7 +74,7 @@ class CatInput implements OmniInput {
                 isTerm ? value?.term.push(walk[walk.length - 1]) :
                     value?.rec.push(walk[walk.length - 1])
             })
-            const output: QueryProp = { key: 'category', input, value: { cats: value } }
+            const output: QueryProp = { key: 'cat', input, value: { cats: value } }
             this.queryProps.push(output)
             return true
         } catch {
@@ -94,6 +94,7 @@ class TagInput implements OmniInput {
 
 
     hint(this: Omnibar, input: string): Hint {
+        input = input ?? ''
         const tagGroups = input.split(',').map(v => v.split('+'))
         const allTags = this.app.session.meta.tags
 
@@ -113,6 +114,7 @@ class TagInput implements OmniInput {
     }
 
     action(this: Omnibar, input: string): boolean {
+        input = input ?? ''
         const tagGroups = input.split(',').map(v => v.split('+'))
         const allTags = this.app.session.meta.tags
 
@@ -153,6 +155,8 @@ class ArchiveInput implements OmniInput {
     action(this: Omnibar, input: string): boolean {
         const value = input == 'true' ? true : input == 'false' ? false : null
 
+        console.log(`INPUT:${input} | VALUE:${value}`)
+
         if (value != null) {
             const output: QueryProp = { key: 'archived', input, value: { archived: value } }
             this.queryProps.push(output)
@@ -167,7 +171,7 @@ class ArchiveInput implements OmniInput {
 
 
 class SearchInput implements OmniInput {
-    key: [string, string] = ['search:', 'search-string']
+    key: [string, string] = ['search', 'search-string']
 
     hint(this: Omnibar, input: string): Hint {
         return { header: `search: ${input}`, hints: [] }
@@ -190,9 +194,11 @@ class SearchInput implements OmniInput {
 
 
 class DateInput implements OmniInput {
+
     key: [string, string] = ['created', 'date expression']
 
     hint(this: Omnibar, input: string): Hint {
+        input = input ?? ''
 
         const examples: [string, string][] = [
             ["shorthand", "1d, 3w, 2m, 4y"],
@@ -269,17 +275,17 @@ class SortingInput implements OmniInput {
     }
 
     action(this: Omnibar, input: string): boolean {
-        const match = 'input'.match(/^(by=|depth=)(.*)/)
+        const match = input.match(/^(by=|depth=)(.*)/)
 
         if (match == null) return this.wiggle()
 
         if (match[1] == 'by=' && ['date', 'cat'].includes(match[2])) {
-            this.sort.by = match[1] as ('date' | 'cat')
+            this.sort.by = match[2] as ('date' | 'cat')
             return true
         }
 
-        if (match[1] == 'depth=' && parseInt(match[2]) > 0) {
-            this.sort.depth = parseInt(match[2])
+        if (match[1] == 'depth=' && (match[2] == 'null' || parseInt(match[2]) > 0)) {
+            this.sort.depth = match[2] == 'null' ? null : parseInt(match[2])
             return true
         }
 
@@ -294,7 +300,7 @@ class SortingInput implements OmniInput {
 // - selection: select-all, deselect-all
 // - query: run, clear
 class QuickAccessInput implements OmniInput {
-    key: [string, string] = ['QA', '(quick-access) save / load']
+    key: [string, string] = ['quick', '[save | load | delete ] ']
 
     hint(this: Omnibar, input: string): Hint {
 
@@ -306,30 +312,45 @@ class QuickAccessInput implements OmniInput {
         })
 
         return {
-            header: 'QA <save | load> <name>',
+            header: 'quick [save | load | delete] [name]',
             hints: hints
         }
     }
 
     action(this: Omnibar, input: string): boolean {
-        // syntax: QA list, QA load some-name, QA save some-name
+        input = input ?? ''
         const split = input.split(' ')
         const loaded = this.app.session.getLocal<[string, QuickAccessState][]>('quick-access') ?? []
 
         if (split.length != 2 || split[1] == '') return this.wiggle()
+
         if (split[0] == 'save') {
             if (loaded.map(v => v[0]).includes(split[1])) return this.wiggle()
             loaded.push([split[1], { queryProps: this.queryProps, sort: this.sort }])
             this.app.session.setLocal('quick-access', loaded)
+            this.resetInputs()
             return true
         }
-        if (split[1] == 'load') {
+
+        if (split[0] == 'load') {
             if (!loaded.map(v => v[0]).includes(split[1])) return this.wiggle()
             const match = loaded.find(v => v[0] == split[1])!
             this.sort = match[1].sort
             this.queryProps = match[1].queryProps
             this.acceptInputs()
+            this.resetInputs()
             this.closeOmnibar()
+            return true
+        }
+
+        if (split[0] == 'delete') {
+            if (!loaded.map(v => v[0]).includes(split[1])) return this.wiggle()
+            const ind = loaded.findIndex(v => v[0] == split[1])!
+            loaded.splice(ind, 1)
+            this.app.session.setLocal('quick-access', loaded)
+            // redisplay
+            const hints = this.getHints(this.input.value)
+            this.displayHints(hints)
             return true
         }
 
@@ -353,14 +374,14 @@ class QueryInput implements OmniInput {
         if (input == 'run') {
             if (this.queryProps.length == 0) return this.wiggle()
             this.acceptInputs()
+            this.saveToHistory()
+            this.resetInputs()
             this.closeOmnibar()
             return true
         }
 
         if (input == 'clear') {
-            // back to defaults
-            this.sort = { by: 'date', depth: 1 }
-            this.queryProps = []
+            this.resetInputs()
 
             return true
         }
@@ -372,21 +393,68 @@ class QueryInput implements OmniInput {
 
 
 
+class HistoryInput implements OmniInput {
+    key: [string, string] = ['hist', '[number]']
 
+    hint(this: Omnibar, input: string): Hint {
+        const hints: [string, string][] = this.history.map((v, ind) => {
+            const sort = `by=${v.sort.by} depth=${v.sort.depth}`
+            const props = v.props.map(v => `${v.key}:${v.input}`).join('|')
+            return [`${ind + 1}`, `${sort} ${props}`]
+        })
+        return {
+            header: 'syntax: hist [run | load] [1..9]',
+            hints: hints
+        }
+    }
+
+    action(this: Omnibar, input: string): boolean {
+        input = input ?? ''
+
+        const split = input.split(' ')
+        if (split.length != 2 || split[1] == '') return this.wiggle()
+
+        const num = parseInt(split[1])
+        if (num < 1 || num > 9 || this.history[num - 1] == null) return this.wiggle()
+
+
+        if (split[0] == 'run') {
+            this.queryProps = this.history[num - 1].props
+            this.sort = { ...this.history[num - 1].sort }
+            this.acceptInputs()
+            this.closeOmnibar()
+            return true 
+        }
+
+        if (split[0] == 'load') {
+            this.queryProps = this.history[num - 1].props
+            this.sort = { ...this.history[num - 1].sort }
+            const hints = this.getHints('')
+            this.displayHints(hints)
+            return true
+        }
+
+        return false
+
+    }
+}
 
 
 export default class Omnibar {
+
     app: App
     el: HTMLElement
     input: HTMLInputElement
     queryProps: QueryProp[]
     sort: ViewSort
+    history: Array<{ props: QueryProp[], sort: ViewSort }> = []
+    private defaultSort: ViewSort = { by: 'date', depth: 1 }
 
     omniInputs: OmniCollection = {
         query: [
             new CatInput(), new TagInput(), new ArchiveInput(), new SearchInput(), new DateInput()
         ],
-        commands: [new QuickAccessInput(), new QueryInput()],
+        commands: [new QuickAccessInput(), new QueryInput(), new HistoryInput()],
         sort: [new SortingInput()]
     }
 
@@ -395,7 +463,7 @@ export default class Omnibar {
         this.el = document.querySelector(".omnibar-full")!
         this.input = document.querySelector(".omnibar-input")!
         this.queryProps = []
-        this.sort = { by: 'date', depth: 1 }
+        this.sort = { ...this.defaultSort }
 
         this.configureEvents()
         this.configureControlKeys()
@@ -409,7 +477,9 @@ export default class Omnibar {
     }
 
     private configureControlKeys() {
+        const context = this
         hotkeys.setScope('main')
+
 
         hotkeys('/', { scope: 'main' }, (event, handler) => {
             event.preventDefault()
@@ -419,11 +489,13 @@ export default class Omnibar {
         hotkeys('/', { scope: 'omnibar' }, (event, handler) => {
             event.preventDefault()
             this.closeOmnibar()
+            this.input.value = ''
         })
 
         hotkeys('escape', { scope: 'omnibar' }, (event) => {
             event.preventDefault()
             this.closeOmnibar()
+            this.input.value = ''
         })
 
         hotkeys('tab', { scope: 'omnibar' }, (event) => {
@@ -433,19 +505,19 @@ export default class Omnibar {
 
 
         // accept query subpart OR exec the #command
-        hotkeys('enter', { scope: 'omnibar' }, (event) => {
+        hotkeys('enter', { scope: 'omnibar' }, function (event) {
             event.preventDefault()
-            const success = this.runActions(this.input.value)
-            if (success) this.input.value = ""
+            const success = context.runActions(context.input.value)
+            if (success) context.input.value = ""
         })
 
-        hotkeys.filter = (event: Event) => {
+        hotkeys.filter = function (event: Event) {
             const tagName = (event.target as HTMLElement).tagName
-            if (hotkeys.getScope() == 'omnibar' && event.target == this.input) {
+            if (hotkeys.getScope() == 'omnibar' && event.target == context.input) {
                 if (event.type == 'keyup') {
                     // console.log(`${(event as KeyboardEvent).key} @ ${event.type} was pressed!`)
-                    const hint = this.getHints(this.input.value)
-                    this.displayHints(hint!)
+                    const hint = context.getHints(context.input.value)
+                    context.displayHints(hint!)
                 }
                 return true
             }
@@ -459,12 +531,13 @@ export default class Omnibar {
     private configureShortcutKeys() {
         hotkeys('ctrl+enter', { scope: 'omnibar' }, (event) => {
             event.preventDefault()
-            this.runActions('#query run')
+            const success = this.runActions('#query run')
+            if (success) this.input.value = ''
         })
 
         for (let i = 1; i <= 9; i++) {
             hotkeys(`shift+${i}`, { scope: 'main' }, (event) => {
-                this.runActions(`#QA load ${i}`)
+                this.runActions(`#quick load ${i}`)
             })
         }
     }
@@ -491,11 +564,26 @@ export default class Omnibar {
     }
 
     acceptInputs() {
-        const query = Object.assign( { type: 'full' }, ...this.queryProps.map(v => v.value))
+        const query = Object.assign({ type: 'full' }, ...this.queryProps.map(v => v.value))
         this.app.session.updateContent(query, this.sort)
     }
 
-    private displayHints(hint: Hint) {
+    sortUpdated() {
+        return this.sort.by != this.defaultSort.by || this.sort.depth != this.defaultSort.depth
+    }
+
+    resetInputs() {
+        this.queryProps = []
+        this.sort = { ...this.defaultSort }
+        this.input.value = ''
+    }
+
+    saveToHistory() {
+        const last = { props: this.queryProps, sort: this.sort }
+        this.history = [last].concat(this.history).slice(0, 9)
+    }
+
+    displayHints(hint: Hint) {
         const hintSelected: HTMLHeadElement = this.el.querySelector('.hinting-selected')!
         const hintValidated: HTMLUListElement = this.el.querySelector('.hinting-validated')!
         const hintHeader: HTMLHeadElement = this.el.querySelector('.hinting-header')!
@@ -506,11 +594,19 @@ export default class Omnibar {
         hintHeader.innerHTML = ""
         hintList.innerHTML = ""
 
+        const genList = (key: string, input: string) => {
+            const li = document.createElement('li')
+            li.innerHTML = `<b>${key}</b> ${input}`
+            hintValidated.appendChild(li)
+        }
+
+        if (this.sortUpdated()) {
+            genList('sort:', `by=${this.sort.by} depth=${this.sort.depth}`)
+        }
+
         if (this.queryProps.length > 0) {
-            this.queryProps.forEach(({key, input}) => {
-                const li = document.createElement('li')
-                li.innerHTML = `<b>${key}</b> ${input}`
-                hintValidated.appendChild(li)
+            this.queryProps.forEach(({ key, input }) => {
+                genList(key, input)
             })
         }
 
@@ -527,7 +623,7 @@ export default class Omnibar {
 
 
 
-    private getHints(input: string): Hint {
+    getHints(input: string): Hint {
         const match = input.match(/^(\:|#|@)([^\s]+)? *(.*$)?/)
         if (match == null) return {
             header: 'Input format:', hints: [
@@ -539,7 +635,7 @@ export default class Omnibar {
 
         let prop: 'commands' | 'query' | 'sort'
         switch (match[1]) {
-            case ':': prop = 'sort'; break
+            case ':': prop = 'query'; break
             case '#': prop = 'commands'; break
             case '@': prop = 'sort'; break
         }
@@ -550,7 +646,7 @@ export default class Omnibar {
                 hints: this.omniInputs[prop!].map(v => [v.key[0], v.key[1]])
             }
         } else {
-            return this.omniInputs[prop!].find(v => v.key[0] == match[2])?.hint(match[3])!
+            return this.omniInputs[prop!].find(v => v.key[0] == match[2])?.hint.bind(this)(match[3])!
         }
 
     }
@@ -561,15 +657,16 @@ export default class Omnibar {
 
         let prop: 'commands' | 'query' | 'sort'
         switch (match[1]) {
-            case ':': prop = 'sort'; break
+            case ':': prop = 'query'; break
             case '#': prop = 'commands'; break
             case '@': prop = 'sort'; break
         }
 
+        console.log(`RUN ACTIONS match2:${match[2]}`)
         if (match[2] == null || !this.omniInputs[prop!].map(v => v.key[0]).includes(match[2]))
             return this.wiggle()
 
-        const success = this.omniInputs[prop!].find(v => v.key[0] == match[2])?.action(match[3])!
+        const success = this.omniInputs[prop!].find(v => v.key[0] == match[2])?.action.bind(this)(match[3])!
         return success != null ? success : false
     }
 }
