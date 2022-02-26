@@ -332,4 +332,7 @@ hr.active-item {
   animation: wiggle 0.1s none;
 }
 
-
+img {
+    width: 100%; 
+    object-fit: contain;
+}
