@@ -1,4 +1,4 @@
-import React, { ClipboardEvent, useRef, useState } from 'react'
+import React, { ClipboardEvent, useRef, useState, useEffect } from 'react'
 import Editor from '@monaco-editor/react'
 import './index.css'
 import Monaco, { editor } from 'monaco-editor'
@@ -8,6 +8,11 @@ import { PrismAsyncLight as SyntaxHighlighter } from 'react-syntax-highlighter'
 import { vscDarkPlus, darcula } from 'react-syntax-highlighter/dist/esm/styles/prism'
 
 import remarkGfm from 'remark-gfm'
+
+import youTubePlayer from 'youtube-player'
+import PlayerStates from 'youtube-player/dist/constants/PlayerStates'
+import type { YouTubePlayer, Options } from 'youtube-player/dist/types'
+
 
 const initmd = `
 Here is some JavaScript code:
@@ -31,6 +36,178 @@ A table:
 | - | - |
 |data|df sf|
 `
+
+
+
+
+interface VideoNode {
+  videoTitle: string
+  videoId: string
+  segments: Segment[]
+}
+type Segment = { seconds: number; title: string }
+
+const videoNodes: VideoNode[] = [
+  {
+    videoTitle: 'some vid1',
+    videoId: 'M7lc1UVf-VE',
+    segments: [
+      { seconds: 100, title: 'some stuff 1' },
+      { seconds: 200, title: 'some stuff 2' },
+      { seconds: 1300, title: 'some stuff 3' },
+    ],
+  },
+  {
+    videoTitle: 'some vid2',
+    videoId: 'XxVg_s8xAms',
+    segments: [
+      { seconds: 150, title: 'other stuff 1' },
+      { seconds: 250, title: 'other stuff 2' },
+      { seconds: 350, title: 'other stuff 3' },
+    ],
+  },
+]
+
+function YouTube({ videoNode }: { videoNode: VideoNode }) {
+  const [player, setPlayer] = useState<YouTubePlayer>()
+
+  const youtubeRef = useRef<any>(null)
+
+  useEffect(() => {
+    const player = youTubePlayer(youtubeRef.current, {
+      videoId: videoNode.videoId,
+      playerVars: {
+        enablejsapi: 1,
+        origin: 'https://homelab:9001',
+        modestbranding: 1,
+      },
+    })
+
+    player.on('ready', () => {
+      setPlayer(player)
+      player.on('stateChange', async e => {
+        
+        const playerState: PlayerStates = await player?.getPlayerState()
+        const stateVal = Object.entries(PlayerStates).find(v => v[1] == playerState)
+        console.log('STATE', playerState, stateVal![0])      
+      })
+    })
+  }, [])
+
+  // player!.loadVideoById('M7lc1UVf-VE')
+  const seekHandler1 = () => player!.seekTo(100, true)
+
+  return (
+    <>
+      <div ref={youtubeRef} className='new-player' />
+      <ProgressBar segments={videoNode.segments} player={player}></ProgressBar>
+    </>
+  )
+}
+
+interface ProgressBarProps {
+  segments: Segment[]
+  player: YouTubePlayer | undefined
+}
+
+function ProgressBar({ segments, player }: ProgressBarProps) {
+  const [duration, setDuration] = useState<number>(0)
+  const [currentTime, setCurrentTime] = useState<number>(0)
+
+  if (player) {
+    player.getDuration().then(v => {
+      console.log(`duration: ${v}`)
+      setDuration(v)
+    })
+  }
+
+  const handler = async () => {
+    const duration = await player!.getDuration()
+    const time = await player!.getCurrentTime()
+    console.log(`progress: ${time}/${duration}`)
+  }
+
+  return (
+    <div className='bar'>
+      {segments.map(segment => {
+        const left = (segment.seconds / duration) * 100
+        return (
+          <div
+            onClick={() => {
+              console.log(player)
+              player!.seekTo(segment.seconds, true)
+            }}
+            className='point'
+            key={segment.seconds}
+            style={{ left: `${left}%` }}></div>
+        )
+      })}
+    </div>
+  )
+}
+
+function TreeNodes({ videoNodes }: { videoNodes: VideoNode[] }) {
+  return (
+    <>
+      {videoNodes.map(videoNode => {
+        return (
+          <ul className='video-node' key={videoNode.videoId}>
+            {videoNode.videoTitle}
+            {videoNode.segments.map(segment => {
+              return (
+                <li className='segment-node' key={segment.seconds}>
+                  {segment.title}
+                </li>
+              )
+            })}
+          </ul>
+        )
+      })}
+    </>
+  )
+}
+
+
+
+
+
+
+
+import Select, { StylesConfig } from "react-select"
+
+
+function MyComponent() {
+  const options = [
+    { value: "chocolate", label: "Chocolate" },
+    { value: "strawberry", label: "Strawberry" },
+    { value: "vanilla", label: "Vanilla" },
+    { value: "berry", label: "Berry" },
+  ]
+
+  const customStyles: StylesConfig = {
+    menu: (provided: any, state: any) => ({
+      ...provided,
+      borderBottom: "4px dotted pink",
+      color: state.selectProps.menuColor,
+      padding: 20,
+    }),
+  }
+
+  return (
+    <div>
+      <h2>Basic Styled</h2>
+      <Select options={options} styles={customStyles} />
+    </div>
+  )
+}
+
+
+
+
+
+
+
+
 
 function CustomButton() {
   const [msg, setButtonText] = useState('test...')
@@ -118,6 +295,9 @@ function App() {
 
   return (
     <div>
+        <YouTube videoNode={videoNodes[0]} />
+      <TreeNodes videoNodes={videoNodes} />
+      <MyComponent />
       <CustomButton />
       <Editor
         height="30vh"
