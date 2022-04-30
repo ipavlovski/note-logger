@@ -1,0 +1,10 @@
+@import url(https://fonts.googleapis.com/css?family=Montserrat:100,200,300,regular,500,600,700,800,900,100italic,200italic,300italic,italic,500italic,600italic,700italic,800italic,900italic);
+
+body {
+  margin: 2rem;
+  background-color: hsl(0, 0%, 12%);
+  color: hsl(0, 0%, 90%);
+  font-family: Montserrat;
+  font-size: 16px;
+}
+

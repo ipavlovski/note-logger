@@ -1,0 +1,96 @@
+generator client {
+    provider = "prisma-client-js"
+}
+
+datasource db {
+    provider = "sqlite"
+    url      = "file:./dev.db"
+}
+
+model Node {
+    id       Int    @id @default(autoincrement())
+    // parent id, can be null when top-level
+    // however top level is reserved only to youtube/web/note definitions
+    pid      Int?
+    parent   Node?  @relation("NodeChain", fields: [pid], references: [id])
+    children Node[] @relation("NodeChain")
+
+    // resource - information that could be used to build a link
+    // in conjuction with a custom processing function
+    resource  String?
+    type      String  
+    title     String
+    order     Int      @default(0)
+    updatedAt DateTime @updatedAt
+
+    // preview path - an image to show when clicking
+    preview String?
+    tags    Tag[]
+    meta    Meta[]
+    leafs   Leaf[]
+
+}
+
+// key, value, type - type is Number/String/Boolean of the 'value'
+model Meta {
+    id      Int    @id @default(autoincrement())
+    node_id Int
+    key     String
+    value   String
+    type    String
+    node    Node   @relation(fields: [node_id], references: [id])
+
+    @@unique([node_id, key], name: "meta_key")
+}
+
+model Leaf {
+    id        Int      @id @default(autoincrement())
+    node_id   Int
+    node      Node     @relation(fields: [node_id], references: [id])
+    createdAt DateTime @default(now())
+    updatedAt DateTime @updatedAt
+    archived  Boolean  @default(false)
+    media     Media[]
+    order     Int      @default(0)
+    
+    type      String  // meta, text, link
+    content   String
+
+    linking  LinkedLeaf? @relation("linking")
+    linkedBy LinkedLeaf[] @relation("linked-by")
+
+}
+
+model LinkedLeaf {
+  linking Leaf @relation("linking", fields: [linkingId], references: [id])
+  linkingId Int
+  linkedBy Leaf @relation("linked-by", fields: [linkedById], references: [id])
+  linkedById Int
+
+  @@id([linkingId, linkedById])
+}
+
+
+
+
+model Media {
+    id        Int      @id @default(autoincrement())
+    leaf_id   Int
+    leaf      Leaf     @relation(fields: [leaf_id], references: [id])
+    updatedAt DateTime @updatedAt
+    order     Int      @default(0)
+    path      String
+
+    @@unique([leaf_id, path], name: "media_path")
+}
+
+model Tag {
+    id     Int    @id @default(autoincrement())
+    name   String
+    pid    Int?   @unique
+    parent Tag?   @relation("TagChain", fields: [pid], references: [id])
+    child  Tag?   @relation("TagChain")
+    node   Node[]
+
+    @@unique([pid, name], name: "tag_chain")
+}
