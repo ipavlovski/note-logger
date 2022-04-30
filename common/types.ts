@@ -6,15 +6,25 @@ export interface Castable {
 
 export interface CastItem {
     type: 'item'
-    value: Item
+    // value: Item
 }
 
 export interface CastCat {
     type: 'cat'
-    value: CatRow
+    // value: CatRow
 }
 
 export interface CastTag {
     type: 'tag'
-    value: TagRow
+    // value: TagRow
 }
+
+
+export interface VideoNode {
+    videoTitle: string
+    videoId: string
+    segments: Segment[]
+  }
+
+export type Segment = { seconds: number; title: string }
+  

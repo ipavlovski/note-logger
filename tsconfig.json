@@ -19,7 +19,7 @@
       // "isolatedModules": true,
       "noEmit": true,
       "jsx": "react-jsx",
-      "baseUrl": "."      
+      "baseUrl": "."
 
   },
   "ts-node": {
@@ -38,6 +38,6 @@
     "exclude": ["node_modules"]
 
   },
-  "include": ["frontend", "backend", "vite.config.ts"],
+  "include": ["frontend", "backend", "common", "vite.config.ts"],
 
 }
