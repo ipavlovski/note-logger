@@ -85,6 +85,27 @@
         // "webpack:///./*": "${workspaceFolder}/*",
         // "*": "${webRoot}/*",
       // },
-    }
+    },
+    {                                                                           
+      "name": "debug.ts",                                                       
+      "type": "pwa-node",
+      "request": "launch",
+      "args": ["debug.ts"],
+      "runtimeExecutable": "node",
+      "runtimeArgs": [
+        "--nolazy",  
+        "-r", "ts-node/register",
+        "-r", "tsconfig-paths/register"             
+      ],
+      "protocol": "inspector",
+      "skipFiles": ["<node_internals>/**"],
+      "sourceMaps": true,
+      "resolveSourceMapLocations": ["${workspaceFolder}/**", "!**/node_modules/**"],
+      "cwd": "${workspaceRoot}",
+      "envFile": "${workspaceFolder}/.env",
+      "preLaunchTask": "tmux-switch",
+      "console": "integratedTerminal",
+      "internalConsoleOptions": "openOnFirstSessionStart"
+  },
   ]
 }

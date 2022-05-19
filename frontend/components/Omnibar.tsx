@@ -1,48 +1,38 @@
 import { useState } from 'react'
 import Select, { StylesConfig } from 'react-select'
 
-function MyComponent() {
+export default function Omnibar() {
+  // const options = [
+  //   { value: 'chocolate', label: 'Chocolate' },
+  //   { value: 'strawberry', label: 'Strawberry 2' },
+  //   { value: 'vanilla', label: 'Vanilla' },
+  //   { value: 'berry', label: 'Berry' },
+  // ]
+
+  // const customStyles: StylesConfig = {
+  //   menu: (provided: any, state: any) => ({
+  //     ...provided,
+  //     borderBottom: '4px dotted pink',
+  //     color: state.selectProps.menuColor,
+  //     padding: 20,
+  //   }),
+  // }
+
   const options = [
-    { value: 'chocolate', label: 'Chocolate' },
-    { value: 'strawberry', label: 'Strawberry' },
-    { value: 'vanilla', label: 'Vanilla' },
-    { value: 'berry', label: 'Berry' },
+    { value: 'a', label: 'AAAA'},
+    { value: 'b', label: 'BBB'}
   ]
 
-  const customStyles: StylesConfig = {
-    menu: (provided: any, state: any) => ({
-      ...provided,
-      borderBottom: '4px dotted pink',
-      color: state.selectProps.menuColor,
-      padding: 20,
-    }),
+  const styles: StylesConfig = {
+    
   }
 
   return (
     <div>
-      <h2>Basic Styled</h2>
-      <Select options={options} styles={customStyles} />
+      <h2>Omnibar:</h2>
+      {/* <Select options={options} styles={customStyles} /> */}
+      <Select options={options}/>
     </div>
   )
 }
 
-function CustomButton() {
-    const [msg, setButtonText] = useState('test...')
-  
-    const fetchData = () => {
-      const text = fetch('https://homelab:3002/select')
-        .then(v => v.text())
-        .then(t => {
-          console.log('fetched text is: ', t)
-          setButtonText(t)
-        })
-    }
-  
-    return (
-      <>
-        <button onClick={fetchData}>{msg}</button>
-      </>
-    )
-  }
-
-export { MyComponent, CustomButton }

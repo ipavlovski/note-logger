@@ -1,6 +1,6 @@
 import { server } from 'backend/server'
-import { serverPort } from 'common/config'
+import { SERVER_PORT } from 'common/config'
 
-server.listen(serverPort, () => {
-    console.log(`Listening on ${serverPort} in dir ${__dirname}\n@ ${new Date().toISOString()}`)
+server.listen(SERVER_PORT, () => {
+  console.log(`Listening on ${SERVER_PORT} in dir ${__dirname}\n@ ${new Date().toISOString()}`)
 })

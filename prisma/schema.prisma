@@ -8,27 +8,39 @@ datasource db {
 }
 
 model Node {
-    id       Int    @id @default(autoincrement())
-    // parent id, can be null when top-level
-    // however top level is reserved only to youtube/web/note definitions
+    id Int @id @default(autoincrement())
+
     pid      Int?
-    parent   Node?  @relation("NodeChain", fields: [pid], references: [id])
+    parent   Node?  @relation("NodeChain", fields: [pid], references: [id], onDelete: Cascade)
     children Node[] @relation("NodeChain")
 
-    // resource - information that could be used to build a link
-    // in conjuction with a custom processing function
-    resource  String?
-    type      String  
-    title     String
+    uri   String
+    title String
+
+    iconId Int
+    icon   Icon? @relation(fields: [iconId], references: [id])
+
     order     Int      @default(0)
     updatedAt DateTime @updatedAt
 
-    // preview path - an image to show when clicking
-    preview String?
-    tags    Tag[]
-    meta    Meta[]
-    leafs   Leaf[]
+    categoryId Int
+    category   Cat?   @relation(fields: [categoryId], references: [id])
+    tags       Tag[]
+    meta       Meta[]
+    leafs      Leaf[]
 
+    @@unique([pid, uri], name: "pid_uri")
+}
+
+model Cat {
+    id     Int    @id @default(autoincrement())
+    name   String
+    pid    Int?
+    parent Cat?   @relation("CatChain", fields: [pid], references: [id])
+    child  Cat[]  @relation("CatChain")
+    node   Node[]
+
+    @@unique([pid, name], name: "cat_chain")
 }
 
 // key, value, type - type is Number/String/Boolean of the 'value'
@@ -50,30 +62,27 @@ model Leaf {
     createdAt DateTime @default(now())
     updatedAt DateTime @updatedAt
     archived  Boolean  @default(false)
-    media     Media[]
+    media     Image[]
     order     Int      @default(0)
-    
-    type      String  // meta, text, link
-    content   String
 
-    linking  LinkedLeaf? @relation("linking")
+    type    String // meta, text, link
+    content String
+
+    linking  LinkedLeaf?  @relation("linking")
     linkedBy LinkedLeaf[] @relation("linked-by")
 
 }
 
 model LinkedLeaf {
-  linking Leaf @relation("linking", fields: [linkingId], references: [id])
-  linkingId Int
-  linkedBy Leaf @relation("linked-by", fields: [linkedById], references: [id])
-  linkedById Int
+    linking    Leaf @relation("linking", fields: [linkingId], references: [id])
+    linkingId  Int  @unique
+    linkedBy   Leaf @relation("linked-by", fields: [linkedById], references: [id])
+    linkedById Int
 
-  @@id([linkingId, linkedById])
+    @@id([linkingId, linkedById])
 }
 
-
-
-
-model Media {
+model Image {
     id        Int      @id @default(autoincrement())
     leaf_id   Int
     leaf      Leaf     @relation(fields: [leaf_id], references: [id])
@@ -81,7 +90,13 @@ model Media {
     order     Int      @default(0)
     path      String
 
-    @@unique([leaf_id, path], name: "media_path")
+    @@unique([leaf_id, path], name: "image_path")
+}
+
+model Icon {
+    id   Int    @id @default(autoincrement())
+    node Node[]
+    path String
 }
 
 model Tag {

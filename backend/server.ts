@@ -1,6 +1,6 @@
 import routes from 'backend/routes'
 import { WSS } from 'backend/websocket'
-import { mediaPath } from 'common/config'
+import { STORAGE_DIRECTORY } from 'common/config'
 import express, { json } from 'express'
 import { createServer } from 'https'
 import morgan from 'morgan'
@@ -19,7 +19,7 @@ morgan.token('session', (req: any) => {
 app.use(morgan(':session :method :url :response-time'))
 
 app.use(express.static(`${__dirname}/../dist`))
-app.use(express.static(mediaPath!))
+app.use(express.static(STORAGE_DIRECTORY!))
 
 app.use(routes)
 

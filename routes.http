@@ -1,0 +1,25 @@
+### BASIC POST QUERY
+
+POST https://homelab:3002/query 
+content-type: application/json
+
+{
+    "username": "LOL1!"
+}
+
+### SEND SOME TEXT
+POST https://homelab:3002/url
+content-type: application/json
+
+{ 
+    "url": "https://stackoverflow.com/questions/58031982/sending-text-via-an-http-post-request"
+}
+
+
+### SEND REQUEST TO CREATE NODE
+PUT https://homelab:3002/node
+content-type: application/json
+
+{ 
+    "url": "https://stackoverflow.com/questions/58031982/sending-text-via-an-http-post-request"
+}

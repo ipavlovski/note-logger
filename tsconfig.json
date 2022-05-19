@@ -35,9 +35,10 @@
     },
     "ignoreDiagnostics": [2393, 2300],
     "require": ["dotenv/config", "tsconfig-paths/register"],
-    "exclude": ["node_modules"]
+    "exclude": ["node_modules", "scratch.ts", "debug.ts"]
 
   },
   "include": ["frontend", "backend", "common", "vite.config.ts"],
+  "exclude": ["debug.ts"]
 
 }
