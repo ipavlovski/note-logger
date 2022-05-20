@@ -1,3 +1,13 @@
+export interface ParsedURL {
+    title?: string
+    icon?: { id: number; buffer: Buffer }
+    pid?: number
+    uri?: string
+    image?: { id: number; buffer: Buffer }
+    category?: string[]
+  }
+
+
 export interface Castable {
     insert?: Array<CastItem | CastTag | CastCat>
     update?: Array<CastItem | CastTag | CastCat>

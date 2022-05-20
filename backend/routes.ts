@@ -9,6 +9,11 @@ import { URL } from 'url'
 
 const routes = Router()
 
+import multer from 'multer'
+// const mult = multer()
+const storage = multer.memoryStorage()
+const upload = multer({ storage: storage })
+
 ////////////// QUERY
 
 const QueryBody = z.object({
@@ -77,6 +82,15 @@ routes.put('/node', async (req, res) => {
     const err = ErrorHandler(error)
     res.json(err)
   }
+})
+
+routes.post('/multi', upload.any(), async (req, res) => {
+  console.log(req.file)
+  console.log('------')
+  console.log(req.body)
+  console.log(req.body.my_field)
+  console.log(req.body[0])
+  res.json('lol')
 })
 
 export default routes

@@ -1,29 +1,24 @@
 import { PrismaClient } from '@prisma/client'
-import { getCategory } from 'backend/db'
+import { getCategory, insertYoutubeChannelNode, saveIcon } from 'backend/db'
 import { YOUTUBE_API_KEY } from 'common/config'
 import fetch from 'node-fetch'
 import { URL } from 'url'
 
 const prisma = new PrismaClient()
 
-interface UrlParams {
-  pid: number
-  uri: string
-  title: string
-  image: string
-  icon: string
-  category: number | null
-  tags: number[]
-}
-
-type YoutubeChannel = { id: string; title: string; desc: string; image: string }
 // type YoutubeChannel = ReturnType<typeof getYoutubeChannel>
-
-type YoutubeVideo = {
+export interface YoutubeChannel {
   id: string
   title: string
   desc: string
   icon: string
+}
+
+export interface YoutubeVideo {
+  id: string
+  title: string
+  desc: string
+  image: string
   publishedAt: string
   channelId: string
 }
@@ -37,35 +32,6 @@ async function queryYoutube(target: 'channels' | 'videos', id: string) {
   return await fetch(url).then((v: any) => v.json())
 }
 
-// example: await getYoutubeChannel('UChWv6Pn_zP0rI6lgGt3MyfA')
-async function getYoutubeChannel(id: string): Promise<YoutubeChannel> {
-  const results = await queryYoutube('channels', id)
-  if (results?.items?.length == 0) throw new Error('Failed to get the channel by Id.')
-
-  return {
-    id: results.items[0].id,
-    title: results.items[0].snippet.title,
-    desc: results.items[0].snippet.description,
-    image: results.items[0].snippet.thumbnails.medium.url,
-  }
-}
-
-// example: await getYoutubeVideo('ztpWsuUItrA')
-async function getYoutubeVideo(id: string): Promise<YoutubeVideo> {
-  const results = await queryYoutube('videos', id)
-  if (results?.items?.length == 0) throw new Error('Failed to get the video by Id.')
-
-  const thumbs = results.items[0].snippet.thumbnails
-  return {
-    id: results.items[0].id,
-    title: results.items[0].snippet.title,
-    desc: results.items[0].snippet.description,
-    icon: thumbs.maxres?.url || thumbs.high.url,
-    publishedAt: results.items[0].snippet.publishedAt,
-    channelId: results.items[0].snippet.channelId,
-  }
-}
-
 // var tmp = await youtubeSearchShorthand('kralyn3d')
 async function youtubeSearchShorthand(shorthand: string) {
   const base = 'https://youtube.googleapis.com/youtube/v3'
@@ -76,34 +42,47 @@ async function youtubeSearchShorthand(shorthand: string) {
   return await fetch(query).then((v: any) => v.json())
 }
 
+// example: await getYoutubeChannel('UChWv6Pn_zP0rI6lgGt3MyfA')
+async function youtubeChannelAPI(id: string): Promise<YoutubeChannel> {
+  const results = await queryYoutube('channels', id)
+  if (results?.items?.length == 0) throw new Error('Failed to get the channel by Id.')
+
+  return {
+    id: results.items[0].id,
+    title: results.items[0].snippet.title,
+    desc: results.items[0].snippet.description,
+    icon: results.items[0].snippet.thumbnails.medium.url,
+  }
+}
+
+// example: await getYoutubeVideo('ztpWsuUItrA')
+async function youtubeVideoAPI(id: string): Promise<YoutubeVideo> {
+  const results = await queryYoutube('videos', id)
+  if (results?.items?.length == 0) throw new Error('Failed to get the video by Id.')
+
+  const thumbs = results.items[0].snippet.thumbnails
+  return {
+    id: results.items[0].id,
+    title: results.items[0].snippet.title,
+    desc: results.items[0].snippet.description,
+    image: thumbs.maxres?.url || thumbs.high.url,
+    publishedAt: results.items[0].snippet.publishedAt,
+    channelId: results.items[0].snippet.channelId,
+  }
+}
+
 // note: if the channel doesn't exist, throw an error
 async function getOrCreateYoutubeChannel(channelId: string) {
   // check if the channel exists in the database
   const channelRecord = await prisma.node.findFirst({ where: { uri: channelId, pid: null } })
   if (channelRecord) return channelRecord
 
-  // get the id for the 'channel' category
-  const channelCategory = await getCategory(['youtube', 'channel'])
-  if (!channelCategory) throw new Error('Failed to find the channel category in DB.')
-
   // get data for the youtube channel
-  const channel = await getYoutubeChannel(channelId)
+  const channel = await youtubeChannelAPI(channelId)
 
-  // create the channel entry
-  const result = await prisma.node.create({
-    data: {
-      title: channel.title,
-      uri: channelId,
-      categoryId: channelCategory!.id,
-      image: channel.image,
-      meta: {
-        create: [{ key: 'description', value: channel.desc, type: 'text' }],
-      },
-      leafs: {
-        create: [{ type: 'meta', content: '' }],
-      },
-    },
-  })
+  // create the youtube chanel
+  const result = await insertYoutubeChannelNode(channel)
+
   if (!result) throw new Error('Failed to get/create a channel.')
   return result
 }
@@ -111,7 +90,7 @@ async function getOrCreateYoutubeChannel(channelId: string) {
 // 'ztpWsuUItrA'
 async function getOrCreateYoutubeVideo(videoId: string) {
   // get the video data using the API
-  const videoData = await getYoutubeVideo(videoId)
+  const videoData = await youtubeVideoAPI(videoId)
 
   // get or create associated channel
   const channelRecord = await getOrCreateYoutubeChannel(videoData.channelId)
@@ -131,11 +110,13 @@ async function getOrCreateYoutubeVideo(videoId: string) {
   // create the video entry
   return await prisma.node.create({
     data: {
-      pid: channelRecord.id,
+      // pid: channelRecord.id,
+      parent: { connect: { id: channelRecord.id } },
       title: videoData.title,
       uri: videoData.id,
-      categoryId: videoCategory!.id,
-      image: videoData.icon,
+      // categoryId: videoCategory!.id,
+      category: { connect: { id: videoCategory!.id } },
+      icon: { create: { path: 'adff' } },
       meta: {
         create: [
           { key: 'description', value: videoData.desc, type: 'text' },
@@ -159,37 +140,40 @@ async function handleYoutubeChannel(url: URL) {
     var channelShorthand = url.pathname.split('/c/')[1]
     const results = await youtubeSearchShorthand(channelShorthand)
     channelId = results?.items[0]?.id?.channelId as string
-    if (! channelId) throw new Error('Failed to obtain correct youtube channel id.')
+    if (!channelId) throw new Error('Failed to obtain correct youtube channel id.')
   }
 
   // next, check if this channel ID already exists in the database
   const existingChannel = await prisma.node.findFirst({
     where: {
       uri: channelId,
-      category: { name: 'channel' }
-    }
+      category: { name: 'channel' },
+    },
   })
   if (existingChannel) return existingChannel
 
   // next, query API to get data on the youtube channel
-  const channel = await getYoutubeChannel(channelId)
+  const channel = await youtubeChannelAPI(channelId)
+  const icon = await saveIcon(channel.icon)
+  icon.path
+  icon.id
 
   // send output back
   return {
     title: channel.title,
     uri: channel.id,
-    icon: channel.image,
+    icon: channel.icon,
     category: ['youtube', 'channel'],
   }
 }
 
 async function handleYoutubeVideo(videoId: string) {
-  const video = await getYoutubeVideo(videoId)
+  const video = await youtubeVideoAPI(videoId)
 
   const output = {
     title: video.title,
     uri: video.id,
-    image: video.icon,
+    image: video.image,
     category: ['youtube', 'channel', 'video'],
   }
 

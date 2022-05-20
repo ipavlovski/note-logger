@@ -5,7 +5,7 @@
       "outDir": "dist",
       "sourceMap": true,
       "esModuleInterop": true,
-      "types": ["node"],
+      "types": ["node", "jest"],
       "moduleResolution": "Node",
       "lib": ["DOM", "DOM.Iterable", "ESNext"],
 
@@ -28,7 +28,7 @@
       "target": "ES2020",
 
       "esModuleInterop": true,
-      "types": ["node"],
+      "types": ["node", "jest"],
       "moduleResolution": "Node",
       "lib": ["ES2020"],
       "strict": true,
@@ -38,7 +38,7 @@
     "exclude": ["node_modules", "scratch.ts", "debug.ts"]
 
   },
-  "include": ["frontend", "backend", "common", "vite.config.ts"],
+  "include": ["frontend", "backend", "common", "vite.config.ts", "scratch.ts"],
   "exclude": ["debug.ts"]
 
 }
