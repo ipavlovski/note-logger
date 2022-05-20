@@ -2,6 +2,7 @@ import { PrismaClient } from '@prisma/client'
 import { getCategory, insertYoutubeChannelNode, saveIcon } from 'backend/db'
 import { YOUTUBE_API_KEY } from 'common/config'
 import fetch from 'node-fetch'
+import { readFile } from 'node:fs/promises'
 import { URL } from 'url'
 
 const prisma = new PrismaClient()
@@ -167,13 +168,46 @@ async function handleYoutubeChannel(url: URL) {
   }
 }
 
+// do this when there is no existing channel
+// if there are other same-channel vids, use those - otherwise ping channel API
+async function getChannelIcon(channelId: string) {
+  // check for any other parent-less videos with the same channel using meta-field
+  const match = await prisma.meta.findFirst({ 
+    where: { key: 'channelId', value: channelId },
+    include: { node: { include: { icon: true }} }
+  })
+  if (match) return match.node.icon
+
+  // query the API
+  const channel = await youtubeChannelAPI(channelId)
+  return await saveIcon(channel.icon)
+}
+
 async function handleYoutubeVideo(videoId: string) {
   const video = await youtubeVideoAPI(videoId)
 
+  // check if a record exists already
+  const vidCat = await getCategory(['youtube', 'channel', 'video'])
+  const vidMatch = await prisma.node.findFirst({ where: { uri: video.id, category: vidCat } })
+  if (vidMatch) return vidMatch
+
+  // check for parent in the DB
+  const channelCat = await getCategory(['youtube', 'channel'])
+  const channelMatch = await prisma.node.findFirst({
+    where: { uri: video.channelId, category: channelCat },
+    include: { icon: true },
+  })
+
+  // if the channel is matched, include the icon data
+  const iconRef = channelMatch ? channelMatch.icon : await getChannelIcon(video.channelId)
+  console.log(`path:`, iconRef!.path)
   const output = {
     title: video.title,
     uri: video.id,
-    image: video.image,
+    icon: {
+      id: iconRef!.id,
+      file: await readFile(iconRef!.path).then(v => v.toString('base64'))
+    },
     category: ['youtube', 'channel', 'video'],
   }
 

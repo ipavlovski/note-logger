@@ -29,8 +29,8 @@ var certificate = readFileSync('secrets/homelab.crt', 'utf8')
 
 var credentials: ServerOptions = { key: privateKey, cert: certificate }
 
-// const server = createSecureServer(credentials, app)
-const server = createServer(app)
+const server = createSecureServer(credentials, app)
+// const server = createServer(app) 
 const wss = new WSS(server)
 
 export { server, wss }

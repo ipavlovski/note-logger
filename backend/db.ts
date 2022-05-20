@@ -117,11 +117,8 @@ async function getCategory(chain: string[]) {
 
 async function downloadImage(url: string, path: string) {
   const res = await fetch(url)
-  if (res.body instanceof Buffer) {
-    return await sharp(res.body).resize(200, 200).webp().toFile(path)
-  } else {
-    throw new Error('URL must contain a buffer')
-  }
+  var buff = Buffer.from(await res.arrayBuffer())
+  await sharp(buff).resize(200, 200).webp().toFile(path)
 }
 
 async function saveIcon(url: string) {
@@ -137,6 +134,7 @@ async function saveIcon(url: string) {
 }
 
 async function saveImage() {}
+
 
 
 async function insertYoutubeChannelNode(channel: YoutubeChannel) {

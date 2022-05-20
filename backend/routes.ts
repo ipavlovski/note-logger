@@ -6,10 +6,13 @@ import { youtubeFilter } from 'backend/handlers/youtube'
 import { Router } from 'express'
 import { z } from 'zod'
 import { URL } from 'url'
+import FormData from 'form-data'
+import { Blob } from 'node:buffer'
 
 const routes = Router()
 
 import multer from 'multer'
+import { readFile, writeFile } from 'fs/promises'
 // const mult = multer()
 const storage = multer.memoryStorage()
 const upload = multer({ storage: storage })
@@ -84,13 +87,32 @@ routes.put('/node', async (req, res) => {
   }
 })
 
-routes.post('/multi', upload.any(), async (req, res) => {
-  console.log(req.file)
+routes.post('/multi', upload.single('avatar'), async (req, res) => {
   console.log('------')
+  console.log(req.file)
+  if (req.file) {
+    await writeFile('image-1.png', req.file.buffer)
+    console.log('written file image-1.png')
+  }
   console.log(req.body)
-  console.log(req.body.my_field)
-  console.log(req.body[0])
+
+  var form = new FormData()
+  form.append('my_field', 'my value')
+  form.append('my_other', 'other value')
+
+  var image = await readFile('image-2.png')
+  const tmp = image.toString('base64')
+  // const tmp = new Blob(image., { type: 'image/png' });
+  var prop = 'asdf'
+
+  // res.setHeader('Content-Type', 'multipart/form-data').send(form)
+  res.json({ tmp, prop })
+})
+
+routes.post('/multi2', async (req, res) => {
+  console.log(req.body)
   res.json('lol')
 })
+
 
 export default routes
