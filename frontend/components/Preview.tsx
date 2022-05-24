@@ -82,4 +82,17 @@ function ProgressBar({ segments, player }: ProgressBarProps) {
   )
 }
 
-export { YouTube, ProgressBar }
+const node = {
+  videoTitle: 'adf',
+  videoId: 'asdf',
+  segments: [{ seconds: 123, title: 'adf'}]
+}
+
+function Preview() {
+  return <>
+    <YouTube videoNode={node} />
+    <ProgressBar segments={[]} player={undefined} />
+  </>
+}
+
+export default Preview

@@ -113,4 +113,4 @@ function Leafs({ initmd }: { initmd: string }) {
   )
 }
 
-export { Leafs }
+export default Leafs

@@ -1,6 +1,6 @@
 import { VideoNode } from 'common/types'
 
-function TreeNodes({ videoNodes }: { videoNodes: VideoNode[] }) {
+function Nodes({ videoNodes }: { videoNodes: VideoNode[] }) {
   return (
     <>
       {videoNodes.map(videoNode => {
@@ -21,4 +21,4 @@ function TreeNodes({ videoNodes }: { videoNodes: VideoNode[] }) {
   )
 }
 
-export { TreeNodes }
+export default Nodes
