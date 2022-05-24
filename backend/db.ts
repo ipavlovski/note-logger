@@ -3,7 +3,6 @@ import { STORAGE_DIRECTORY } from 'common/config'
 import fetch from 'node-fetch'
 import sharp from 'sharp'
 import { nanoid } from 'nanoid'
-import { YoutubeChannel } from 'backend/handlers/youtube'
 
 const prisma = new PrismaClient()
 
@@ -105,67 +104,34 @@ function flattenCats(inputChain: CatChain) {
 }
 
 async function getCategory(chain: string[]) {
-  if (chain.length == 0) return null
+  if (chain.length == 0) throw new Error(`Category must not be empty.`)
 
   let parent
   for (let name of chain) {
     const obj2: any = { name, parent }
     parent = obj2
   }
-  return await prisma.cat.findFirst({ where: parent })
-}
-
-async function downloadImage(url: string, path: string) {
-  const res = await fetch(url)
-  var buff = Buffer.from(await res.arrayBuffer())
-  await sharp(buff).resize(200, 200).webp().toFile(path)
+  const results = await prisma.cat.findFirst({ where: parent })
+  if (!results) throw new Error(`Category ${chain.join('>')} not in database.`)
+  return results
 }
 
 async function saveIcon(url: string) {
-  var path = `${STORAGE_DIRECTORY}/icons/${nanoid(14)}.webp`
-  await downloadImage(url, path)
+  const path = `${STORAGE_DIRECTORY}/icons/${nanoid(14)}.webp`
+  const res = await fetch(url)
+  const buff = Buffer.from(await res.arrayBuffer())
+  await sharp(buff).resize(200, 200).webp().toFile(path)
 
-  return await prisma.icon.create({
-    data: {
-      path: path,
-      source: url,
-    },
-  })
+  return await prisma.icon.create({ data: { path: path, source: url } })
 }
 
-async function saveImage() {}
+async function saveImage(url: string) {
+  const path = `${STORAGE_DIRECTORY}/images/${nanoid(14)}.webp`
+  const res = await fetch(url)
+  const buff = Buffer.from(await res.arrayBuffer())
+  await sharp(buff).webp().toFile(path)
 
-
-
-async function insertYoutubeChannelNode(channel: YoutubeChannel) {
-
-  // get the id for the 'channel' category
-  const channelCategory = await getCategory(['youtube', 'channel'])
-  if (!channelCategory) throw new Error('Failed to find the channel category in DB.')
-
-  // download the icon
-  channel.icon
-
-  // create the channel entry
-  return await prisma.node.create({
-    data: {
-      title: channel.title,
-      uri: channel.id,
-      category: { connect: { id: channelCategory!.id } },
-      icon: { create: { path: 'asdf' } },
-      meta: {
-        create: [{ key: 'description', value: channel.desc, type: 'text' }],
-      },
-      leafs: {
-        create: [{ type: 'meta', content: '' }],
-      },
-    },
-  })
+  return await prisma.image.create({ data: { path: path, source: url } })
 }
 
-
-
-
-
-
-export { getCategory, saveIcon, insertYoutubeChannelNode }
+export { getCategory, saveIcon, saveImage }

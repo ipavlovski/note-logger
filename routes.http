@@ -12,14 +12,18 @@ POST https://homelab:3002/url
 content-type: application/json
 
 { 
-    "url": "https://stackoverflow.com/questions/58031982/sending-text-via-an-http-post-request"
+    "url": "https://www.youtube.com/c/PetryfiedWoodworks"
 }
 
 
-### SEND REQUEST TO CREATE NODE
+### YOUTUBE CHANNEL
 PUT https://homelab:3002/node
 content-type: application/json
 
-{ 
-    "url": "https://stackoverflow.com/questions/58031982/sending-text-via-an-http-post-request"
+{
+  "title": "Petryfied Woodworks",
+  "uri": "UCA53VbscPchxlmkCeST2BfA",
+  "icon": { "iconId": 8 },
+  "category": [ "youtube", "channel" ]
 }
+
