@@ -20,28 +20,15 @@ model Node {
     iconId Int
     icon   Icon? @relation(fields: [iconId], references: [id])
 
-    order     Int      @default(0)
+    createdAt DateTime @default(now())
     updatedAt DateTime @updatedAt
+    order     Int      @default(0)
 
-    categoryId Int
-    category   Cat?   @relation(fields: [categoryId], references: [id])
-    tags       Tag[]
-    meta       Meta[]
-    leafs      Leaf[]
+    tags     Tag[]
+    metadata Metadata[]
+    leafs    Leaf[]
 
     @@unique([pid, uri], name: "pid_uri")
-}
-
-model Cat {
-    id     Int    @id @default(autoincrement())
-    name   String
-    pid    Int?
-    parent Cat?   @relation("CatChain", fields: [pid], references: [id])
-    child  Cat[]  @relation("CatChain")
-    node   Node[]
-    colour String @default("#1f1f1f")
-
-    @@unique([pid, name], name: "cat_chain")
 }
 
 model Tag {
@@ -51,13 +38,12 @@ model Tag {
     parent Tag?   @relation("TagChain", fields: [pid], references: [id])
     child  Tag?   @relation("TagChain")
     node   Node[]
-    colour String @default("#1f1f1f")
 
     @@unique([pid, name], name: "tag_chain")
 }
 
 // key, value, type - type is Number/String/Boolean of the 'value'
-model Meta {
+model Metadata {
     id      Int    @id @default(autoincrement())
     node_id Int
     key     String
@@ -65,35 +51,17 @@ model Meta {
     type    String
     node    Node   @relation(fields: [node_id], references: [id])
 
-    @@unique([node_id, key], name: "meta_key")
+    @@unique([node_id, key], name: "metadata_key")
 }
 
 model Leaf {
     id        Int      @id @default(autoincrement())
     node_id   Int
     node      Node     @relation(fields: [node_id], references: [id])
-    createdAt DateTime @default(now())
-    archived  Boolean  @default(false)
     media     Image[]
-
-    updatedAt DateTime @updatedAt
+    content   String
+    createdAt DateTime @default(now())
     order     Int      @default(0)
-
-    type    String // meta, text, link
-    content String
-
-    linking  LinkedLeaf?  @relation("linking")
-    linkedBy LinkedLeaf[] @relation("linked-by")
-
-}
-
-model LinkedLeaf {
-    linking    Leaf @relation("linking", fields: [linkingId], references: [id])
-    linkingId  Int  @unique
-    linkedBy   Leaf @relation("linked-by", fields: [linkedById], references: [id])
-    linkedById Int
-
-    @@id([linkingId, linkedById])
 }
 
 model Image {
@@ -104,8 +72,6 @@ model Image {
     path      String
     source    String?
     createdAt DateTime @default(now())
-
-    updatedAt DateTime @updatedAt
     order     Int      @default(0)
 
     @@unique([leaf_id, path], name: "image_path")
@@ -117,5 +83,4 @@ model Icon {
 
     path      String
     source    String?
-    createdAt DateTime @default(now())
 }
