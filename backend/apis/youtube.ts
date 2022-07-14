@@ -1,9 +1,6 @@
-import { PrismaClient } from '@prisma/client'
-import { saveIcon } from 'backend/db'
 import { YOUTUBE_API_KEY } from 'common/config'
 import fetch from 'node-fetch'
 
-const prisma = new PrismaClient()
 
 // type YoutubeChannel = ReturnType<typeof getYoutubeChannel>
 interface YoutubeChannel {
@@ -29,9 +26,9 @@ interface YoutubeChannelSearch {
   icon: string
 }
 
-var tmp1 = await rawQuery('videos', 'ztpWsuUItrA')
-var tmp2 = await rawQuery('channels', 'UCsBjURrPoezykLs9EqgamOA')
-var tmp3 = await rawQuery('search', 'kralyn3d')
+// var tmp1 = await rawQuery('videos', 'ztpWsuUItrA')
+// var tmp2 = await rawQuery('channels', 'UCsBjURrPoezykLs9EqgamOA')
+// var tmp3 = await rawQuery('search', 'kralyn3d')
 
 async function rawQuery(api: 'channels' | 'videos' | 'search', arg: string) {
   const base = 'https://youtube.googleapis.com/youtube/v3'
@@ -49,6 +46,8 @@ async function rawQuery(api: 'channels' | 'videos' | 'search', arg: string) {
   const url = `${base}/${api}?${params}&key=${YOUTUBE_API_KEY}`
   return await fetch(url).then((v: any) => v.json())
 }
+
+
 
 // example: await getYoutubeChannel('UChWv6Pn_zP0rI6lgGt3MyfA')
 export async function queryYoutubeChannels(id: string): Promise<YoutubeChannel> {
@@ -89,4 +88,13 @@ export async function queryYoutubeSearch(channelName: string): Promise<YoutubeCh
     desc: results.items[0].snippet.description,
     icon: results.items[0].snippet.thumbnails.medium.url,
   }
+}
+
+
+
+
+export async function youtubeVideoAPI(videoId: string) {
+  const params = `part=snippet&id=${videoId}`
+  const url = `https://youtube.googleapis.com/youtube/v3/videos?${params}&key=${YOUTUBE_API_KEY}`
+  return await fetch(url).then((v: any) => v.json())
 }

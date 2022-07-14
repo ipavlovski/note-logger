@@ -14,11 +14,14 @@ model Node {
     parent   Node?  @relation("NodeChain", fields: [pid], references: [id], onDelete: Cascade)
     children Node[] @relation("NodeChain")
 
-    uri   String
+    uri   String @unique
     title String
 
-    iconId Int
+    iconId Int?
     icon   Icon? @relation(fields: [iconId], references: [id])
+
+    backsplashId Int?
+    backsplash   Backsplash? @relation(fields: [backsplashId], references: [id])
 
     createdAt DateTime @default(now())
     updatedAt DateTime @updatedAt
@@ -27,17 +30,17 @@ model Node {
     tags     Tag[]
     metadata Metadata[]
     leafs    Leaf[]
-
-    @@unique([pid, uri], name: "pid_uri")
+    history  History[]
 }
 
 model Tag {
     id     Int    @id @default(autoincrement())
     name   String
-    pid    Int?   @unique
+    pid    Int?      
     parent Tag?   @relation("TagChain", fields: [pid], references: [id])
-    child  Tag?   @relation("TagChain")
+    child  Tag[]   @relation("TagChain")
     node   Node[]
+    order  Int    @default(0)
 
     @@unique([pid, name], name: "tag_chain")
 }
@@ -81,6 +84,22 @@ model Icon {
     id   Int    @id @default(autoincrement())
     node Node[]
 
-    path      String
-    source    String?
+    path   String @unique
+    source String? @unique
+}
+
+model Backsplash {
+    id   Int    @id @default(autoincrement())
+    node Node[]
+
+    path   String @unique
+    source String? @unique
+}
+
+model History {
+    id         Int      @id @default(autoincrement())
+    node_id    Int
+    visited_at DateTime
+    imported_at DateTime @default(now())
+    node       Node     @relation(fields: [node_id], references: [id])
 }

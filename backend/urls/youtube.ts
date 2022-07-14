@@ -1,6 +1,5 @@
 import { PrismaClient } from '@prisma/client'
 import { queryYoutubeChannels, queryYoutubeSearch, queryYoutubeVideos } from 'backend/apis/youtube'
-import { getCategory, saveIcon } from 'backend/db'
 import { readFile } from 'node:fs/promises'
 import { URL } from 'url'
 
@@ -23,7 +22,7 @@ async function youtubeChannelHandler(url: URL) {
 
   // next, check if this channel ID already exists in the database
   const existingChannel = await prisma.node.findFirst({
-    where: { uri: channelId, category: { name: 'channel' } },
+    where: { uri: channelId },
   })
   if (existingChannel) return existingChannel
 
@@ -43,8 +42,8 @@ async function youtubeVideoHandler(url: URL) {
   const video = await queryYoutubeVideos(videoId!)
 
   // check if a record exists already
-  const vidCat = await getCategory(['youtube', 'channel', 'video'])
-  const vidMatch = await prisma.node.findFirst({ where: { uri: video.id, category: vidCat } })
+  // const vidCat = await getCategory(['youtube', 'channel', 'video'])
+  const vidMatch = await prisma.node.findFirst({ where: { uri: video.id } })
   if (vidMatch) return vidMatch
 
   // if the channel is matched

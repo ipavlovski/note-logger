@@ -1,5 +1,4 @@
 import { ErrorHandler } from 'backend/error-handler'
-import { genericFilter } from 'backend/urls/generic'
 import { redditFilter } from 'backend/urls/reddit'
 import { stackExchangeFilter } from 'backend/urls/stack-exchange'
 import { Router } from 'express'

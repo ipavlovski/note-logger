@@ -38,3 +38,43 @@ export interface VideoNode {
 
 export type Segment = { seconds: number; title: string }
   
+
+
+
+
+
+
+export interface ChromeHistoryItem {
+    history_url: string
+    history_title: string
+    iso_date_visited: string
+    client_id: string
+    page_transition: string
+}
+
+
+export interface ChromeBookmarkItem {
+    bookmark_url: string
+    bookmark_title: string
+    iso_date_added: string
+    icon_url: string
+}
+
+export interface YoutubePlaylistItem {
+    video_id: string
+    iso_date_added: string
+}
+
+export interface YoutubeSearchItem {
+    search_text: string
+    search_url: string
+    iso_date_searched: string
+}
+
+export interface YoutubeHistoryItem {
+    video_url: string
+    video_title: string
+    channel_url: string
+    channel_title: string
+    iso_date_watched: string
+}
