@@ -14,7 +14,7 @@ function YouTube({ videoNode }: { videoNode: VideoNode }) {
       videoId: videoNode.videoId,
       playerVars: {
         enablejsapi: 1,
-        origin: 'https://homelab:9001',
+        origin: 'https://localhost:9001',
         modestbranding: 1,
       },
     })

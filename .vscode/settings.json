@@ -2,7 +2,7 @@
   "eslint.enable": true,
   "workbench.colorCustomizations": {
     "activityBar.background": "#2a42252c",
-    "statusBar.background": "#21a806af"
+    // "statusBar.background": "#21a806af"
   },
   "[prisma]": {
     "editor.defaultFormatter": "Prisma.prisma"

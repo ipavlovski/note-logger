@@ -1,8 +1,6 @@
-import React, { ClipboardEvent, KeyboardEventHandler, useState } from 'react'
-import Select, { StylesConfig } from 'react-select'
+import { ClipboardEvent, KeyboardEventHandler, useState } from 'react'
+import { ActionMeta, OnChangeValue, StylesConfig } from 'react-select'
 import CreatableSelect from 'react-select/creatable'
-import { ActionMeta, OnChangeValue } from 'react-select'
-
 import chroma from 'chroma-js'
 
 interface Option {
@@ -30,7 +28,7 @@ export default function Omnibar() {
             data.getType('text/plain').then(async blob => {
               const txt = await blob.text()
 
-              const res = await fetch('https://homelab:3002/url', {
+              const res = await fetch('https://localhost:3002/url', {
                 method: 'POST',
                 body: JSON.stringify({ url: 'https://www.youtube.com/watch?v=m68FDmU0wGw' }),
                 headers: { 'Content-Type': 'application/json' },
@@ -52,7 +50,7 @@ export default function Omnibar() {
               formData.append('some_text', 'tes')
               formData.append('avatar', blob, 'lolpath')
 
-              const res = await fetch('https://homelab:3002/multi', {
+              const res = await fetch('https://localhost:3002/multi', {
                 method: 'POST',
                 body: formData,
               })
@@ -111,11 +109,12 @@ export default function Omnibar() {
   const components = { DropdownIndicator: null }
 
   const colourStyles: StylesConfig<Option, true> = {
-    control: styles => ({ 
-      ...styles, 
+    control: styles => ({
+      ...styles,
       borderRadius: 50,
       height: '1rem',
-      backgroundColor: 'white' }),
+      backgroundColor: 'white',
+    }),
 
     option: (styles, { data, isDisabled, isFocused, isSelected }) => {
       const color = chroma(data.color)
@@ -156,7 +155,6 @@ export default function Omnibar() {
         ...styles,
         borderRadius: 50,
         backgroundColor: color.alpha(0.4).css(),
-        
       }
     },
 
@@ -183,8 +181,7 @@ export default function Omnibar() {
   }
 
   return (
-    <div onPasteCapture={handleClipboardEvent}>
-      <h2>Omnibar:</h2>
+    <div onPasteCapture={handleClipboardEvent} style={{ gridArea: "omnibar" }}>
       <CreatableSelect
         isClearable
         isMulti
@@ -198,8 +195,8 @@ export default function Omnibar() {
         onKeyDown={handleKeyDown}
         styles={colourStyles}
       />
-      <p>{msg}</p>
-      <img src={imgURL} />
+      {/* <p>{msg}</p> */}
+      {/* <img src={imgURL} /> */}
     </div>
   )
 }

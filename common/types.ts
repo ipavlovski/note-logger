@@ -1,3 +1,5 @@
+import { Prisma } from '@prisma/client'
+
 export interface ParsedURL {
     title?: string
     icon?: { id: number; buffer: Buffer }
@@ -78,3 +80,19 @@ export interface YoutubeHistoryItem {
     channel_title: string
     iso_date_watched: string
 }
+
+
+const historyWithNode = Prisma.validator<Prisma.HistoryArgs>()({include: { node: true}}) 
+export type HistoryWithNode = Prisma.HistoryGetPayload<typeof historyWithNode>
+
+const nodeWithProps = Prisma.validator<Prisma.NodeArgs>()({include: { 
+    parent: true,
+    children: true,
+    leafs: true,
+    history: true,
+    icon: true,
+    backsplash: true,
+    metadata: true,
+    tags: true
+  }}) 
+export type NodeWithProps = Prisma.NodeGetPayload<typeof nodeWithProps>

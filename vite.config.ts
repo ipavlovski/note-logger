@@ -4,6 +4,8 @@ import path from 'path'
 
 export default defineConfig({
   plugins: [react()],
+  root: 'frontend',
+
   server: {
     port: 9001,
     host: true,
@@ -13,7 +15,7 @@ export default defineConfig({
     },
     proxy: {
       '/select': {
-        target: 'https://homelab:3002',
+        target: 'https://localhost:3002',
         changeOrigin: true
       }
     }

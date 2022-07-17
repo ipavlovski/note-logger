@@ -10,12 +10,6 @@ import { promisify } from 'util'
 import * as cheerio from 'cheerio'
 import { URL } from 'url'
 
-// ensure that the folders are up and running
-existsSync(`${STORAGE_DIRECTORY}/icons`) || mkdirSync(`${STORAGE_DIRECTORY}/icons`)
-existsSync(`${STORAGE_DIRECTORY}/images`) || mkdirSync(`${STORAGE_DIRECTORY}/images`)
-existsSync(`${STORAGE_DIRECTORY}/backsplashes`) || mkdirSync(`${STORAGE_DIRECTORY}/backsplashes`)
-existsSync('/tmp/note-logger') || mkdirSync('/tmp/note-logger')
-
 const prisma = new PrismaClient()
 
 export const pexec = promisify(exec)

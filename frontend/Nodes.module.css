@@ -1,0 +1,16 @@
+.nodes {
+  color: #3a3838;
+}
+
+
+.nodes::-webkit-scrollbar {
+    width: 0.5rem;
+}
+
+.nodes::-webkit-scrollbar-track {
+    background: hsl(0, 7%, 70%)
+}
+
+.nodes::-webkit-scrollbar-thumb {
+    background:hsl(305, 49%, 32%)
+}

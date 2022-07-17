@@ -99,7 +99,7 @@ model Backsplash {
 model History {
     id         Int      @id @default(autoincrement())
     node_id    Int
-    visited_at DateTime
+    visited_at DateTime @unique
     imported_at DateTime @default(now())
     node       Node     @relation(fields: [node_id], references: [id])
 }

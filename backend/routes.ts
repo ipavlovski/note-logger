@@ -15,6 +15,10 @@ import { readFile, writeFile } from 'fs/promises'
 const storage = multer.memoryStorage()
 const upload = multer({ storage: storage })
 
+import { PrismaClient } from '@prisma/client'
+import { DateTime } from 'luxon'
+
+const prisma = new PrismaClient()
 
 ////////////// MULTIHANDLERS
 
@@ -43,6 +47,54 @@ routes.post('/multi', upload.single('avatar'), async (req, res) => {
 routes.post('/multi2', async (req, res) => {
   console.log(req.body)
   res.json('lol')
+})
+
+
+routes.get('/history/:date?', async (req, res) => {
+  var date = req.params.date
+  if (date == null || ! DateTime.fromISO(date).isValid) {
+      const output = await prisma.history.findMany({
+      take: 100,
+      skip: 1, // Skip the cursor
+      orderBy: { visited_at: 'desc' },
+      include: { node: true }
+    })
+    return res.json(output)
+  }
+
+  const validDate = await prisma.history.findFirst({
+    where: { visited_at: { gte: DateTime.fromISO(date).toJSDate()}},
+  })
+  
+  const output = await prisma.history.findMany({
+    take: 100,
+    skip: 1, // Skip the cursor
+    orderBy: { visited_at: 'desc' },
+    cursor: {
+      visited_at: validDate!.visited_at
+    },
+    include: { node: true }
+  })
+
+  return res.json(output)
+})
+
+routes.get('/node/:id', async (req, res) => {
+  var id = parseInt(req.params.id)
+
+  const node = await prisma.node.findFirst({ where: { id: id}, include: { 
+    parent: true,
+    children: true,
+    leafs: true,
+    history: true,
+    icon: true,
+    backsplash: true,
+    metadata: true,
+    tags: true
+  }})
+
+  return res.json(node)
+
 })
 
 
