@@ -1,24 +1,40 @@
 import { HistoryWithNode } from "common/types"
-import { useState, useEffect, useRef, useContext } from "react"
+import { useState, useEffect, useRef, useContext, MouseEvent } from "react"
 import styles from "frontend/Nodes.module.css"
 import { NodeContext } from 'frontend/App'
 
 
-function Node(v: HistoryWithNode) {
+// function Node(v: HistoryWithNode) {
+function Node(v: HistoryWithNode & { selected: { allSelected: number[], setAllSelected: any}}) {
   const [context, setContext] = useContext(NodeContext);
+  const [ selected, setSelected ] = useState(false)
 
-  const clickHandler = () => {
-    setContext(v.node.id)
-    console.log(`iri: ${v.node.id}`)
+  const clickHandler = (e: MouseEvent<HTMLLIElement>) => {
+    if (e.shiftKey) {
+      setSelected(! selected)
+      if (! selected) {
+        console.log('not selected')
+        v.selected.setAllSelected(v.selected.allSelected.concat(v.node.id))
+      } else {
+        const arr = v.selected.allSelected.filter(item => item !== v.node.id)
+        v.selected.setAllSelected(arr)
+      }
+    } else {
+      setContext(v.node.id)
+    }
   }
+
+
   return (
-    <li onClick={clickHandler}>{v.node.title}</li>
+    <li onClick={clickHandler} style={{color: selected ? 'red' : 'blue'}}>{v.node.title}</li>
   )
 }
 
 function NodeList() {
   const [history, setHistory] = useState<HistoryWithNode[]>()
   // const [context, setContext] = useContext(NodeContext);
+
+  const [ allSelected, setAllSelected] = useState<number[]>([])
 
   const fetchHistory = async (isoString?: Date) => {
     const url = isoString
@@ -67,12 +83,17 @@ function NodeList() {
           overflowY: "scroll",
           maxHeight: "95vh",
           transform: `scaleX(-1)`,
+          userSelect: 'none'
         }}
         className={styles.nodes}
       >
         <ul style={{ transform: `scaleX(-1)` }}>
-          {history.map((v) => {
-            return <Node {...v} key={v.id}/>
+          <p>selected: {allSelected.length}</p>
+          {history.map((v: HistoryWithNode) => {
+            // return <Node {...v} key={v.id} />
+            const props = { ...v, selected: { allSelected, setAllSelected } }
+            // @ts-ignore
+            return <Node {...props} key={v.id} />
           })}
         </ul>
       </div>

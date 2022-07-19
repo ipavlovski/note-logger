@@ -97,5 +97,24 @@ routes.get('/node/:id', async (req, res) => {
 
 })
 
+routes.post('/leaf/:id', async (req, res) => {
+  var leafId = parseInt(req.params.id)
+  var content = req.body.content
+
+  await prisma.leaf.update({ where: { id: leafId}, data: { content: content }})
+  return res.sendStatus(200)
+})
+
+routes.put('/node/:id/leaf', async (req, res) => {
+  var id = parseInt(req.params.id)
+
+  await prisma.node.update({ where: { id: id}, data: { leafs: { create: {
+    content: 'new.'
+  }}}})
+
+  return res.sendStatus(200)
+})
+
+
 
 export default routes
