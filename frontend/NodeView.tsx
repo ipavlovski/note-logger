@@ -1,5 +1,5 @@
 import { NodeWithProps } from 'common/types'
-import { NodeContext } from 'frontend/App'
+import { Context } from 'frontend/App'
 import { ClipboardEvent, useContext, useEffect, useRef, useState } from 'react'
 import Editor from '@monaco-editor/react'
 import { editor } from 'monaco-editor'
@@ -168,7 +168,7 @@ function Leaf(props: any) {
 // <img src={imgURL} />
 
 function NodeView() {
-  const [context, _] = useContext(NodeContext)
+  const { state, dispatch } = useContext<Context>(Context)
 
   const [node, setNode] = useState<NodeWithProps>()
 
@@ -178,11 +178,8 @@ function NodeView() {
   }
 
   useEffect(() => {
-    if (context != null) {
-      console.log(`setting context: ${context}`)
-      fetchNode(context).then(v => setNode(v))
-    }
-  }, [context])
+    fetchNode(state.activeNodeId).then(v => setNode(v))
+  }, [state.activeNodeId])
 
   const createNewEditor = async () => {
     console.log('create new editor!')
@@ -192,13 +189,12 @@ function NodeView() {
     const url = `https://localhost:3002/node/${nodeId}/leaf`
     const res = await fetch(url, {
       method: 'PUT',
-      headers: { 'Content-Type': 'application/json' }
+      headers: { 'Content-Type': 'application/json' },
     })
     console.log(`Update status: ${res.status}`)
 
     // re-fetch
-    fetchNode(context).then(v => setNode(v))
-
+    fetchNode(state.activeNodeId).then(v => setNode(v))
   }
 
   return (
@@ -211,11 +207,11 @@ function NodeView() {
           return (
             <div key={leaf.id}>
               <hr></hr>
-              <Leaf  leaf={leaf} />
+              <Leaf leaf={leaf} />
             </div>
           )
         })}
-        <hr onClick={createNewEditor} style={{padding: '2px', margin: '1rem'}}></hr>
+        <hr onClick={createNewEditor} style={{ padding: '2px', margin: '1rem' }}></hr>
       </div>
     </>
   )

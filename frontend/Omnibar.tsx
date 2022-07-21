@@ -1,7 +1,8 @@
-import { ClipboardEvent, KeyboardEventHandler, useState } from 'react'
+import { ClipboardEvent, KeyboardEventHandler, useContext, useEffect, useState } from 'react'
 import { ActionMeta, OnChangeValue, StylesConfig } from 'react-select'
 import CreatableSelect from 'react-select/creatable'
 import chroma from 'chroma-js'
+import { Context } from 'frontend/App'
 
 interface Option {
   readonly label: string
@@ -12,6 +13,23 @@ interface Option {
 export default function Omnibar() {
   const [imgURL, setImgURL] = useState('https://picsum.photos/420/320')
   const [msg, setMsg] = useState('this is a message...')
+
+  const { state, dispatch } = useContext<Context>(Context)
+
+  useEffect(() => {
+    if (state.selectedNodes.length > 0) {
+      const oldValues = value.filter(v => v.value != 'selected')
+      const newValue: Option = {
+        label: `selected: ${state.selectedNodes.length}`,
+        value: 'selected',
+        color: 'black',
+      }
+      setValue(oldValues.concat(newValue))
+    } else {
+      const oldValues = value.filter(v => v.value != 'selected')
+      setValue(oldValues)
+    }
+  }, [state.selectedNodes])
 
   const handleClipboardEvent = (e: ClipboardEvent<HTMLInputElement>) => {
     // @ts-ignore
@@ -77,6 +95,12 @@ export default function Omnibar() {
   // new 'modified' value is passed through it, but it needs to be 'handled'
   const handleChange = (value: OnChangeValue<Option, true>, actionMeta: ActionMeta<Option>) => {
     console.log(`action: ${actionMeta.action}`)
+    console.dir(actionMeta)
+    if (actionMeta.action == 'pop-value' && actionMeta.removedValue.value == 'selected') {
+      state.selectedNodes.forEach(v => {
+        dispatch({ type: 'DESELECT_NODE', payload: { id: v.id } })
+      })
+    }
     setValue([...value])
   }
 
@@ -181,7 +205,7 @@ export default function Omnibar() {
   }
 
   return (
-    <div onPasteCapture={handleClipboardEvent} style={{ gridArea: "omnibar" }}>
+    <div onPasteCapture={handleClipboardEvent} style={{ gridArea: 'omnibar' }}>
       <CreatableSelect
         isClearable
         isMulti
