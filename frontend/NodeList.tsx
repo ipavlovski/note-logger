@@ -7,6 +7,7 @@ import { Context } from 'frontend/App'
 function Node(histNode: HistoryWithNode) {
   const { state, dispatch } = useContext<Context>(Context)
   const [selected, setSelected] = useState(false)
+  const [active, setActive] = useState(false)
 
   const clickHandler = (e: MouseEvent<HTMLLIElement>) => {
     if (e.shiftKey) {
@@ -18,11 +19,22 @@ function Node(histNode: HistoryWithNode) {
       }
     } else {
       dispatch({ type: 'ACTIVATE_NODE', payload: histNode.node.id })
+      if (! active) {
+        setActive(true)
+      } else {
+        setActive(false)
+      }
     }
   }
 
+  useEffect(() => {
+    if (histNode.node.id != state.activeNodeId) {
+      setActive(false)
+    }
+  }, [state.activeNodeId])
+
   return (
-    <li onClick={clickHandler} style={{ color: selected ? 'red' : 'blue' }}>
+    <li onClick={clickHandler} style={{ color: selected ? 'red' : active ? 'blue' : 'black' }}>
       {histNode.node.title}
     </li>
   )
