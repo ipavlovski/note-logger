@@ -96,7 +96,8 @@ export default function Omnibar() {
   const handleChange = (value: OnChangeValue<Option, true>, actionMeta: ActionMeta<Option>) => {
     console.log(`action: ${actionMeta.action}`)
     console.dir(actionMeta)
-    if (actionMeta.action == 'pop-value' && actionMeta.removedValue.value == 'selected') {
+    if ((actionMeta.action == 'pop-value' || actionMeta.action == 'remove-value') 
+    && actionMeta.removedValue.value == 'selected') {
       state.selectedNodes.forEach(v => {
         dispatch({ type: 'DESELECT_NODE', payload: { id: v.id } })
       })
