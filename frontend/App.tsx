@@ -4,10 +4,10 @@ import NodeView from 'frontend/NodeView'
 import Omnibar from 'frontend/Omnibar'
 import { createContext, useReducer, useState } from 'react'
 
-import { HistoryWithNode } from 'common/types'
+import { HistoryWithNode, HistoryAcc } from 'common/types'
 
 interface State {
-  history: HistoryWithNode[]
+  history: HistoryAcc[]
   activeNodeId: number
   selectedNodes: { id: number; setter: React.Dispatch<React.SetStateAction<boolean>> }[]
 }
@@ -18,7 +18,7 @@ export interface Context {
 }
 
 type Action =
-  | { type: 'ADD_HISTORY'; payload: HistoryWithNode[] }
+  | { type: 'ADD_HISTORY'; payload: HistoryAcc[] }
   | { type: 'ACTIVATE_NODE'; payload: number }
   | {
       type: 'SELECT_NODE'
@@ -34,12 +34,28 @@ const initState: State = {
 
 export const Context = createContext<Context>({ dispatch: () => {}, state: initState })
 
-
+function processHist(newAcc: HistoryAcc[], masterAcc: HistoryAcc[]) {
+  newAcc.forEach(accNew => {
+    const accMatch = masterAcc.find(accMaster => accMaster.title == accNew.title)
+    if (accMatch == null) {
+     masterAcc.push(accNew)
+    } else {
+     accNew.children.forEach(histItem => {
+       const matchInd = accMatch.children.findIndex(accItem => accItem.node_id == histItem.node_id)
+       matchInd == -1 ? accMatch.children.push(histItem) : 
+         accMatch.children[matchInd].visited_at = histItem.visited_at
+     })
+    }
+ })
+ return masterAcc
+}
 
 function reducer(state: State, action: Action): State {
   switch (action.type) {
     case 'ADD_HISTORY':
-      return { ...state, history: state.history.concat(action.payload)  }
+      console.log(`INCOMING HISTORY:`, action.payload)
+      const newHist = processHist(action.payload, state.history)
+      return { ...state, history: newHist }
     case 'ACTIVATE_NODE':
       return { ...state, activeNodeId: action.payload }
     case 'SELECT_NODE':

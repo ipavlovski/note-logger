@@ -1,4 +1,4 @@
-import { HistoryWithNode } from 'common/types'
+import { HistoryAcc, HistoryWithNode } from 'common/types'
 import { useState, useEffect, useRef, useContext, MouseEvent } from 'react'
 import styles from 'frontend/Nodes.module.css'
 import { Context } from 'frontend/App'
@@ -19,7 +19,7 @@ function Node(histNode: HistoryWithNode) {
       }
     } else {
       dispatch({ type: 'ACTIVATE_NODE', payload: histNode.node.id })
-      if (! active) {
+      if (!active) {
         setActive(true)
       } else {
         setActive(false)
@@ -34,8 +34,52 @@ function Node(histNode: HistoryWithNode) {
   }, [state.activeNodeId])
 
   return (
-    <li onClick={clickHandler} style={{ color: selected ? 'red' : active ? 'blue' : 'black' }}>
+    <li
+      onClick={clickHandler}
+      style={{
+        color: selected ? 'red' : active ? 'blue' : 'black',
+        listStyle: 'none',
+      }}>
+      <span
+        style={{
+          background: 'black',
+          borderRadius: '50%',
+          content: '',
+          width: '0.4rem',
+          height: '0.4rem',
+          display: 'inline-block',
+          marginRight: '0.5rem',
+          marginLeft: '-1rem',
+        }}></span>
       {histNode.node.title}
+    </li>
+  )
+}
+
+function TreeNode({ title, children }: { title: string; children: HistoryWithNode[] }) {
+  return (
+    <li style={{ listStyle: 'none' }}>
+      <div style={{ marginLeft: '0rem' }}>
+        <span
+          style={{
+            background: 'black',
+            borderRadius: '50%',
+            content: '',
+            width: '0.8rem',
+            height: '0.8rem',
+            display: 'inline-block',
+            marginRight: '0.5rem',
+            marginLeft: '0rem',
+          }}></span>
+        {title}
+      </div>
+      {children.length ? (
+        <ul>
+          {children.map((v: HistoryWithNode) => {
+            return <Node {...v} key={v.id} />
+          })}
+        </ul>
+      ) : null}
     </li>
   )
 }
@@ -43,16 +87,15 @@ function Node(histNode: HistoryWithNode) {
 function NodeList() {
   const { state, dispatch } = useContext<Context>(Context)
 
-  const fetchHistory = async (isoString?: Date) => {
-    const url = isoString
-      ? `https://localhost:3002/history/${isoString}`
-      : 'https://localhost:3002/history/'
+  const fetchHistory = async (isoString: Date) => {
+    const url = `https://localhost:3002/history/${isoString.toISOString()}`
+    // console.log(`url: ${url}`)
     return await fetch(url).then(v => v.json())
   }
 
   useEffect(() => {
     console.log('FETCHING!')
-    fetchHistory().then(v => dispatch({ type: 'ADD_HISTORY', payload: v }))
+    fetchHistory(new Date()).then(v => dispatch({ type: 'ADD_HISTORY', payload: v }))
   }, [])
 
   const listInnerRef = useRef() as React.MutableRefObject<HTMLDivElement>
@@ -62,8 +105,10 @@ function NodeList() {
       if (scrollTop + clientHeight === scrollHeight) {
         if (state.history.length > 0) {
           console.log('fetching...')
-          const lastHistoryDate = state.history[state.history.length - 1].visited_at
-          fetchHistory(lastHistoryDate).then(v => dispatch({ type: 'ADD_HISTORY', payload: v }))
+          const latestDate = state.history[state.history.length -1].children
+            .map(v => v.visited_at).sort().at(0)!
+          
+          fetchHistory(new Date(latestDate)).then(v => dispatch({ type: 'ADD_HISTORY', payload: v }))
         }
       }
     }
@@ -82,8 +127,8 @@ function NodeList() {
       }}
       className={styles.nodes}>
       <ul style={{ transform: `scaleX(-1)` }}>
-        {state.history.map((v: HistoryWithNode) => {
-          return <Node {...v} key={v.id} />
+        {state.history.map((v: HistoryAcc) => {
+          return <TreeNode {...v} />
         })}
       </ul>
     </div>

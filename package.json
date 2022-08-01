@@ -29,7 +29,7 @@
     "morgan": "^1.10.0",
     "multer": "^1.4.4",
     "nanoid": "^4.0.0",
-    "node-fetch": "^3.2.8",
+    "node-fetch": "^2.6.7",
     "page-icon": "^0.4.0",
     "prisma": "^4.0.0",
     "react": "^18.2.0",

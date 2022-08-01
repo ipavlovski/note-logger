@@ -96,3 +96,9 @@ const nodeWithProps = Prisma.validator<Prisma.NodeArgs>()({include: {
     tags: true
   }}) 
 export type NodeWithProps = Prisma.NodeGetPayload<typeof nodeWithProps>
+
+
+export interface HistoryAcc {
+    title: string
+    children: HistoryWithNode[]
+  }

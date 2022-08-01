@@ -5,7 +5,7 @@ public/
 dist/
 .env
 *.sqlite
-scratch.*
+scratch*
 debug.ts
 package-lock.json
 media/
