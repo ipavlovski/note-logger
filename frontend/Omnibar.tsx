@@ -219,6 +219,7 @@ export default function Omnibar() {
         onInputChange={handleInputChange}
         onKeyDown={handleKeyDown}
         styles={colourStyles}
+        
       />
       {/* <p>{msg}</p> */}
       {/* <img src={imgURL} /> */}

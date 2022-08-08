@@ -102,3 +102,12 @@ export interface HistoryAcc {
     title: string
     children: HistoryWithNode[]
   }
+
+
+
+export interface TreeNode {
+    type: 'hist' | 'tag' | 'node'
+    title: string
+    items: NodeWithProps[]
+    children: TreeNode[]
+}
