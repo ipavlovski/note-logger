@@ -96,4 +96,81 @@ routes.put('/node/:id/leaf', async (req, res) => {
 
 
 
+
+
+
+
+
+
+
+
+async function getTagSuggestions(tagsString: string) {
+  const tags = tagsString.split(':')
+
+  // if split
+  if (tags.length == 0 || (tags.length == 1 && tags[0] == '')) {
+      return await prisma.tag.findMany()
+  } else if (tags.length == 1) {
+      return await prisma.tag.findMany({where: {name: {contains: tags[0]}}})
+  } else {
+      const firstParent = tags[0] == '' ? null : { name: tags[0] }
+      if (tags.length == 2) {
+          return await prisma.tag.findMany({where: { name: { contains: tags[1]}, parent: firstParent}})
+      } else if (tags.length == 3) {
+          // console.dir({name: { contains: tags[2]}, parent: { name: tags[1], parent: firstParent}})
+          return await prisma.tag.findMany({
+              where: {name: { contains: tags[2]}, parent: { name: tags[1], parent: firstParent}}
+          })
+          
+      } else if (tags.length == 4) {
+          return await prisma.tag.findMany({
+              where: { 
+                  name: { contains: tags[3]}, 
+                  parent: { name: tags[2], parent: { name: tags[1], parent: firstParent}}}
+          })
+                      
+      } else {
+          console.log('MAX TAGS EXCEEDED')
+          return []
+      }
+  }
+}
+
+
+async function getTextSuggestions({type, value}: { type: 'title' | 'body' | 'uri', value: string}) {
+  if (type == 'title') {
+    return await prisma.node.findMany({where: {title: { contains: value}}, take: 100})
+  } else if (type == 'body') {
+    return await prisma.node.findMany({where: { leafs: { some: { content: { contains: value }}},
+    OR: { title: {contains: value}}}, take: 100})
+  } else if (type == 'uri') {
+    console.log(`uri: ${value}`)
+    return await prisma.node.findMany({where: { uri: { contains: value}}, take: 100})
+  } else {
+    console.log(`null`)
+    return []
+  }
+}
+
+routes.post('/suggestions', async (req, res) => {
+  const body = req.body
+  console.dir(req.body)
+  if (body.type == 'tags') {
+    const results = await getTagSuggestions(req.body.value)
+    return res.json(results)
+  } else if (body.type == 'text') {
+    const results = await getTextSuggestions(req.body.value)
+    return res.json(results)
+  } else {
+    return res.json([])
+  }
+
+})
+
+
+
+
+
+
+
 export default routes

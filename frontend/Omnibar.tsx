@@ -1,14 +1,95 @@
-import { ClipboardEvent, KeyboardEventHandler, useContext, useEffect, useState } from 'react'
+import { ClipboardEvent, KeyboardEventHandler, useContext, useEffect, useRef, useState } from 'react'
 import { ActionMeta, OnChangeValue, StylesConfig } from 'react-select'
 import CreatableSelect from 'react-select/creatable'
 import chroma from 'chroma-js'
 import { Context } from 'frontend/App'
+import AsyncSelect from 'react-select/async'
+
 
 interface Option {
   readonly label: string
-  readonly value: string
+  readonly value: number
+  readonly type: 'selected' | 'tag' | 'metadata' | 'props' | 'text'
   readonly color: string
 }
+
+
+interface Tag {
+  id: number
+  name: string
+  pid: number | null
+  order: number
+}
+
+
+
+
+
+
+
+
+
+
+const fetchSuggestions = async (body: any) => {
+  const url = `https://localhost:3002/suggestions`
+  
+  return await fetch(url, {
+    method: 'POST',
+    body: JSON.stringify(body),
+    headers: { 'Content-Type': 'application/json' },
+  }).then((v) => v.json()) 
+}
+
+const getTagOptions = async (inputValue: string): Promise<Option[]> => {
+  // prep the body
+  const body = { type: 'tags', value: inputValue.substring(1) }
+
+  // query the server
+  const output: Tag[] = await  fetchSuggestions(body)
+
+  // parse output
+  return output.map((elt) => ({
+    label: elt.name,
+    value: elt.id,
+    type: 'tag',
+    color: '#000000',
+  }))
+}
+
+const getTextOptions = async (inputValue: string): Promise<Option[]> => {
+  const input = inputValue.substring(1)
+
+  if (['title:', 'body:', 'uri:'].some(elt => input.startsWith(elt))) {
+    const type = input.split(':')[0]
+    const value = input.replace(/^.*?:/, '')
+    const body = { type: 'text', value: { type, value} }
+
+    // query the server
+    const output = await fetchSuggestions(body)
+  
+    return output.map((elt: any) => ({ label: elt.title, value: elt.id, type: 'text', color: 'black'}))
+  
+  } else {
+    return ['title', 'body', 'uri']
+    .filter(elt => new RegExp(`.*${input}.*`).test(elt))
+    .map((elt, ind) => ({ label: elt, value: ind, color: 'black', type: 'text'}))
+
+  }
+
+}
+
+const getPropOptions = async (inputValue: string): Promise<Option[]> => {
+  return []
+}
+
+const getViewOptions = async (inputValue: string): Promise<Option[]> => {
+  return []
+}
+
+
+
+
+
 
 export default function Omnibar() {
   const [imgURL, setImgURL] = useState('https://picsum.photos/420/320')
@@ -16,20 +97,46 @@ export default function Omnibar() {
 
   const { state, dispatch } = useContext<Context>(Context)
 
+  // { label: 'lol', value: 'lol1', color: chroma.random().hex() }
+  const [value, setValue] = useState<Option[]>([])
+  const [inputValue, setInputValue] = useState('')
+
+  const getOptions = async (inputValue: string): Promise<Option[]> => {
+    if (inputValue.startsWith('#')) {
+      return await getTagOptions(inputValue)
+    }
+  
+    if (inputValue.startsWith('$')) {
+      return await getTextOptions(inputValue)
+    }
+  
+    if (inputValue.startsWith('!')) {
+      return await getViewOptions(inputValue)
+    }
+  
+    if (inputValue.startsWith('@')) {
+      return await getPropOptions(inputValue)
+    }
+  
+    return []
+  }
+  
   useEffect(() => {
     if (state.selectedNodes.length > 0) {
-      const oldValues = value.filter(v => v.value != 'selected')
+      const oldValues = value.filter(elt => elt.type != 'selected')
       const newValue: Option = {
         label: `selected: ${state.selectedNodes.length}`,
-        value: 'selected',
+        type: 'selected',
+        value: state.selectedNodes.length,
         color: 'black',
       }
       setValue(oldValues.concat(newValue))
     } else {
-      const oldValues = value.filter(v => v.value != 'selected')
+      const oldValues = value.filter(elt => elt.type != 'selected')
       setValue(oldValues)
     }
   }, [state.selectedNodes])
+
 
   const handleClipboardEvent = (e: ClipboardEvent<HTMLInputElement>) => {
     // @ts-ignore
@@ -88,19 +195,22 @@ export default function Omnibar() {
     })
   }
 
-  const [value, setValue] = useState([{ label: 'lol', value: 'lol1', color: chroma.random().hex() }])
-  const [inputValue, setInputValue] = useState('')
 
   // this handles different default (clear/remove) actions
   // new 'modified' value is passed through it, but it needs to be 'handled'
   const handleChange = (value: OnChangeValue<Option, true>, actionMeta: ActionMeta<Option>) => {
     console.log(`action: ${actionMeta.action}`)
-    console.dir(actionMeta)
-    if ((actionMeta.action == 'pop-value' || actionMeta.action == 'remove-value') 
-    && actionMeta.removedValue.value == 'selected') {
-      state.selectedNodes.forEach(v => {
-        dispatch({ type: 'DESELECT_NODE', payload: { id: v.id } })
-      })
+    switch (actionMeta.action) {
+      case 'pop-value':
+      case 'remove-value':
+       if (actionMeta.removedValue.type == 'selected') {
+        state.selectedNodes.forEach(v => {
+          dispatch({ type: 'DESELECT_NODE', payload: { id: v.id } })
+        })
+       } 
+        break;
+      default:
+        break;
     }
     setValue([...value])
   }
@@ -118,20 +228,27 @@ export default function Omnibar() {
 
     // use Enter and Tab as 'confirm' keys
     switch (event.key) {
-      case 'Enter':
+      // case 'Tab':
+      //   // don't do anything if the the label already exists
+      //   if (value.find(v => v.label == inputValue)) return
+      //   // reset the current input value
+      //   setInputValue('')
+      //   // and set the new value
+      //   setValue([...value, { label: inputValue, value: inputValue, color: chroma.random().hex() }])
+      //   event.preventDefault()
       case 'Tab':
-        // don't do anything if the the label already exists
-        if (value.find(v => v.label == inputValue)) return
-        // reset the current input value
-        setInputValue('')
-        // and set the new value
-        setValue([...value, { label: inputValue, value: inputValue, color: chroma.random().hex() }])
+        console.log(`TAB: current value: ${inputValue}, value: ${selectInputRef.current}`)
+        console.dir(selectInputRef.current.state.focusedOption)
+        const label = selectInputRef.current.state.focusedOption.label
+
+        setInputValue(`${inputValue.at(0)}${label}`)
         event.preventDefault()
+        break
     }
   }
 
   // change components of the react-select
-  const components = { DropdownIndicator: null }
+  // const components = { DropdownIndicator: null }
 
   const colourStyles: StylesConfig<Option, true> = {
     control: styles => ({
@@ -205,22 +322,30 @@ export default function Omnibar() {
     }),
   }
 
+  const selectInputRef = useRef<any>()
+
   return (
     <div onPasteCapture={handleClipboardEvent} style={{ gridArea: 'omnibar' }}>
-      <CreatableSelect
-        isClearable
+      <AsyncSelect
         isMulti
-        components={components}
+        isClearable
+        defaultOptions
+        // components={components}
         value={value}
         inputValue={inputValue}
-        menuIsOpen={false}
+        // menuIsOpen={false}
+        tabSelectsValue={false}
         placeholder="Type something and press enter..."
+        loadOptions={getOptions}
         onChange={handleChange}
         onInputChange={handleInputChange}
         onKeyDown={handleKeyDown}
+        getOptionLabel={(option) => `${option.label}: ${option.value}`}
         styles={colourStyles}
+        ref={selectInputRef}
         
       />
+
       {/* <p>{msg}</p> */}
       {/* <img src={imgURL} /> */}
     </div>
