@@ -7,7 +7,7 @@
     "tsnd": "/usr/bin/tsnd -r dotenv/config -r tsconfig-paths/register --exit-child --respawn --clear backend/app.ts",
     "ts-node": "ts-node -r dotenv/config -r tsconfig-paths/register backend/app.ts",
     "jest": "jest --watch",
-    "prisma": "prisma",
+    "prisma": "prisma migrate dev --name init",
     "dev": "vite",
     "build": "tsc && vite build",
     "preview": "vite preview"

@@ -212,6 +212,7 @@ function NodeView() {
           )
         })}
         <hr onClick={createNewEditor} style={{ padding: '2px', margin: '1rem' }}></hr>
+        
       </div>
     </>
   )
