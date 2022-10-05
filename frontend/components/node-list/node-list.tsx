@@ -6,7 +6,9 @@ import Omnibar from 'components/node-list/omnibar'
 import { createStyles, Text, Image, Group } from '@mantine/core'
 import { fetchHistory } from 'components/node-list/node-list-slice'
 
-const imagesPath = 'https://localhost:3003/'
+
+const SERVER_URL = `https://localhost:${import.meta.env.VITE_SERVER_PORT}`
+
 
 export interface HistoryTree {
   title: string
@@ -85,7 +87,7 @@ export default function NodeList() {
 
   const treeItems = treeRoots.map(({ node, id }) => (
     <Group key={id} noWrap>
-      {node.icon != null && <Image radius={'md'} style={{width: 120, height: 80}} src={`${imagesPath}/${node.icon.path}`} />}
+      {node.icon != null && <Image radius={'md'} style={{width: 120, height: 80}} src={`${SERVER_URL}/${node.icon.path}`} />}
       <Text
         size={'sm'}
         className={cx(classes.node, id == selectedNodeId && classes.selected)}

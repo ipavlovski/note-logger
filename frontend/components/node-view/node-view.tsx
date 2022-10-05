@@ -9,7 +9,7 @@ import { useAppDispatch, useAppSelector } from 'frontend/hooks'
 
 import client from 'frontend/client'
 
-const imagesPath = 'https://localhost:3003/'
+const SERVER_URL = `https://localhost:${import.meta.env.VITE_SERVER_PORT}`
 
 const useStyles = createStyles((theme) => ({
   scrollable: {
@@ -119,9 +119,9 @@ export default function NodeView() {
         />
  */
   }
-  console.log(`${imagesPath}/${nodeWithProps.thumbnail}`)
+  console.log(`${SERVER_URL}/${nodeWithProps.thumbnail}`)
   const preview = nodeWithProps.thumbnail ? (
-    <Image radius={'md'} src={`${imagesPath}/${nodeWithProps.thumbnail.path}`} />
+    <Image radius={'md'} src={`${SERVER_URL}/${nodeWithProps.thumbnail.path}`} />
   ) : (
     <Skeleton animate={false} radius="lg" />
   )

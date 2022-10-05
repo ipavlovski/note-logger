@@ -9,7 +9,9 @@ import { setLeafContent } from 'components/node-view/node-view-slice'
 
 import type { LeafWithMedia } from 'backend/routes/leaf'
 
-const imagesPath = 'https://localhost:3003/'
+
+const SERVER_URL = `https://localhost:${import.meta.env.VITE_SERVER_PORT}`
+
 
 interface MonacoProps {
   leaf: LeafWithMedia
@@ -44,7 +46,7 @@ export default function Monaco({ leaf, setEditing, markdown}: MonacoProps) {
         if (path) {
           // const { lineNumber, column } = editorRef.current?.getPosition()!
           editorRef.current!.trigger('keyboard', 'type', {
-            text: `![](${imagesPath}/${path})`,
+            text: `![](${SERVER_URL}/${path})`,
           })
         }
 

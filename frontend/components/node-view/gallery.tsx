@@ -5,7 +5,8 @@ import { useRef, useState } from 'react'
 import { Button, Modal, Group } from '@mantine/core'
 import { Carousel, useAnimationOffsetEffect, Embla } from '@mantine/carousel'
 
-const url = 'https://localhost:3003'
+
+const  SERVER_URL = `https://localhost:${import.meta.env.VITE_SERVER_PORT}`
 
 export default function Gallery({ images }: { images: PrismaImage[] }) {
   const [initSlide, setInitSlide] = useState(0)
@@ -31,7 +32,7 @@ export default function Gallery({ images }: { images: PrismaImage[] }) {
           style={{ cursor: 'pointer' }}
           radius={'md'}
           height={140}
-          src={`${url}/${image.path}`}
+          src={`${SERVER_URL}/${image.path}`}
           alt={image.source ?? ''}
         />
       </Grid.Col>
@@ -42,7 +43,7 @@ export default function Gallery({ images }: { images: PrismaImage[] }) {
     return (
       <Carousel.Slide key={image.id}>
         <Image
-          src={`${url}/${image.path}`}
+          src={`${SERVER_URL}/${image.path}`}
           style={{
             objectFit: 'contain',
             marginLeft: 'auto',
