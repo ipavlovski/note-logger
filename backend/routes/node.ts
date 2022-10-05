@@ -1,58 +1,124 @@
+import { Prisma, PrismaClient } from '@prisma/client'
+import { LeafWithMedia } from 'backend/routes/leaf'
+import { DeleteLeafsRequest, DeleteLeafsResponse } from 'components/node-view/node-view-slice'
 import { Router } from 'express'
-import { z } from 'zod'
-import { ErrorHandler } from 'backend/error-handler'
+import parser from 'backend/api/parser'
+import { v4 as uuidv4 } from 'uuid'
+import { writeFile } from 'fs/promises'
+import sharp from 'sharp'
+import { STORAGE_DIRECTORY } from 'backend/config'
+import multer from 'multer'
 
-const nodeRoutes = Router()
 
-const CreateNodeArgs = z.object({
-  parent: z.number().optional(),
-  title: z.string(),
-  uri: z.string().optional(),
-  icon: z.object({ iconId: z.number() }).optional(),
-  image: z.string().optional(),
-  category: z.string().array(),
-  tags: z.string().array().optional(),
+const prisma = new PrismaClient()
+const routes = Router()
+
+const storage = multer.memoryStorage()
+const upload = multer({ storage: storage })
+
+const nodeWithProps = Prisma.validator<Prisma.NodeArgs>()({
+  include: {
+    parent: true,
+    children: true,
+    leafs: { include: { media: true } },
+    history: true,
+    icon: true,
+    thumbnail: true,
+    metadata: true,
+    tags: true,
+  },
 })
-export type CreateNodeArgs = z.infer<typeof CreateNodeArgs>
+export type NodeWithProps = Prisma.NodeGetPayload<typeof nodeWithProps>
 
-// to create a node, need to go through a series of constraints
-function createNode(reqBody: CreateNodeArgs) {
-  return {}
-}
+routes.get('/node/:id', async (req, res) => {
+  const results: NodeWithProps | null = await prisma.node.findFirst({
+    where: { id: parseInt(req.params.id) },
+    include: {
+      parent: true,
+      children: true,
+      leafs: { include: { media: true } },
+      history: true,
+      icon: true,
+      thumbnail: true,
+      metadata: true,
+      tags: true,
+    },
+  })
+  return res.json(results)
+})
 
-nodeRoutes.put('/node', async (req, res) => {
+routes.get('/node/:id/parse', async (req, res) => {
+  const nodeId = parseInt(req.params.id)
+
   try {
-    const body = CreateNodeArgs.parse(req.body)
-    const results = createNode(body)
-    res.json(results)
-  } catch (error) {
-    const err = ErrorHandler(error)
-    res.json(err)
+    const node = await prisma.node.findFirstOrThrow({ where: { id: nodeId } })
+    await parser(nodeId, node.uri)
+
+    return res.json({ message: 'success' })
+  } catch (err) {
+    return res.json({ error: err instanceof Error ? err.message : 'unknown error' })
   }
 })
 
+routes.put('/node/:id/leaf', async (req, res) => {
+  const nodeId = parseInt(req.params.id)
 
-nodeRoutes.post('/node', async (req, res) => {
+  const leaf: LeafWithMedia = await prisma.leaf.create({
+    data: {
+      content: '',
+      node_id: nodeId,
+    },
+    include: { media: true },
+  })
+
+  return res.json({ leaf: leaf })
+})
+
+routes.post('/node/:id/preview', upload.single('image'), async (req, res) => {
+  const nodeId = parseInt(req.params.id)
+
   try {
-    const body = CreateNodeArgs.parse(req.body)
-    const results = createNode(body)
-    res.json(results)
-  } catch (error) {
-    const err = ErrorHandler(error)
-    res.json(err)
+    if (req.file == null) throw new Error('Attached file is missing')
+
+    const type = req.file.originalname
+    const ext = req.file.mimetype == 'image/png' ? 'png' : 'unknown'
+
+    const path = `thumbnails/${uuidv4()}.${ext}`
+    await writeFile(`${STORAGE_DIRECTORY}/${path}`, req.file.buffer)
+
+    const image = sharp(req.file.buffer)
+    const metadata = await image.metadata()
+    if (metadata.width == null || metadata.height == null)
+      throw new Error('Issue extracting metadata.')
+
+    console.log(`new path: ${path}`)
+    await prisma.node.update({
+      where: { id: nodeId },
+      data: {
+        thumbnail: { create: { path: path } },
+      },
+    })
+
+    return res.json({ path: path })
+  } catch (err) {
+    console.log(err)
+    return res.sendStatus(400)
   }
 })
 
-nodeRoutes.delete('/node', async (req, res) => {
-  try {
-    const body = CreateNodeArgs.parse(req.body)
-    const results = createNode(body)
-    res.json(results)
-  } catch (error) {
-    const err = ErrorHandler(error)
-    res.json(err)
-  }
+routes.delete('/node/:id/leafs', async (req, res) => {
+  const nodeId = parseInt(req.params.id)
+  const body: DeleteLeafsRequest = req.body
+  console.dir(req.body)
+
+  // const leaf = await prisma.leaf.create({
+  //   data: {
+  //     content: '',
+  //     node_id: nodeId,
+  //   },
+  // })
+  const output: DeleteLeafsResponse = { deletedIds: body.leafIds }
+  return res.json(output)
 })
 
-
-export default nodeRoutes
+export default routes

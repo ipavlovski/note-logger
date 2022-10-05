@@ -1,21 +1,33 @@
+import { Prisma, PrismaClient } from '@prisma/client'
 import { Router } from 'express'
-import { z } from 'zod'
-import { ErrorHandler } from 'backend/error-handler'
 
-const queryRoutes = Router()
+const prisma = new PrismaClient()
+const routes = Router()
 
-const QueryBody = z.object({
-  username: z.string(),
+const historyWithNode = Prisma.validator<Prisma.HistoryArgs>()({
+  include: { node: { include: { icon: true } } },
 })
-type QueryBody = z.infer<typeof QueryBody>
+export type HistoryWithNode = Prisma.HistoryGetPayload<typeof historyWithNode>
 
-queryRoutes.get('/query', async (req, res) => {
-  try {
-    const query = QueryBody.parse(req.body)
-    res.send('YES!')
-  } catch (error) {
-    console.log('select error')
-  }
+routes.get('/history/:date', async (req, res) => {
+  const dateFrom = new Date(req.params.date)
+
+  // get the latest
+  var latestEntry = await prisma.history.findFirst({
+    orderBy: { visited_at: 'desc' },
+    where: { visited_at: { lte: dateFrom } },
+  })
+
+  // query history for all elements after the given date
+  var historyResults = await prisma.history.findMany({
+    take: 200,
+    skip: 1, // Skip the cursor
+    orderBy: { visited_at: 'desc' },
+    cursor: { visited_at: latestEntry?.visited_at },
+    include: { node: { include: { icon: true } } },
+  })
+
+  return res.json(historyResults)
 })
 
-export default queryRoutes
+export default routes

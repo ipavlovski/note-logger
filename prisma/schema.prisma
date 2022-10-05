@@ -20,12 +20,12 @@ model Node {
     iconId Int?
     icon   Icon? @relation(fields: [iconId], references: [id])
 
-    backsplashId Int?
-    backsplash   Backsplash? @relation(fields: [backsplashId], references: [id])
+    thumbnailId Int?
+    thumbnail   Thumbnail? @relation(fields: [thumbnailId], references: [id])
 
-    createdAt DateTime @default(now())
-    updatedAt DateTime @updatedAt
-    order     Int      @default(0)
+    lastVisitedAt DateTime?
+    lastEditedAt  DateTime?
+    order         Int      @default(0)
 
     tags     Tag[]
     metadata Metadata[]
@@ -36,9 +36,9 @@ model Node {
 model Tag {
     id     Int    @id @default(autoincrement())
     name   String
-    pid    Int?      
+    pid    Int?
     parent Tag?   @relation("TagChain", fields: [pid], references: [id])
-    child  Tag[]   @relation("TagChain")
+    child  Tag[]  @relation("TagChain")
     node   Node[]
     order  Int    @default(0)
 
@@ -76,6 +76,9 @@ model Image {
     source    String?
     createdAt DateTime @default(now())
     order     Int      @default(0)
+    type      String // enum: inline vs. gallery
+    width     Int
+    height    Int
 
     @@unique([leaf_id, path], name: "image_path")
 }
@@ -84,22 +87,22 @@ model Icon {
     id   Int    @id @default(autoincrement())
     node Node[]
 
-    path   String @unique
+    path   String  @unique
     source String? @unique
 }
 
-model Backsplash {
+model Thumbnail {
     id   Int    @id @default(autoincrement())
     node Node[]
 
-    path   String @unique
+    path   String  @unique
     source String? @unique
 }
 
 model History {
-    id         Int      @id @default(autoincrement())
-    node_id    Int
-    visited_at DateTime @unique
+    id          Int      @id @default(autoincrement())
+    node_id     Int
+    node        Node     @relation(fields: [node_id], references: [id])
+    visited_at  DateTime @unique
     imported_at DateTime @default(now())
-    node       Node     @relation(fields: [node_id], references: [id])
 }

@@ -5,7 +5,7 @@
       "outDir": "dist",
       "sourceMap": true,
       "esModuleInterop": true,
-      "types": ["node", "jest"],
+      "types": ["node"],
       "moduleResolution": "Node",
       "lib": ["DOM", "DOM.Iterable", "ESNext"],
 
@@ -16,19 +16,20 @@
       "strict": true,
       "forceConsistentCasingInFileNames": true,
       "resolveJsonModule": true,
-      // "isolatedModules": true,
       "noEmit": true,
       "jsx": "react-jsx",
-      "baseUrl": "."
+      "baseUrl": ".",
+      "paths": {
+        "components/*": ["frontend/components/*"]
+      }
 
   },
   "ts-node": {
     "compilerOptions": {
       "module": "CommonJS",
       "target": "ES2020",
-
       "esModuleInterop": true,
-      "types": ["node", "jest"],
+      "types": ["node"],
       "moduleResolution": "Node",
       "lib": ["ES2020"],
       "strict": true,
@@ -37,8 +38,5 @@
     "require": ["dotenv/config", "tsconfig-paths/register"],
     "exclude": ["node_modules", "scratch.ts", "debug.ts"]
 
-  },
-  "include": ["frontend", "backend", "common", "vite.config.ts", "scratch.ts"],
-  "exclude": ["debug.ts"]
-
+  }
 }

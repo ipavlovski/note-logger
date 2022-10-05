@@ -1,0 +1,106 @@
+import Editor from '@monaco-editor/react'
+import { editor } from 'monaco-editor'
+import { ClipboardEvent, useRef } from 'react'
+import { Observable, timer } from 'rxjs'
+import { debounce } from 'rxjs/operators'
+import client from 'frontend/client'
+import { useAppDispatch } from 'frontend/hooks'
+import { setLeafContent } from 'components/node-view/node-view-slice'
+
+import type { LeafWithMedia } from 'backend/routes/leaf'
+
+const imagesPath = 'https://localhost:3003/'
+
+interface MonacoProps {
+  leaf: LeafWithMedia
+  setEditing: (value: React.SetStateAction<boolean>) => void
+  markdown: string
+}
+export default function Monaco({ leaf, setEditing, markdown}: MonacoProps) {
+  const dispatch = useAppDispatch()
+  const editorRef = useRef<null | editor.IStandaloneCodeEditor>(null)
+
+  async function uploadLeafImage(leafId: number, content: Blob, type: 'inline' | 'gallery') {
+    const formData = new FormData()
+    formData.append('image', content, type)
+
+    const { path } = await client.upload(`/leaf/${leafId}/upload`, formData)
+    return path
+  }
+
+  const handleMonacoPaste = async (e: ClipboardEvent<HTMLInputElement>) => {
+    // @ts-ignore
+    const descriptor: PermissionDescriptor = { name: 'clipboard-read' }
+    const result = await navigator.permissions.query(descriptor)
+
+    if (result.state == 'granted' || result.state == 'prompt') {
+      const allData = await navigator.clipboard.read()
+      const data = allData[0]
+
+      if (data.types.includes('image/png')) {
+        const blob = await data.getType('image/png')
+        const path = await uploadLeafImage(leaf.id, blob, 'inline')
+
+        if (path) {
+          // const { lineNumber, column } = editorRef.current?.getPosition()!
+          editorRef.current!.trigger('keyboard', 'type', {
+            text: `![](${imagesPath}/${path})`,
+          })
+        }
+
+        e.stopPropagation()
+        e.preventDefault()
+      }
+    }
+  }
+
+  // this function has to be  here
+  function handleEditorChange(value: string | undefined, event: editor.IModelContentChangedEvent) {}
+
+  function handleEditorDidMount(editor: editor.IStandaloneCodeEditor, monaco: any) {
+    // here is the editor instance
+    // you can store it in `useRef` for further usage
+    editorRef.current = editor
+    // @ts-ignore
+    editor.getDomNode()!.addEventListener('paste', handleMonacoPaste)
+
+    const obs = new Observable((observer) => {
+      editor.getModel()!.onDidChangeContent((event) => {
+        observer.next(event)
+      })
+    })
+    obs.pipe(debounce(() => timer(300))).subscribe(() => {
+      const content = editor.getValue()
+      if (content) {
+        dispatch(setLeafContent({leafId: leaf.id, content: content}))
+        // setMarkdown(content)
+        client.post<{ content: string }, string>(`/leaf/${leaf.id}/update`, { content })
+      }
+    })
+
+    editor.addCommand(monaco.KeyMod.CtrlCmd | monaco.KeyCode.KeyM, () => {
+      console.log('ctrl+m')
+    })
+
+    editor.addCommand(monaco.KeyMod.CtrlCmd | monaco.KeyMod.Shift | monaco.KeyCode.KeyM, () => {
+      console.log('ctrl+shift+m')
+    })
+
+    editor.addCommand(monaco.KeyCode.Escape, () => {
+      console.log('escape')
+      setEditing(false)
+    })
+  }
+
+  return (
+    <Editor
+      height="30vh"
+      defaultLanguage="markdown"
+      defaultValue={markdown}
+      theme="vs-dark"
+      onChange={handleEditorChange}
+      onMount={handleEditorDidMount}
+      options={{ quickSuggestions: false, minimap: { enabled: false }, fontSize: 16 }}
+    />
+  )
+}
