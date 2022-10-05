@@ -1,14 +1,13 @@
 import { HistoryWithNode } from 'backend/routes/query'
-import { fetchNode } from 'components/node-view/node-view-slice'
+import { fetchNode, parseNode } from 'components/node-view/node-view-slice'
 import { useAppDispatch, useAppSelector } from 'frontend/hooks'
 import { useCallback, useRef, useState } from 'react'
 import Omnibar from 'components/node-list/omnibar'
 import { createStyles, Text, Image, Group } from '@mantine/core'
 import { fetchHistory } from 'components/node-list/node-list-slice'
-
+import { IconCirclePlus, IconRefresh } from '@tabler/icons'
 
 const SERVER_URL = `https://localhost:${import.meta.env.VITE_SERVER_PORT}`
-
 
 export interface HistoryTree {
   title: string
@@ -16,7 +15,7 @@ export interface HistoryTree {
   children: HistoryTree[]
 }
 
-const useStyles = createStyles((theme) => ({
+const useStyles = createStyles(theme => ({
   outer: {
     overflowY: 'scroll',
     maxHeight: '90vh',
@@ -46,6 +45,15 @@ const useStyles = createStyles((theme) => ({
       backgroundColor: theme.colors.dark[6],
     },
   },
+  refresh: {
+    width: 36,
+    height: 36,
+    cursor: 'pointer',
+    color: theme.colors.dark[1],
+    ':hover': {
+      color: theme.colors.dark[0],
+    },
+  },
   selected: {
     padding: 4,
     color: theme.white,
@@ -59,12 +67,10 @@ const useStyles = createStyles((theme) => ({
 }))
 
 export default function NodeList() {
-  const { treeRoots } = useAppSelector((state) => state.nodeList)
-  const dispatch = useAppDispatch()
-
-  const [selectedNodeId, setSelectedNodeId] = useState<number>()
-
   const { classes, cx } = useStyles()
+  const dispatch = useAppDispatch()
+  const { treeRoots } = useAppSelector(state => state.nodeList)
+  const [selectedNodeId, setSelectedNodeId] = useState<number>()
 
   const ref = useRef() as React.MutableRefObject<HTMLDivElement>
   const onScroll = () => {
@@ -76,7 +82,7 @@ export default function NodeList() {
           // const latestDate = state.history[state.history.length -1].children
           // .map(v => v.visited_at).sort().at(0)!
           const latest = treeRoots
-            .map((v) => v.visited_at)
+            .map(v => v.visited_at)
             .sort()
             .at(0)!
           dispatch(fetchHistory({ isoDate: latest as unknown as string }))
@@ -87,16 +93,25 @@ export default function NodeList() {
 
   const treeItems = treeRoots.map(({ node, id }) => (
     <Group key={id} noWrap>
-      {node.icon != null && <Image radius={'md'} style={{width: 120, height: 80}} src={`${SERVER_URL}/${node.icon.path}`} />}
+      {node.icon != null ? (
+        <Image
+          radius={'md'}
+          style={{ width: 120, height: 80 }}
+          src={`${SERVER_URL}/${node.icon.path}`}
+        />
+      ) : (<IconRefresh
+        className={classes.refresh}
+        onClick={() => {
+          dispatch(parseNode(node.id))
+        }}
+      />)}
       <Text
         size={'sm'}
         className={cx(classes.node, id == selectedNodeId && classes.selected)}
-        // style={{ color: id == selectedNodeId ? 'white' : 'gray' }}
         onClick={() => {
           setSelectedNodeId(id)
           dispatch(fetchNode(node.id))
-        }}
-      >
+        }}>
         {node.title}
       </Text>
     </Group>
