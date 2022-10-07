@@ -4,17 +4,17 @@ import { ClipboardEvent, useRef } from 'react'
 import { Observable, timer } from 'rxjs'
 import { debounce } from 'rxjs/operators'
 import client from 'frontend/client'
-import { useAppDispatch } from 'frontend/hooks'
+import { useAppDispatch } from 'frontend/store'
 import { setLeafContent } from 'components/node-view/node-view-slice'
 
-import type { LeafWithMedia } from 'backend/routes/leaf'
+import type { LeafWithImages } from 'backend/routes/leaf'
 
 
 const SERVER_URL = `https://localhost:${import.meta.env.VITE_SERVER_PORT}`
 
 
 interface MonacoProps {
-  leaf: LeafWithMedia
+  leaf: LeafWithImages
   setEditing: (value: React.SetStateAction<boolean>) => void
   markdown: string
 }

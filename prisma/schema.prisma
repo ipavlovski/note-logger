@@ -20,12 +20,11 @@ model Node {
     iconId Int?
     icon   Icon? @relation(fields: [iconId], references: [id])
 
-    thumbnailId Int?
-    thumbnail   Thumbnail? @relation(fields: [thumbnailId], references: [id])
+    previewId Int?
+    preview   Preview? @relation(fields: [previewId], references: [id])
 
     lastVisitedAt DateTime?
     lastEditedAt  DateTime?
-    order         Int      @default(0)
 
     tags     Tag[]
     metadata Metadata[]
@@ -34,15 +33,10 @@ model Node {
 }
 
 model Tag {
-    id     Int    @id @default(autoincrement())
-    name   String
-    pid    Int?
-    parent Tag?   @relation("TagChain", fields: [pid], references: [id])
-    child  Tag[]  @relation("TagChain")
-    node   Node[]
-    order  Int    @default(0)
-
-    @@unique([pid, name], name: "tag_chain")
+    id    Int     @id @default(autoincrement())
+    name  String  @unique
+    color String?
+    node  Node[]
 }
 
 // key, value, type - type is Number/String/Boolean of the 'value'
@@ -57,11 +51,35 @@ model Metadata {
     @@unique([node_id, key], name: "metadata_key")
 }
 
+model Icon {
+    id   Int    @id @default(autoincrement())
+    node Node[]
+
+    path   String  @unique
+    source String? @unique
+}
+
+model Preview {
+    id   Int    @id @default(autoincrement())
+    node Node[]
+
+    path   String  @unique
+    source String? @unique
+}
+
+model History {
+    id          Int      @id @default(autoincrement())
+    node_id     Int
+    node        Node     @relation(fields: [node_id], references: [id])
+    visited_at  DateTime @unique
+    imported_at DateTime @default(now())
+}
+
 model Leaf {
     id        Int      @id @default(autoincrement())
     node_id   Int
     node      Node     @relation(fields: [node_id], references: [id])
-    media     Image[]
+    images    Image[]
     content   String
     createdAt DateTime @default(now())
     order     Int      @default(0)
@@ -81,28 +99,4 @@ model Image {
     height    Int
 
     @@unique([leaf_id, path], name: "image_path")
-}
-
-model Icon {
-    id   Int    @id @default(autoincrement())
-    node Node[]
-
-    path   String  @unique
-    source String? @unique
-}
-
-model Thumbnail {
-    id   Int    @id @default(autoincrement())
-    node Node[]
-
-    path   String  @unique
-    source String? @unique
-}
-
-model History {
-    id          Int      @id @default(autoincrement())
-    node_id     Int
-    node        Node     @relation(fields: [node_id], references: [id])
-    visited_at  DateTime @unique
-    imported_at DateTime @default(now())
 }

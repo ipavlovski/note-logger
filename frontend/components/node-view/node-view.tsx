@@ -1,17 +1,24 @@
-import { AspectRatio, createStyles, Divider, Skeleton, Text, Image, Group } from '@mantine/core'
-import { IconCirclePlus, IconRefresh } from '@tabler/icons'
-import { showNotification } from '@mantine/notifications'
-
+import { AspectRatio, createStyles, Divider, Group, Image, Skeleton, Text } from '@mantine/core'
 import { useHotkeys } from '@mantine/hooks'
-import Leaf from 'components/node-view/leaf'
-import { createNewLeaf, deleteLeafs, parseNode, togglePreviewSelect, uploadGallery, uploadPreview } from 'components/node-view/node-view-slice'
-import { useAppDispatch, useAppSelector } from 'frontend/hooks'
+import { showNotification } from '@mantine/notifications'
+import { IconCirclePlus, IconRefresh } from '@tabler/icons'
 
-import client from 'frontend/client'
+import Leaf from 'components/node-view/leaf'
+import {
+  createNewLeaf,
+  deleteLeafs,
+  parseNode,
+  togglePreviewSelect,
+  uploadGallery,
+  uploadPreview
+} from 'components/node-view/node-view-slice'
+import { nodeApi } from 'frontend/api'
+import { useAppDispatch, useAppSelector } from 'frontend/store'
+
 
 const SERVER_URL = `https://localhost:${import.meta.env.VITE_SERVER_PORT}`
 
-const useStyles = createStyles((theme) => ({
+const useStyles = createStyles(theme => ({
   scrollable: {
     overflowX: 'hidden',
     overflowY: 'scroll',
@@ -50,24 +57,27 @@ const useStyles = createStyles((theme) => ({
     },
   },
   selectedPreview: {
-    border: `2px solid ${theme.colors.dark[1]}`
-  }
+    border: `2px solid ${theme.colors.dark[1]}`,
+  },
 }))
 
 export default function NodeView() {
-  const { nodeWithProps, latestLeafId } = useAppSelector((state) => state.nodeView)
+  const dispatch = useAppDispatch()
+
   const { leafs: selectedLeafs, preview: selectedPreview } = useAppSelector(
-    (store) => store.nodeView.selected
+    store => store.nodeView.selected
   )
 
-  const dispatch = useAppDispatch()
+  const { active } = useAppSelector((state) => state.nodeList)
+  const { data: nodeWithProps } = nodeApi.useGetNodeByIdQuery(active!, { skip: active == null })
+
 
   useHotkeys([
     [
       'delete',
       () => {
         console.log('Deleting leafs...')
-        nodeWithProps && dispatch(deleteLeafs({ leafIds: selectedLeafs, nodeId: nodeWithProps.id }))
+        // nodeWithProps && dispatch(deleteLeafs({ leafIds: selectedLeafs, nodeId: nodeWithProps.id }))
       },
     ],
     [
@@ -83,7 +93,7 @@ export default function NodeView() {
             })
             return
           }
-  
+
           dispatch(uploadGallery('gallery'))
 
           return
@@ -92,11 +102,8 @@ export default function NodeView() {
         if (selectedPreview) {
           dispatch(uploadPreview(nodeWithProps!.id))
 
-
           return
         }
-
-
       },
     ],
   ])
@@ -106,7 +113,7 @@ export default function NodeView() {
   if (!nodeWithProps) return <h3>no item selected</h3>
 
   const leafs = nodeWithProps.leafs.map((leaf, ind) => {
-    return <Leaf {...{ leaf: leaf, editing: leaf.id == latestLeafId }} key={ind} />
+    return <Leaf leaf={leaf} key={ind} />
   })
 
   {
@@ -119,9 +126,10 @@ export default function NodeView() {
         />
  */
   }
-  console.log(`${SERVER_URL}/${nodeWithProps.thumbnail}`)
-  const preview = nodeWithProps.thumbnail ? (
-    <Image radius={'md'} src={`${SERVER_URL}/${nodeWithProps.thumbnail.path}`} />
+  // console.log(`${SERVER_URL}/${nodeWithProps.preview}`)
+
+  const preview = nodeWithProps.preview ? (
+    <Image radius={'md'} src={`${SERVER_URL}/${nodeWithProps.preview.path}`} />
   ) : (
     <Skeleton animate={false} radius="lg" />
   )
@@ -136,13 +144,12 @@ export default function NodeView() {
         ratio={16 / 9}
         mx="auto"
         className={cx(selectedPreview && classes.selectedPreview)}
-        onClick={(event) => {
+        onClick={event => {
           // when shift is pressed, toggle selection of the element
           event.shiftKey && dispatch(togglePreviewSelect())
           // this prevents residual selects when shift is pressed
           event.preventDefault()
-        }}
-      >
+        }}>
         {preview}
         <Group>
           <IconRefresh

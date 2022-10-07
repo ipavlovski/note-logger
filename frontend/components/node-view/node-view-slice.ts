@@ -2,7 +2,7 @@ import { createAsyncThunk, createSelector, createSlice, PayloadAction } from '@r
 
 import client from 'frontend/client'
 
-import type { LeafWithMedia } from 'backend/routes/leaf'
+import type { LeafWithImages } from 'backend/routes/leaf'
 import type { NodeWithProps } from 'backend/routes/node'
 import { showNotification } from '@mantine/notifications'
 import { RootState } from 'frontend/store'
@@ -40,7 +40,7 @@ export const fetchNode = createAsyncThunk('views/fetch-node', async (nodeId: num
 })
 
 export const createNewLeaf = createAsyncThunk('views/insert-leaf', async (nodeId: number) => {
-  return await client.put<null, { leaf: LeafWithMedia }>(`/node/${nodeId}/leaf`, null)
+  return await client.put<null, { leaf: LeafWithImages }>(`/node/${nodeId}/leaf`, null)
 })
 
 export const parseNode = createAsyncThunk('views/parse-node', async (nodeId: number) => {
@@ -48,22 +48,22 @@ export const parseNode = createAsyncThunk('views/parse-node', async (nodeId: num
 })
 
 export const uploadPreview = createAsyncThunk('views/upload-preview', async (nodeId: number) => {
-    // @ts-ignore
-    const descriptor: PermissionDescriptor = { name: 'clipboard-read' }
-    const result = await navigator.permissions.query(descriptor)
+  // @ts-ignore
+  const descriptor: PermissionDescriptor = { name: 'clipboard-read' }
+  const result = await navigator.permissions.query(descriptor)
 
-    if (result.state == 'granted' || result.state == 'prompt') {
-      const allData = await navigator.clipboard.read()
-      const data = allData[0]
+  if (result.state == 'granted' || result.state == 'prompt') {
+    const allData = await navigator.clipboard.read()
+    const data = allData[0]
 
-      if (data.types.includes('image/png')) {
-        const blob = await data.getType('image/png')
-        const formData = new FormData()
-        formData.append('image', blob, 'stuff')
+    if (data.types.includes('image/png')) {
+      const blob = await data.getType('image/png')
+      const formData = new FormData()
+      formData.append('image', blob, 'stuff')
 
-        await client.upload(`/node/${nodeId}/preview`, formData)
-      }
+      await client.upload(`/node/${nodeId}/preview`, formData)
     }
+  }
 })
 
 export const uploadGallery = createAsyncThunk(
@@ -119,7 +119,7 @@ const nodeViewSlice = createSlice({
 
       // set new selection
       state.selected.leafs = current.includes(leafId)
-        ? current.filter((elt) => elt != leafId)
+        ? current.filter(elt => elt != leafId)
         : current.concat(leafId)
     },
 
@@ -133,7 +133,7 @@ const nodeViewSlice = createSlice({
 
       // set new state
       state.selected.gallery = current.includes(imageId)
-        ? current.filter((id) => id != imageId)
+        ? current.filter(id => id != imageId)
         : current.concat(imageId)
     },
 
@@ -152,11 +152,11 @@ const nodeViewSlice = createSlice({
 
     setLeafContent(state, action: PayloadAction<{ leafId: number; content: string }>) {
       const { leafId, content } = action.payload
-      const leaf = state.nodeWithProps?.leafs.find((v) => v.id == leafId)
+      const leaf = state.nodeWithProps?.leafs.find(v => v.id == leafId)
       if (leaf) leaf.content = content
     },
   },
-  extraReducers: (builder) => {
+  extraReducers: builder => {
     builder
       .addCase(fetchNode.pending, (state, action) => {
         state.status = 'loading'
@@ -177,7 +177,7 @@ const nodeViewSlice = createSlice({
         console.log(`len before delete: ${state.nodeWithProps!.leafs.length}`)
         const { deletedIds } = action.payload
         if (state.nodeWithProps != null) {
-          state.nodeWithProps.leafs = state.nodeWithProps.leafs.filter((val) => {
+          state.nodeWithProps.leafs = state.nodeWithProps.leafs.filter(val => {
             if (deletedIds.includes(val.id)) console.log(`deleting ${val.id}`)
             return !deletedIds.includes(val.id)
           })

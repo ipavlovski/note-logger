@@ -12,12 +12,12 @@ import { STORAGE_DIRECTORY } from 'backend/config'
 
 const prisma = new PrismaClient()
 
-const leafWithMedia = Prisma.validator<Prisma.LeafArgs>()({
+const leafWithImages = Prisma.validator<Prisma.LeafArgs>()({
   include: {
-    media: true,
+    images: true,
   },
 })
-export type LeafWithMedia = Prisma.LeafGetPayload<typeof leafWithMedia>
+export type LeafWithImages = Prisma.LeafGetPayload<typeof leafWithImages>
 
 const routes = Router()
 const storage = multer.memoryStorage()

@@ -1,6 +1,5 @@
 import {  STORAGE_DIRECTORY, YOUTUBE_API_KEY } from 'backend/config'
 import fetch from 'node-fetch'
-
 import { PrismaClient } from '@prisma/client'
 import { writeFile } from 'fs/promises'
 import sharp from 'sharp'

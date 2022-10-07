@@ -1,5 +1,5 @@
 import { Prisma, PrismaClient } from '@prisma/client'
-import { LeafWithMedia } from 'backend/routes/leaf'
+import { LeafWithImages } from 'backend/routes/leaf'
 import { DeleteLeafsRequest, DeleteLeafsResponse } from 'components/node-view/node-view-slice'
 import { Router } from 'express'
 import parser from 'backend/api/parser'
@@ -20,10 +20,10 @@ const nodeWithProps = Prisma.validator<Prisma.NodeArgs>()({
   include: {
     parent: true,
     children: true,
-    leafs: { include: { media: true } },
+    leafs: { include: { images: true } },
     history: true,
     icon: true,
-    thumbnail: true,
+    preview: true,
     metadata: true,
     tags: true,
   },
@@ -36,10 +36,10 @@ routes.get('/node/:id', async (req, res) => {
     include: {
       parent: true,
       children: true,
-      leafs: { include: { media: true } },
+      leafs: { include: { images: true } },
       history: true,
       icon: true,
-      thumbnail: true,
+      preview: true,
       metadata: true,
       tags: true,
     },
@@ -63,12 +63,12 @@ routes.get('/node/:id/parse', async (req, res) => {
 routes.put('/node/:id/leaf', async (req, res) => {
   const nodeId = parseInt(req.params.id)
 
-  const leaf: LeafWithMedia = await prisma.leaf.create({
+  const leaf: LeafWithImages = await prisma.leaf.create({
     data: {
       content: '',
       node_id: nodeId,
     },
-    include: { media: true },
+    include: { images: true },
   })
 
   return res.json({ leaf: leaf })
@@ -83,7 +83,7 @@ routes.post('/node/:id/preview', upload.single('image'), async (req, res) => {
     const type = req.file.originalname
     const ext = req.file.mimetype == 'image/png' ? 'png' : 'unknown'
 
-    const path = `thumbnails/${uuidv4()}.${ext}`
+    const path = `preview/${uuidv4()}.${ext}`
     await writeFile(`${STORAGE_DIRECTORY}/${path}`, req.file.buffer)
 
     const image = sharp(req.file.buffer)
@@ -95,7 +95,7 @@ routes.post('/node/:id/preview', upload.single('image'), async (req, res) => {
     await prisma.node.update({
       where: { id: nodeId },
       data: {
-        thumbnail: { create: { path: path } },
+        preview: { create: { path: path } },
       },
     })
 

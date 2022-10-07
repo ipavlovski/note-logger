@@ -6,7 +6,7 @@ import { STORAGE_DIRECTORY, SERVER_PORT } from 'backend/config'
 // ensure that the folders are up and running
 existsSync(`${STORAGE_DIRECTORY}/icons`) || mkdirSync(`${STORAGE_DIRECTORY}/icons`)
 existsSync(`${STORAGE_DIRECTORY}/images`) || mkdirSync(`${STORAGE_DIRECTORY}/images`)
-existsSync(`${STORAGE_DIRECTORY}/thumbnails`) || mkdirSync(`${STORAGE_DIRECTORY}/thumbnails`)
+existsSync(`${STORAGE_DIRECTORY}/preview`) || mkdirSync(`${STORAGE_DIRECTORY}/preview`)
 
 // start the server
 server.listen(SERVER_PORT, () => {

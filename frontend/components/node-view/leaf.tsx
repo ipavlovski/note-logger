@@ -3,11 +3,11 @@ import { Container, Grid, Skeleton } from '@mantine/core'
 import { toggleLeafSelect } from 'components/node-view/node-view-slice'
 import { createStyles, Text } from '@mantine/core'
 
-import { useAppDispatch, useAppSelector } from 'frontend/hooks'
+import { useAppDispatch, useAppSelector } from 'frontend/store'
 import Monaco from './monaco'
 import Remark from './remark'
 
-import type { LeafWithMedia } from 'backend/routes/leaf'
+import type { LeafWithImages } from 'backend/routes/leaf'
 import Gallery from 'components/node-view/gallery'
 
 const useStyles = createStyles((theme) => ({
@@ -33,19 +33,22 @@ const useStyles = createStyles((theme) => ({
   },
 }))
 
-export default function Leaf({ editing, leaf }: { editing: boolean; leaf: LeafWithMedia }) {
+export default function Leaf({ leaf }: { leaf: LeafWithImages }) {
   const dispatch = useAppDispatch()
   const { leafs } = useAppSelector((store) => store.nodeView.selected)
   const markdown = useAppSelector(
     (store) => store.nodeView.nodeWithProps?.leafs.find((v) => v.id == leaf.id)?.content || ''
   )
 
-  const [isEditing, setEditing] = useState(editing)
+  // const { latestLeafId } = useAppSelector(state => state.nodeView)
+
+
+  const [isEditing, setEditing] = useState(false)
   // const [markdown, setMarkdown] = useState(leaf.content)
 
   const { classes, cx } = useStyles()
 
-  const images = leaf.media.filter(({ type }) => type == 'gallery')
+  const images = leaf.images.filter(({ type }) => type == 'gallery')
 
   return (
     <div
