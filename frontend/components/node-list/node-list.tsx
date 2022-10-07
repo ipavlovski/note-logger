@@ -1,12 +1,11 @@
+import { createStyles, Group, Image, Text } from '@mantine/core'
+import { IconRefresh } from '@tabler/icons'
 import { HistoryWithNode } from 'backend/routes/query'
-import { fetchNode, parseNode } from 'components/node-view/node-view-slice'
-import { useAppDispatch, useAppSelector } from 'frontend/store'
-import { useCallback, useEffect, useRef, useState } from 'react'
-import Omnibar from 'components/node-list/omnibar'
-import { createStyles, Text, Image, Group } from '@mantine/core'
 import { selectNode } from 'components/node-list/node-list-slice'
-import { IconCirclePlus, IconRefresh } from '@tabler/icons'
+import Omnibar from 'components/node-list/omnibar'
 import { nodeApi } from 'frontend/api'
+import { useAppDispatch, useAppSelector } from 'frontend/store'
+import { useEffect, useRef } from 'react'
 
 const SERVER_URL = `https://localhost:${import.meta.env.VITE_SERVER_PORT}`
 
@@ -74,6 +73,8 @@ function TreeItem({ item }: { item: HistoryWithNode }) {
   const { classes, cx } = useStyles()
   const { active } = useAppSelector(state => state.nodeList)
 
+  const [parseNode] = nodeApi.useParseNodeByIdMutation()
+
   return (
     <Group noWrap>
       {item.node.icon != null ? (
@@ -86,8 +87,7 @@ function TreeItem({ item }: { item: HistoryWithNode }) {
         <IconRefresh
           className={classes.refresh}
           onClick={() => {
-            // dispatch(parseNode(node.id))
-            console.log('REFRESH!')
+            parseNode(item.node.id)
           }}
         />
       )}

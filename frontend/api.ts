@@ -16,7 +16,11 @@ export const nodeApi = createApi({
     }),
     getNodeById: builder.query<NodeWithProps, number>({
       query: nodeId => `node/${nodeId}`,
-      // providesTags: [{ type: 'Node', id: 'LIST' }],
+      providesTags: [{ type: 'Node', id: 'LIST' }],
     }),
+    parseNodeById: builder.mutation<NodeWithProps, number>({
+      query: nodeId => `node/${nodeId}/parse`,
+      invalidatesTags: ['NodeList', 'Node']
+    })
   }),
 })

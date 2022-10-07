@@ -1,4 +1,4 @@
-import {  STORAGE_DIRECTORY, YOUTUBE_API_KEY } from 'backend/config'
+import { STORAGE_DIRECTORY, YOUTUBE_API_KEY } from 'backend/config'
 import fetch from 'node-fetch'
 import { PrismaClient } from '@prisma/client'
 import { writeFile } from 'fs/promises'
@@ -8,28 +8,44 @@ const prisma = new PrismaClient()
 
 const base = 'https://youtube.googleapis.com/youtube/v3'
 
-
-
 ////////////// UTILS
 
-const saveImage = async (url: string, subdir: string) => {
-    // get the image
-    const imageData = await fetch(url).then((v) => v.arrayBuffer())
+const fetchImageBuffer = async (url: string) => {
+  // get the image
+  const imageData = await fetch(url).then(v => v.arrayBuffer())
 
-    // create the buffer+sharp objects from the image data
-    const buffer = Buffer.from(imageData)
-    const sharpImage = sharp(buffer)
-  
-    // get the image format
-    const { format } = await sharpImage.metadata()
-  
-    // get the path, and write file to buffer
-    const path = `${subdir}/${uuidv4()}.${format}`
-    await writeFile(`${STORAGE_DIRECTORY}/${path}`, buffer)
+  // create the buffer objects from the image data
+  const buffer = Buffer.from(imageData)
 
-    return path
+  return buffer
 }
 
+const saveAsPreview = async (buffer: Buffer) => {
+  const sharpImage = sharp(buffer)
+
+  // get the image format
+  const { format } = await sharpImage.metadata()
+
+  // get the path, and write file to buffer
+  const path = `preview/${uuidv4()}.${format}`
+  await writeFile(`${STORAGE_DIRECTORY}/${path}`, buffer)
+
+  return path
+}
+
+const saveAsIcon = async (buffer: Buffer) => {
+  const path = `icons/${uuidv4()}.webp`
+  const sharpImage = sharp(buffer)
+
+  await sharpImage
+    .resize(120, 80, {
+      fit: 'inside',
+    })
+    .webp()
+    .toFile(`${STORAGE_DIRECTORY}/${path}`)
+
+  return path
+}
 
 ////////////// YOUTUBE CHANNEL: MATCHER, FETCHER, INSERTER
 
@@ -44,7 +60,7 @@ type YoutubeChannelData = { description: string; title: string; created: string;
 const youtubeChannelFetcher = async (channelId: string) => {
   const channelData = await fetch(
     `${base}/channels?part=snippet&id=${channelId}&key=${YOUTUBE_API_KEY}`
-  ).then((v) => v.json())
+  ).then(v => v.json())
 
   if (!channelData) return null
 
@@ -57,8 +73,8 @@ const youtubeChannelFetcher = async (channelId: string) => {
 }
 
 const youtubeChannelUpdater = async (nodeId: number, channelData: YoutubeChannelData) => {
-
-  const path = await saveImage(channelData.icon, 'icons')
+  const buffer = await fetchImageBuffer(channelData.icon)
+  const path = await saveAsIcon(buffer)
 
   // update the data
   await prisma.node.update({
@@ -81,13 +97,11 @@ const youtubeChannelUpdater = async (nodeId: number, channelData: YoutubeChannel
   })
 }
 
-
 const youtubeChannel = {
   matcher: youtubeChannelMatcher,
   fetcher: youtubeChannelFetcher,
-  updater: youtubeChannelUpdater
+  updater: youtubeChannelUpdater,
 }
-
 
 ////////////// YOUTUBE VIDEO: MATCHER, FETCHER, INSERTER
 
@@ -100,9 +114,10 @@ const youtubeVideoMatcher = (uri: string) => {
 // fetcher
 type YoutubeVideoData = { title: string; description: string; published: string; thumbnail: string }
 const youtubeVideoFetcher = async (videoId: string) => {
+  
   const videoData = await fetch(
     `${base}/videos?part=snippet&id=${videoId}&key=${YOUTUBE_API_KEY}`
-  ).then((v) => v.json())
+  ).then(v => v.json())
 
   if (!videoData) return null
 
@@ -119,8 +134,14 @@ const youtubeVideoFetcher = async (videoId: string) => {
 }
 
 const youtubeVideoUpdater = async (nodeId: number, videoData: YoutubeVideoData) => {
+  // save full-res image as preview
 
-  const path = await saveImage(videoData.thumbnail, 'thumbnails')
+  const buffer = await fetchImageBuffer(videoData.thumbnail)
+  const iconPath = await saveAsIcon(buffer)
+  const previewPath = await saveAsPreview(buffer)
+
+  // // save compressed image as icon
+  // const path = await saveImage(videoData.thumbnail, 'thumbnails')
 
   // update the data
   await prisma.node.update({
@@ -135,33 +156,37 @@ const youtubeVideoUpdater = async (nodeId: number, videoData: YoutubeVideoData) 
       },
       icon: {
         create: {
-          path: path,
+          path: iconPath,
           source: videoData.thumbnail,
         },
       },
+      preview: {
+        create: {
+          path: previewPath,
+          source: videoData.thumbnail
+        }
+      }
     },
   })
-
 }
 
 const youtubeVideo = {
   matcher: youtubeVideoMatcher,
   fetcher: youtubeVideoFetcher,
-  updater: youtubeVideoUpdater
+  updater: youtubeVideoUpdater,
 }
 
-
-
-
 export default async (nodeId: number, uri: string) => {
-  const handlers = [ youtubeVideo, youtubeChannel ]
+  const handlers = [youtubeVideo, youtubeChannel]
+  console.log('parsing...')
 
   for (const handler of handlers) {
     const match = handler.matcher(uri)
-    if (! match) continue
-    
+    if (!match) continue
+
+
     const data = await handler.fetcher(match)
-    if (! data) return
+    if (!data) return
 
     // @ts-ignore
     await handler.updater(nodeId, data)

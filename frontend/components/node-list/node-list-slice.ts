@@ -1,8 +1,4 @@
-import { createAsyncThunk, createSelector, createSlice, PayloadAction } from '@reduxjs/toolkit'
-
-import client from 'frontend/client'
-
-import { HistoryWithNode } from 'backend/routes/query'
+import { createSlice, PayloadAction } from '@reduxjs/toolkit'
 
 interface NodeList {
   selected: number[],

@@ -52,10 +52,12 @@ routes.get('/node/:id/parse', async (req, res) => {
 
   try {
     const node = await prisma.node.findFirstOrThrow({ where: { id: nodeId } })
+
     await parser(nodeId, node.uri)
 
     return res.json({ message: 'success' })
   } catch (err) {
+    console.error(err)
     return res.json({ error: err instanceof Error ? err.message : 'unknown error' })
   }
 })
