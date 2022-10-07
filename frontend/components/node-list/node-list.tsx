@@ -64,6 +64,11 @@ const useStyles = createStyles(theme => ({
       backgroundColor: '#7a3a73',
     },
   },
+  icon: {
+    minWidth: 120,
+    padding: 4,
+    // margin: 4
+  },
 }))
 
 const date = new Date().toISOString()
@@ -78,11 +83,9 @@ function TreeItem({ item }: { item: HistoryWithNode }) {
   return (
     <Group noWrap>
       {item.node.icon != null ? (
-        <Image
-          radius={'md'}
-          style={{ width: 120, height: 80 }}
-          src={`${SERVER_URL}/${item.node.icon.path}`}
-        />
+        <div className={classes.icon}>
+          <Image radius={'md'} src={`${SERVER_URL}/${item.node.icon.path}`} />
+        </div>
       ) : (
         <IconRefresh
           className={classes.refresh}
