@@ -1,20 +1,12 @@
-import { AspectRatio, createStyles, Divider, Group, Image, Skeleton, Text } from '@mantine/core'
+import { createStyles, Group, Text } from '@mantine/core'
 import { useHotkeys } from '@mantine/hooks'
 import { showNotification } from '@mantine/notifications'
-import { IconCirclePlus, IconRefresh } from '@tabler/icons'
-
-import Leaf from 'components/node-view/leaf'
-import {
-  createNewLeaf,
-  deleteLeafs,
-  parseNode,
-  togglePreviewSelect,
-  uploadGallery,
-  uploadPreview
-} from 'components/node-view/node-view-slice'
+import Leafs from 'components/node-view/leafs'
+import Metadata from 'components/node-view/metadata'
+import { uploadGallery, uploadPreview } from 'components/node-view/node-view-slice'
+import Preview from 'components/node-view/preview'
 import { nodeApi } from 'frontend/api'
 import { useAppDispatch, useAppSelector } from 'frontend/store'
-
 
 const SERVER_URL = `https://localhost:${import.meta.env.VITE_SERVER_PORT}`
 
@@ -22,7 +14,7 @@ const useStyles = createStyles(theme => ({
   scrollable: {
     overflowX: 'hidden',
     overflowY: 'scroll',
-    maxHeight: '50vh',
+    maxHeight: '60vh',
     userSelect: 'none',
     '&::-webkit-scrollbar': {
       width: 6,
@@ -56,21 +48,16 @@ const useStyles = createStyles(theme => ({
       color: theme.colors.dark[0],
     },
   },
-  selectedPreview: {
-    border: `2px solid ${theme.colors.dark[1]}`,
-  },
 }))
 
 export default function NodeView() {
   const dispatch = useAppDispatch()
-
   const { leafs: selectedLeafs, preview: selectedPreview } = useAppSelector(
     store => store.nodeView.selected
   )
-
-  const { active } = useAppSelector((state) => state.nodeList)
+  const { active } = useAppSelector(state => state.nodeList)
   const { data: nodeWithProps } = nodeApi.useGetNodeByIdQuery(active!, { skip: active == null })
-
+  const { classes, cx } = useStyles()
 
   useHotkeys([
     [
@@ -108,31 +95,8 @@ export default function NodeView() {
     ],
   ])
 
-  const { classes, cx } = useStyles()
 
   if (!nodeWithProps) return <h3>no item selected</h3>
-
-  const leafs = nodeWithProps.leafs.map((leaf, ind) => {
-    return <Leaf leaf={leaf} key={ind} />
-  })
-
-  {
-    /* <iframe
-          src="https://www.youtube.com/embed/Dorf8i6lCuk"
-          title="YouTube video player"
-          frameBorder="0"
-          allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-          allowFullScreen
-        />
- */
-  }
-  // console.log(`${SERVER_URL}/${nodeWithProps.preview}`)
-
-  const preview = nodeWithProps.preview ? (
-    <Image radius={'md'} src={`${SERVER_URL}/${nodeWithProps.preview.path}`} />
-  ) : (
-    <Skeleton animate={false} radius="lg" />
-  )
 
   return (
     <div>
@@ -140,45 +104,11 @@ export default function NodeView() {
         {nodeWithProps.title}
       </Text>
 
-      <AspectRatio
-        ratio={16 / 9}
-        mx="auto"
-        className={cx(selectedPreview && classes.selectedPreview)}
-        onClick={event => {
-          // when shift is pressed, toggle selection of the element
-          event.shiftKey && dispatch(togglePreviewSelect())
-          // this prevents residual selects when shift is pressed
-          event.preventDefault()
-        }}>
-        {preview}
-        <Group>
-          <IconRefresh
-            className={nodeWithProps.icon ? classes.hidden : classes.refresh}
-            onClick={() => {
-              dispatch(parseNode(nodeWithProps.id))
-            }}
-          />
-        </Group>
-      </AspectRatio>
+      <Preview nodeId={nodeWithProps.id} preview={nodeWithProps.preview} />
 
-      <Group align="center" my="sm">
-        <Text>metadata goes here ...</Text>
-      </Group>
+      <Metadata />
 
-      <div className={classes.scrollable}>
-        {leafs}
-        <Divider
-          onDoubleClick={() => dispatch(createNewLeaf(nodeWithProps.id))}
-          m="md"
-          variant="dashed"
-          labelPosition="center"
-          style={{
-            cursor: 'grab',
-            userSelect: 'none',
-          }}
-          label={<IconCirclePlus size={'1.5rem'} />}
-        />
-      </div>
+      <Leafs nodeId={nodeWithProps.id} leafs={nodeWithProps.leafs} />
     </div>
   )
 }

@@ -1,16 +1,18 @@
+import { Container, createStyles, Text } from '@mantine/core'
+import { createNewLeaf, toggleLeafSelect } from 'components/node-view/node-view-slice'
 import { MouseEvent, useState } from 'react'
-import { Container, Grid, Skeleton } from '@mantine/core'
-import { toggleLeafSelect } from 'components/node-view/node-view-slice'
-import { createStyles, Text } from '@mantine/core'
 
 import { useAppDispatch, useAppSelector } from 'frontend/store'
 import Monaco from './monaco'
 import Remark from './remark'
 
+import { Divider } from '@mantine/core'
+import { IconCirclePlus } from '@tabler/icons'
+
 import type { LeafWithImages } from 'backend/routes/leaf'
 import Gallery from 'components/node-view/gallery'
 
-const useStyles = createStyles((theme) => ({
+const useStyles = createStyles(theme => ({
   outerLeaf: {
     padding: 8,
     borderTop: `2px solid ${theme.colors.dark[3]}`,
@@ -31,19 +33,34 @@ const useStyles = createStyles((theme) => ({
       borderLeft: '2px solid #dfcc43',
     },
   },
+  scrollable: {
+    overflowX: 'hidden',
+    overflowY: 'scroll',
+    maxHeight: '60vh',
+    userSelect: 'none',
+    '&::-webkit-scrollbar': {
+      width: 6,
+    },
+    '&::-webkit-scrollbar-track': {
+      backgroundColor: '#b8adad',
+      borderRadius: 12,
+    },
+    '&::-webkit-scrollbar-thumb': {
+      backgroundColor: '#7a2a73',
+      borderRadius: 12,
+    },
+  },
 }))
 
-export default function Leaf({ leaf }: { leaf: LeafWithImages }) {
+function Leaf({ leaf }: { leaf: LeafWithImages }) {
   const dispatch = useAppDispatch()
-  const { leafs } = useAppSelector((store) => store.nodeView.selected)
+  const { leafs } = useAppSelector(store => store.nodeView.selected)
   const markdown = useAppSelector(
-    (store) => store.nodeView.nodeWithProps?.leafs.find((v) => v.id == leaf.id)?.content || ''
+    store => store.nodeView.nodeWithProps?.leafs.find(v => v.id == leaf.id)?.content || ''
   )
+  const [isEditing, setEditing] = useState(false)
 
   // const { latestLeafId } = useAppSelector(state => state.nodeView)
-
-
-  const [isEditing, setEditing] = useState(false)
   // const [markdown, setMarkdown] = useState(leaf.content)
 
   const { classes, cx } = useStyles()
@@ -52,13 +69,12 @@ export default function Leaf({ leaf }: { leaf: LeafWithImages }) {
 
   return (
     <div
-      onClick={(event) => {
+      onClick={event => {
         // when shift is pressed, toggle selection of the element
         event.shiftKey && dispatch(toggleLeafSelect(leaf.id))
         // this prevents residual selects when shift is pressed
         event.preventDefault()
-      }}
-    >
+      }}>
       <Container className={classes.outerLeaf}>
         <Text align="end" size={'sm'}>
           {/* Leaf created: {leaf.createdAt as unknown as string} */}
@@ -70,8 +86,7 @@ export default function Leaf({ leaf }: { leaf: LeafWithImages }) {
           onDoubleClick={(event: MouseEvent<HTMLDivElement>) => {
             // is bang-shift-key to prevent accidental editing during shift-selection op
             !event.shiftKey && setEditing(true)
-          }}
-        >
+          }}>
           {isEditing ? (
             <Monaco leaf={leaf} setEditing={setEditing} markdown={markdown} />
           ) : (
@@ -79,6 +94,30 @@ export default function Leaf({ leaf }: { leaf: LeafWithImages }) {
           )}
         </div>
       </Container>
+    </div>
+  )
+}
+
+export default function Leafs({ nodeId, leafs }: { nodeId: number; leafs: LeafWithImages[] }) {
+  const dispatch = useAppDispatch()
+  const { classes, cx } = useStyles()
+
+  return (
+    <div className={classes.scrollable}>
+      {leafs.map((leaf, ind) => (
+        <Leaf leaf={leaf} key={ind} />
+      ))}
+      <Divider
+        onDoubleClick={() => dispatch(createNewLeaf(nodeId))}
+        m="md"
+        variant="dashed"
+        labelPosition="center"
+        style={{
+          cursor: 'grab',
+          userSelect: 'none',
+        }}
+        label={<IconCirclePlus size={'1.5rem'} />}
+      />
     </div>
   )
 }

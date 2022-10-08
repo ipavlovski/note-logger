@@ -27,6 +27,8 @@ routes.post('/leaf/:id/update', async (req, res) => {
   var leafId = parseInt(req.params.id)
   var content = req.body.content
 
+  console.log(content)
+
   await prisma.leaf.update({ where: { id: leafId }, data: { content: content } })
   return res.json({ success: 1 })
 })
