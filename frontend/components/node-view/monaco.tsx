@@ -9,18 +9,10 @@ import { stopLeafEditing } from 'components/node-view/node-view-slice'
 
 import type { LeafWithImages } from 'backend/routes/leaf'
 import { nodeApi } from 'frontend/api'
+import { getClipboardImage } from 'frontend/util'
+import { showNotification } from '@mantine/notifications'
 
 const SERVER_URL = `https://localhost:${import.meta.env.VITE_SERVER_PORT}`
-
-// setEditing: (value: React.SetStateAction<boolean>) => void
-
-async function uploadLeafImage(leafId: number, content: Blob, type: 'inline' | 'gallery') {
-  const formData = new FormData()
-  formData.append('image', content, type)
-
-  const { path } = await client.upload(`/leaf/${leafId}/upload`, formData)
-  return path
-}
 
 interface MonacoProps {
   leaf: LeafWithImages
@@ -30,30 +22,20 @@ export default function Monaco({ leaf, markdown }: MonacoProps) {
   const dispatch = useAppDispatch()
   const editorRef = useRef<null | editor.IStandaloneCodeEditor>(null)
   const [updateContents] = nodeApi.useUpdateLeafContentsMutation()
+  const [uploadGallery] = nodeApi.useUploadGalleryMutation()
 
   const handleMonacoPaste = async (e: ClipboardEvent<HTMLInputElement>) => {
-    // @ts-ignore
-    const descriptor: PermissionDescriptor = { name: 'clipboard-read' }
-    const result = await navigator.permissions.query(descriptor)
+    try {
+      const formData = await getClipboardImage('inline')
+      const { path } = await uploadGallery({ leafId: leaf.id, formData: formData }).unwrap()
+      path && editorRef.current!.trigger('keyboard', 'type', { text: `![](${SERVER_URL}/${path})` })
 
-    if (result.state == 'granted' || result.state == 'prompt') {
-      const allData = await navigator.clipboard.read()
-      const data = allData[0]
-
-      if (data.types.includes('image/png')) {
-        const blob = await data.getType('image/png')
-        const path = await uploadLeafImage(leaf.id, blob, 'inline')
-
-        if (path) {
-          // const { lineNumber, column } = editorRef.current?.getPosition()!
-          editorRef.current!.trigger('keyboard', 'type', {
-            text: `![](${SERVER_URL}/${path})`,
-          })
-        }
-
-        e.stopPropagation()
-        e.preventDefault()
-      }
+      e.stopPropagation()
+      e.preventDefault()
+    } catch (err) {
+      const msg = err instanceof Error ? err.message : 'Unknown error'
+      if (msg != 'Missing clipboard handler')
+        showNotification({ title: 'ctrl+v', message: msg, color: 'red', autoClose: 1600 })
     }
   }
 
@@ -74,12 +56,7 @@ export default function Monaco({ leaf, markdown }: MonacoProps) {
     })
     obs.pipe(debounce(() => timer(300))).subscribe(() => {
       const content = editor.getValue()
-      if (content) {
-        // dispatch(setLeafContent({ leafId: leaf.id, content: content }))
-        // setMarkdown(content)
-        // client.post<{ content: string }, string>(`/leaf/${leaf.id}/update`, { content })
-        updateContents({ content: content, leafId: leaf.id})
-      }
+      if (content) updateContents({ content: content, leafId: leaf.id })
     })
 
     editor.addCommand(monaco.KeyMod.CtrlCmd | monaco.KeyCode.KeyM, () => {
@@ -92,6 +69,9 @@ export default function Monaco({ leaf, markdown }: MonacoProps) {
 
     editor.addCommand(monaco.KeyCode.Escape, () => {
       console.log('escape')
+
+      const content = editor.getValue()
+      if (content) updateContents({ content: content, leafId: leaf.id })
 
       dispatch(stopLeafEditing(leaf.id))
     })

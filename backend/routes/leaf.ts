@@ -59,7 +59,7 @@ routes.post('/leaf/:id/upload', upload.single('image'), async (req, res) => {
       },
     })
 
-    return res.json({ path: path })
+    return res.json({ path })
   } catch (err) {
     return res.sendStatus(400)
   }

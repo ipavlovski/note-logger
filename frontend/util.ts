@@ -15,7 +15,7 @@ export async function getClipboardImage(blobTag: string) {
 
       return formData
     }
-    throw new Error(`No handler for ${data} type`)
+    throw new Error(`Missing clipboard handler`)
   }
   throw new Error('Failed to get clipboard permissions')
 }

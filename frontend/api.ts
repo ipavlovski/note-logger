@@ -34,7 +34,7 @@ export const nodeApi = createApi({
       }),
       invalidatesTags: ['Node'],
     }),
-    uploadGallery: builder.mutation<LeafWithImages, { leafId: number; formData: FormData }>({
+    uploadGallery: builder.mutation<{ path: string }, { leafId: number; formData: FormData }>({
       query: ({ leafId, formData }) => ({
         url: `leaf/${leafId}/upload`,
         method: 'POST',
