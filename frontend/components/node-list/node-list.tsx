@@ -1,7 +1,7 @@
 import { createStyles, Group, Image, Text } from '@mantine/core'
 import { IconRefresh } from '@tabler/icons'
 import { HistoryWithNode } from 'backend/routes/query'
-import { selectNode } from 'components/node-list/node-list-slice'
+import { selectNode } from 'frontend/slices'
 import Omnibar from 'components/node-list/omnibar'
 import { nodeApi } from 'frontend/api'
 import { useAppDispatch, useAppSelector } from 'frontend/store'

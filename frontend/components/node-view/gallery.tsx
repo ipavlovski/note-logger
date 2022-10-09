@@ -1,12 +1,10 @@
-import { Grid, Skeleton, Image, Divider } from '@mantine/core'
+import { Divider, Grid, Image, Modal } from '@mantine/core'
+import { Carousel, Embla, useAnimationOffsetEffect } from '@mantine/carousel'
+import { useState } from 'react'
+
 import type { Image as PrismaImage } from '@prisma/client'
 
-import { useRef, useState } from 'react'
-import { Button, Modal, Group } from '@mantine/core'
-import { Carousel, useAnimationOffsetEffect, Embla } from '@mantine/carousel'
-
-
-const  SERVER_URL = `https://localhost:${import.meta.env.VITE_SERVER_PORT}`
+const SERVER_URL = `https://localhost:${import.meta.env.VITE_SERVER_PORT}`
 
 export default function Gallery({ input }: { input: PrismaImage[] }) {
   const [initSlide, setInitSlide] = useState(0)
@@ -43,7 +41,7 @@ export default function Gallery({ input }: { input: PrismaImage[] }) {
     )
   })
 
-  const slides = images.map((image) => {
+  const slides = images.map(image => {
     return (
       <Carousel.Slide key={image.id}>
         <Image
@@ -58,7 +56,6 @@ export default function Gallery({ input }: { input: PrismaImage[] }) {
       </Carousel.Slide>
     )
   })
-
 
   return (
     <div>
@@ -75,17 +72,14 @@ export default function Gallery({ input }: { input: PrismaImage[] }) {
         withCloseButton={false}
         onClose={() => setOpened(false)}
         // sx={{ display: 'flex', alignItems: 'start' }}
-        overlayBlur={1}
-      >
+        overlayBlur={1}>
         <Carousel
           mx="auto"
           withIndicators
           // sx={{ flex: 1 }}
           draggable={false}
           initialSlide={initSlide}
-          getEmblaApi={setEmbla}
-
-        >
+          getEmblaApi={setEmbla}>
           {slides}
         </Carousel>
       </Modal>

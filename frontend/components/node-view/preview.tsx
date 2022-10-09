@@ -1,10 +1,9 @@
 import { AspectRatio, createStyles, Group, Image, Skeleton } from '@mantine/core'
 import { IconRefresh } from '@tabler/icons'
-import { togglePreviewSelect } from 'components/node-view/node-view-slice'
-import { useAppDispatch, useAppSelector } from 'frontend/store'
-
-import type { NodeWithProps } from 'backend/routes/node'
 import type { Preview as IPreview } from '@prisma/client'
+
+import { togglePreviewSelect } from 'frontend/slices'
+import { useAppDispatch, useAppSelector } from 'frontend/store'
 
 const SERVER_URL = `https://localhost:${import.meta.env.VITE_SERVER_PORT}`
 
@@ -69,4 +68,3 @@ export default function Preview({ nodeId, preview }: { nodeId: number; preview: 
         />
  */
 }
-// console.log(`${SERVER_URL}/${nodeWithProps.preview}`)

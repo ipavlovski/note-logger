@@ -1,17 +1,14 @@
-import { Container, createStyles, Text } from '@mantine/core'
-import { startLeafEditing, toggleLeafSelect } from 'components/node-view/node-view-slice'
-import { MouseEvent, useState } from 'react'
-
-import { useAppDispatch, useAppSelector } from 'frontend/store'
-import Monaco from './monaco'
-import Remark from './remark'
-
-import { Divider } from '@mantine/core'
+import { Container, createStyles, Divider, Text } from '@mantine/core'
 import { IconCirclePlus } from '@tabler/icons'
+import { MouseEvent } from 'react'
 
 import type { LeafWithImages } from 'backend/routes/leaf'
 import Gallery from 'components/node-view/gallery'
+import Monaco from 'components/node-view/monaco'
+import Remark from 'components/node-view/remark'
 import { nodeApi } from 'frontend/api'
+import { startLeafEditing, toggleLeafSelect } from 'frontend/slices'
+import { useAppDispatch, useAppSelector } from 'frontend/store'
 
 const useStyles = createStyles(theme => ({
   outerLeaf: {
@@ -64,7 +61,6 @@ function Leaf({ leaf }: { leaf: LeafWithImages }) {
 
   const isEditing = useAppSelector(store => store.nodeView.editing.includes(leaf.id))
 
-
   return (
     <div
       onClick={event => {
@@ -79,7 +75,6 @@ function Leaf({ leaf }: { leaf: LeafWithImages }) {
         </Text>
 
         <Gallery input={leaf.images} />
-
 
         <div
           className={cx(classes.innerLeaf, selectedLeafs.includes(leaf.id) && classes.selected)}

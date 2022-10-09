@@ -3,22 +3,21 @@ import { setupListeners } from '@reduxjs/toolkit/query'
 import { useDispatch, useSelector } from 'react-redux'
 import type { TypedUseSelectorHook } from 'react-redux'
 
-import nodeListReducer from 'components/node-list/node-list-slice'
-import nodeViewReducer from 'components/node-view/node-view-slice'
+import { nodeListSlice } from 'frontend/slices'
+import { nodeViewSlice } from 'frontend/slices'
 import { nodeApi } from 'frontend/api'
 
 const store = configureStore({
   reducer: {
-    nodeList: nodeListReducer,
-    nodeView: nodeViewReducer,
+    nodeList: nodeListSlice.reducer,
+    nodeView: nodeViewSlice.reducer,
     [nodeApi.reducerPath]: nodeApi.reducer,
   },
-  middleware: (getDefaultMiddleware) => getDefaultMiddleware().concat(nodeApi.middleware),
+  middleware: getDefaultMiddleware => getDefaultMiddleware().concat(nodeApi.middleware),
 })
 
 // configure listeners using the provided defaults
 setupListeners(store.dispatch)
-
 
 // Infer the `RootState` and `AppDispatch` types from the store itself
 export type RootState = ReturnType<typeof store.getState>

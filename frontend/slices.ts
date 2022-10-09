@@ -1,6 +1,27 @@
-import { createAsyncThunk, createSelector, createSlice, PayloadAction } from '@reduxjs/toolkit'
+import { createSlice, PayloadAction, createAsyncThunk } from '@reduxjs/toolkit'
 import client from 'frontend/client'
 import type { NodeWithProps } from 'backend/routes/node'
+
+interface NodeList {
+  selected: number[],
+  active: number | null
+}
+
+const nodeListInit: NodeList = {
+  selected: [],
+  active: null
+}
+
+export const nodeListSlice = createSlice({
+  name: 'nodeList',
+  initialState: nodeListInit,
+  reducers: {
+    selectNode(state, action: PayloadAction<number>) {
+      state.active = action.payload
+    }
+  },
+})
+
 
 interface NodeSelection {
   leafs: number[]
@@ -30,9 +51,6 @@ const initialState: NodeView = {
   editing: [],
 }
 
-// export const parseNode = createAsyncThunk('views/parse-node', async (nodeId: number) => {
-//   return await client.safeGet<{ message: string }>(`/node/${nodeId}/parse`)
-// })
 
 export const uploadPreview = createAsyncThunk('views/upload-preview', async (nodeId: number) => {
   // @ts-ignore
@@ -67,7 +85,7 @@ export const deleteLeafs = createAsyncThunk(
   }
 )
 
-const nodeViewSlice = createSlice({
+export const nodeViewSlice = createSlice({
   name: 'nodeView',
   initialState,
   reducers: {
@@ -159,4 +177,4 @@ export const {
   stopLeafEditing,
 } = nodeViewSlice.actions
 
-export default nodeViewSlice.reducer
+export const { selectNode } = nodeListSlice.actions

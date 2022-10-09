@@ -3,7 +3,7 @@ import { PrismAsyncLight as SyntaxHighlighter } from 'react-syntax-highlighter'
 import { vscDarkPlus } from 'react-syntax-highlighter/dist/esm/styles/prism'
 import remarkGfm from 'remark-gfm'
 
-export default function Remark({ markdown}: { markdown: string}) {
+export default function Remark({ markdown }: { markdown: string }) {
   return (
     <ReactMarkdown
       children={markdown}

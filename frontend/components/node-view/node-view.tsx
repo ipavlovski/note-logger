@@ -1,6 +1,7 @@
-import { createStyles, Group, Text } from '@mantine/core'
+import { createStyles, Text } from '@mantine/core'
 import { useHotkeys } from '@mantine/hooks'
 import { showNotification } from '@mantine/notifications'
+
 import Leafs from 'components/node-view/leafs'
 import Metadata from 'components/node-view/metadata'
 import Preview from 'components/node-view/preview'

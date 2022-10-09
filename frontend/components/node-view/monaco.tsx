@@ -1,16 +1,15 @@
+import { showNotification } from '@mantine/notifications'
 import Editor from '@monaco-editor/react'
 import { editor } from 'monaco-editor'
 import { ClipboardEvent, useRef } from 'react'
 import { Observable, timer } from 'rxjs'
 import { debounce } from 'rxjs/operators'
-import client from 'frontend/client'
-import { useAppDispatch } from 'frontend/store'
-import { stopLeafEditing } from 'components/node-view/node-view-slice'
 
 import type { LeafWithImages } from 'backend/routes/leaf'
 import { nodeApi } from 'frontend/api'
+import { stopLeafEditing } from 'frontend/slices'
+import { useAppDispatch } from 'frontend/store'
 import { getClipboardImage } from 'frontend/util'
-import { showNotification } from '@mantine/notifications'
 
 const SERVER_URL = `https://localhost:${import.meta.env.VITE_SERVER_PORT}`
 
@@ -43,21 +42,21 @@ export default function Monaco({ leaf, markdown }: MonacoProps) {
   function handleEditorChange(value: string | undefined, event: editor.IModelContentChangedEvent) {}
 
   function handleEditorDidMount(editor: editor.IStandaloneCodeEditor, monaco: any) {
-    // here is the editor instance
-    // you can store it in `useRef` for further usage
+    // here is the editor instance, you can store it in `useRef` for further usage
     editorRef.current = editor
     // @ts-ignore
     editor.getDomNode()!.addEventListener('paste', handleMonacoPaste)
 
-    const obs = new Observable(observer => {
+    new Observable(observer => {
       editor.getModel()!.onDidChangeContent(event => {
         observer.next(event)
       })
     })
-    obs.pipe(debounce(() => timer(300))).subscribe(() => {
-      const content = editor.getValue()
-      if (content) updateContents({ content: content, leafId: leaf.id })
-    })
+      .pipe(debounce(() => timer(300)))
+      .subscribe(() => {
+        const content = editor.getValue()
+        if (content) updateContents({ content: content, leafId: leaf.id })
+      })
 
     editor.addCommand(monaco.KeyMod.CtrlCmd | monaco.KeyCode.KeyM, () => {
       console.log('ctrl+m')
