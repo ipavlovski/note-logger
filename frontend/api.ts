@@ -1,9 +1,9 @@
 import { createApi, fetchBaseQuery } from '@reduxjs/toolkit/query/react'
 import type { NodeWithProps } from 'backend/routes/node'
 import type { HistoryWithNode } from 'backend/routes/query'
+import type { LeafWithImages } from 'backend/routes/leaf'
 
 const SERVER_URL = `https://localhost:${import.meta.env.VITE_SERVER_PORT}`
-
 
 export const nodeApi = createApi({
   reducerPath: 'nodeApi',
@@ -20,7 +20,19 @@ export const nodeApi = createApi({
     }),
     parseNodeById: builder.mutation<NodeWithProps, number>({
       query: nodeId => `node/${nodeId}/parse`,
-      invalidatesTags: ['NodeList', 'Node']
-    })
+      invalidatesTags: ['NodeList', 'Node'],
+    }),
+    createNewLeaf: builder.mutation<LeafWithImages, number>({
+      query: nodeId => ({ url: `node/${nodeId}/leaf`, method: 'PUT' }),
+      invalidatesTags: ['Node'],
+    }),
+    updateLeafContents: builder.mutation<LeafWithImages, { leafId: number, content: string}>({
+      query: ({leafId, content}) => ({ 
+        url: `leaf/${leafId}/update`, 
+        method: 'POST',
+        body: { content }
+      }),
+      invalidatesTags: ['Node'],
+    }),
   }),
 })

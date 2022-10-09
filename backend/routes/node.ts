@@ -9,7 +9,6 @@ import sharp from 'sharp'
 import { STORAGE_DIRECTORY } from 'backend/config'
 import multer from 'multer'
 
-
 const prisma = new PrismaClient()
 const routes = Router()
 
@@ -73,7 +72,7 @@ routes.put('/node/:id/leaf', async (req, res) => {
     include: { images: true },
   })
 
-  return res.json({ leaf: leaf })
+  return res.json(leaf)
 })
 
 routes.post('/node/:id/preview', upload.single('image'), async (req, res) => {

@@ -14,13 +14,6 @@ interface NodeSelection {
   metadata: number[]
 }
 
-interface NodeView {
-  status: 'idle' | 'loading'
-  nodeWithProps: NodeWithProps | null
-  selected: NodeSelection
-  latestLeafId: number | null
-}
-
 const emptySelection: NodeSelection = {
   leafs: [],
   gallery: [],
@@ -28,24 +21,31 @@ const emptySelection: NodeSelection = {
   metadata: [],
 }
 
+interface NodeView {
+  status: 'idle' | 'loading'
+  nodeWithProps: NodeWithProps | null
+  selected: NodeSelection
+  editing: number[]
+}
+
 const initialState: NodeView = {
   status: 'idle',
   nodeWithProps: null,
   selected: { ...emptySelection },
-  latestLeafId: null,
+  editing: [],
 }
 
-export const fetchNode = createAsyncThunk('views/fetch-node', async (nodeId: number) => {
-  return await client.get<NodeWithProps | null>(`/node/${nodeId}`)
-})
+// export const fetchNode = createAsyncThunk('views/fetch-node', async (nodeId: number) => {
+//   return await client.get<NodeWithProps | null>(`/node/${nodeId}`)
+// })
 
-export const createNewLeaf = createAsyncThunk('views/insert-leaf', async (nodeId: number) => {
-  return await client.put<null, { leaf: LeafWithImages }>(`/node/${nodeId}/leaf`, null)
-})
+// export const createNewLeaf = createAsyncThunk('views/insert-leaf', async (nodeId: number) => {
+//   return await client.put<null, { leaf: LeafWithImages }>(`/node/${nodeId}/leaf`, null)
+// })
 
-export const parseNode = createAsyncThunk('views/parse-node', async (nodeId: number) => {
-  return await client.safeGet<{ message: string }>(`/node/${nodeId}/parse`)
-})
+// export const parseNode = createAsyncThunk('views/parse-node', async (nodeId: number) => {
+//   return await client.safeGet<{ message: string }>(`/node/${nodeId}/parse`)
+// })
 
 export const uploadPreview = createAsyncThunk('views/upload-preview', async (nodeId: number) => {
   // @ts-ignore
@@ -155,46 +155,55 @@ const nodeViewSlice = createSlice({
       const leaf = state.nodeWithProps?.leafs.find(v => v.id == leafId)
       if (leaf) leaf.content = content
     },
+
+    startLeafEditing(state, action: PayloadAction<number>) {
+      const leafId = action.payload
+      state.editing = state.editing.concat(leafId)
+    },
+    stopLeafEditing(state, action: PayloadAction<number>) {
+      const leafId = action.payload
+      state.editing = state.editing.filter(id => id != leafId)
+    },
   },
-  extraReducers: builder => {
-    builder
-      .addCase(fetchNode.pending, (state, action) => {
-        state.status = 'loading'
-      })
-      .addCase(fetchNode.fulfilled, (state, action) => {
-        state.nodeWithProps = action.payload
-        state.selected = { ...emptySelection }
-        state.latestLeafId = null
-        state.status = 'idle'
-      })
-      .addCase(createNewLeaf.fulfilled, (state, action) => {
-        if (state.nodeWithProps != null) {
-          state.nodeWithProps.leafs = state.nodeWithProps.leafs.concat(action.payload.leaf)
-          state.latestLeafId = action.payload.leaf.id
-        }
-      })
-      .addCase(deleteLeafs.fulfilled, (state, action) => {
-        console.log(`len before delete: ${state.nodeWithProps!.leafs.length}`)
-        const { deletedIds } = action.payload
-        if (state.nodeWithProps != null) {
-          state.nodeWithProps.leafs = state.nodeWithProps.leafs.filter(val => {
-            if (deletedIds.includes(val.id)) console.log(`deleting ${val.id}`)
-            return !deletedIds.includes(val.id)
-          })
-          state.selected = { ...emptySelection }
-          console.log(`len after delete: ${state.nodeWithProps.leafs.length}`)
-        }
-        return state
-      })
-      .addCase(parseNode.fulfilled, (state, action) => {
-        'error' in action.payload
-          ? showNotification({ title: 'Error', message: action.payload.error, color: 'red' })
-          : showNotification({ title: 'Success', message: action.payload.message, color: 'green' })
-      })
-  },
+  // extraReducers: builder => {
+  //   builder
+  //     .addCase(fetchNode.pending, (state, action) => {
+  //       state.status = 'loading'
+  //     })
+  //     .addCase(deleteLeafs.fulfilled, (state, action) => {
+  //       console.log(`len before delete: ${state.nodeWithProps!.leafs.length}`)
+  //       const { deletedIds } = action.payload
+  //       if (state.nodeWithProps != null) {
+  //         state.nodeWithProps.leafs = state.nodeWithProps.leafs.filter(val => {
+  //           if (deletedIds.includes(val.id)) console.log(`deleting ${val.id}`)
+  //           return !deletedIds.includes(val.id)
+  //         })
+  //         state.selected = { ...emptySelection }
+  //         console.log(`len after delete: ${state.nodeWithProps.leafs.length}`)
+  //       }
+  //       return state
+  //     })
+  //     .addCase(parseNode.fulfilled, (state, action) => {
+  //       'error' in action.payload
+  //         ? showNotification({ title: 'Error', message: action.payload.error, color: 'red' })
+  //         : showNotification({ title: 'Success', message: action.payload.message, color: 'green' })
+  //     })
+  // },
 })
 
-export const { toggleLeafSelect, toggleGallerySelect, togglePreviewSelect, setLeafContent } =
-  nodeViewSlice.actions
+// export const isEditing = (state: RootState, leafId: number) =>
+//   createSelector(
+//     (state: RootState) => state.nodeView.editing,
+//     (editing) => editing.includes(leafId)
+//   )
+
+export const {
+  toggleLeafSelect,
+  toggleGallerySelect,
+  togglePreviewSelect,
+  setLeafContent,
+  startLeafEditing,
+  stopLeafEditing,
+} = nodeViewSlice.actions
 
 export default nodeViewSlice.reducer

@@ -5,30 +5,31 @@ import { Observable, timer } from 'rxjs'
 import { debounce } from 'rxjs/operators'
 import client from 'frontend/client'
 import { useAppDispatch } from 'frontend/store'
-import { setLeafContent } from 'components/node-view/node-view-slice'
+import { stopLeafEditing } from 'components/node-view/node-view-slice'
 
 import type { LeafWithImages } from 'backend/routes/leaf'
-
+import { nodeApi } from 'frontend/api'
 
 const SERVER_URL = `https://localhost:${import.meta.env.VITE_SERVER_PORT}`
 
+// setEditing: (value: React.SetStateAction<boolean>) => void
+
+async function uploadLeafImage(leafId: number, content: Blob, type: 'inline' | 'gallery') {
+  const formData = new FormData()
+  formData.append('image', content, type)
+
+  const { path } = await client.upload(`/leaf/${leafId}/upload`, formData)
+  return path
+}
 
 interface MonacoProps {
   leaf: LeafWithImages
-  setEditing: (value: React.SetStateAction<boolean>) => void
   markdown: string
 }
-export default function Monaco({ leaf, setEditing, markdown}: MonacoProps) {
+export default function Monaco({ leaf, markdown }: MonacoProps) {
   const dispatch = useAppDispatch()
   const editorRef = useRef<null | editor.IStandaloneCodeEditor>(null)
-
-  async function uploadLeafImage(leafId: number, content: Blob, type: 'inline' | 'gallery') {
-    const formData = new FormData()
-    formData.append('image', content, type)
-
-    const { path } = await client.upload(`/leaf/${leafId}/upload`, formData)
-    return path
-  }
+  const [updateContents] = nodeApi.useUpdateLeafContentsMutation()
 
   const handleMonacoPaste = async (e: ClipboardEvent<HTMLInputElement>) => {
     // @ts-ignore
@@ -66,17 +67,18 @@ export default function Monaco({ leaf, setEditing, markdown}: MonacoProps) {
     // @ts-ignore
     editor.getDomNode()!.addEventListener('paste', handleMonacoPaste)
 
-    const obs = new Observable((observer) => {
-      editor.getModel()!.onDidChangeContent((event) => {
+    const obs = new Observable(observer => {
+      editor.getModel()!.onDidChangeContent(event => {
         observer.next(event)
       })
     })
     obs.pipe(debounce(() => timer(300))).subscribe(() => {
       const content = editor.getValue()
       if (content) {
-        dispatch(setLeafContent({leafId: leaf.id, content: content}))
+        // dispatch(setLeafContent({ leafId: leaf.id, content: content }))
         // setMarkdown(content)
-        client.post<{ content: string }, string>(`/leaf/${leaf.id}/update`, { content })
+        // client.post<{ content: string }, string>(`/leaf/${leaf.id}/update`, { content })
+        updateContents({ content: content, leafId: leaf.id})
       }
     })
 
@@ -90,7 +92,8 @@ export default function Monaco({ leaf, setEditing, markdown}: MonacoProps) {
 
     editor.addCommand(monaco.KeyCode.Escape, () => {
       console.log('escape')
-      setEditing(false)
+
+      dispatch(stopLeafEditing(leaf.id))
     })
   }
 

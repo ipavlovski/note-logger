@@ -1,5 +1,5 @@
 import { Container, createStyles, Text } from '@mantine/core'
-import { createNewLeaf, toggleLeafSelect } from 'components/node-view/node-view-slice'
+import { startLeafEditing, toggleLeafSelect } from 'components/node-view/node-view-slice'
 import { MouseEvent, useState } from 'react'
 
 import { useAppDispatch, useAppSelector } from 'frontend/store'
@@ -11,6 +11,7 @@ import { IconCirclePlus } from '@tabler/icons'
 
 import type { LeafWithImages } from 'backend/routes/leaf'
 import Gallery from 'components/node-view/gallery'
+import { nodeApi } from 'frontend/api'
 
 const useStyles = createStyles(theme => ({
   outerLeaf: {
@@ -50,20 +51,18 @@ const useStyles = createStyles(theme => ({
       borderRadius: 12,
     },
   },
+  divider: {
+    cursor: 'grab',
+    userSelect: 'none',
+  },
 }))
 
 function Leaf({ leaf }: { leaf: LeafWithImages }) {
-  const dispatch = useAppDispatch()
-  const { leafs } = useAppSelector(store => store.nodeView.selected)
-  const markdown = useAppSelector(
-    store => store.nodeView.nodeWithProps?.leafs.find(v => v.id == leaf.id)?.content || ''
-  )
-  const [isEditing, setEditing] = useState(false)
-
-  // const { latestLeafId } = useAppSelector(state => state.nodeView)
-  // const [markdown, setMarkdown] = useState(leaf.content)
-
   const { classes, cx } = useStyles()
+  const dispatch = useAppDispatch()
+  const { leafs: selectedLeafs } = useAppSelector(store => store.nodeView.selected)
+
+  const isEditing = useAppSelector(store => store.nodeView.editing.includes(leaf.id))
 
   const images = leaf.images.filter(({ type }) => type == 'gallery')
 
@@ -77,20 +76,21 @@ function Leaf({ leaf }: { leaf: LeafWithImages }) {
       }}>
       <Container className={classes.outerLeaf}>
         <Text align="end" size={'sm'}>
-          {/* Leaf created: {leaf.createdAt as unknown as string} */}
           {new Date(leaf.createdAt).toLocaleString()}
         </Text>
+
         <div>{images.length > 0 && <Gallery images={images} />}</div>
+
         <div
-          className={cx(classes.innerLeaf, leafs.includes(leaf.id) && classes.selected)}
+          className={cx(classes.innerLeaf, selectedLeafs.includes(leaf.id) && classes.selected)}
           onDoubleClick={(event: MouseEvent<HTMLDivElement>) => {
             // is bang-shift-key to prevent accidental editing during shift-selection op
-            !event.shiftKey && setEditing(true)
+            !event.shiftKey && dispatch(startLeafEditing(leaf.id))
           }}>
           {isEditing ? (
-            <Monaco leaf={leaf} setEditing={setEditing} markdown={markdown} />
+            <Monaco leaf={leaf} markdown={leaf.content} />
           ) : (
-            <Remark markdown={markdown == '' ? '...' : markdown} />
+            <Remark markdown={leaf.content == '' ? '...' : leaf.content} />
           )}
         </div>
       </Container>
@@ -99,23 +99,24 @@ function Leaf({ leaf }: { leaf: LeafWithImages }) {
 }
 
 export default function Leafs({ nodeId, leafs }: { nodeId: number; leafs: LeafWithImages[] }) {
-  const dispatch = useAppDispatch()
   const { classes, cx } = useStyles()
+  const [createNewLeaf, newLeafResult] = nodeApi.useCreateNewLeafMutation()
+  console.log(newLeafResult)
 
   return (
     <div className={classes.scrollable}>
       {leafs.map((leaf, ind) => (
         <Leaf leaf={leaf} key={ind} />
       ))}
+
       <Divider
-        onDoubleClick={() => dispatch(createNewLeaf(nodeId))}
+        onDoubleClick={() => {
+          createNewLeaf(nodeId)
+        }}
         m="md"
         variant="dashed"
         labelPosition="center"
-        style={{
-          cursor: 'grab',
-          userSelect: 'none',
-        }}
+        className={classes.divider}
         label={<IconCirclePlus size={'1.5rem'} />}
       />
     </div>

@@ -1,6 +1,6 @@
 import { AspectRatio, createStyles, Group, Image, Skeleton } from '@mantine/core'
 import { IconRefresh } from '@tabler/icons'
-import { parseNode, togglePreviewSelect } from 'components/node-view/node-view-slice'
+import { togglePreviewSelect } from 'components/node-view/node-view-slice'
 import { useAppDispatch, useAppSelector } from 'frontend/store'
 
 import type { NodeWithProps } from 'backend/routes/node'
@@ -51,7 +51,7 @@ export default function Preview({ nodeId, preview }: { nodeId: number; preview: 
         <IconRefresh
           className={preview ? classes.hidden : classes.refresh}
           onClick={() => {
-            dispatch(parseNode(nodeId))
+            // dispatch(parseNode(nodeId))
           }}
         />
       </Group>
