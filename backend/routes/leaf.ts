@@ -65,4 +65,17 @@ routes.post('/leaf/:id/upload', upload.single('image'), async (req, res) => {
   }
 })
 
+routes.delete('/leafs', async (req, res) => {
+  const { leafIds } = req.body as { leafIds: number[] }
+
+  try {
+    const results = await prisma.leaf.deleteMany({ where: { id: { in: leafIds } } })
+    return res.json({ count: results.count })
+  } catch (err) {
+    console.error(err)
+    const msg = err instanceof Error ? err.message : 'Unknown error'
+    return res.status(400).json({ error: msg })
+  }
+})
+
 export default routes

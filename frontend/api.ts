@@ -44,9 +44,17 @@ export const nodeApi = createApi({
     }),
     uploadPreview: builder.mutation<{ path: string }, { nodeId: number; formData: FormData }>({
       query: ({ nodeId, formData }) => ({
-        url: `/node/${nodeId}/preview`,
+        url: `node/${nodeId}/preview`,
         method: 'POST',
         body: formData,
+      }),
+      invalidatesTags: ['Node'],
+    }),
+    deleteLeafs: builder.mutation<{ path: string }, { leafIds: number[] }>({
+      query: ({ leafIds }) => ({
+        url: `leafs`,
+        method: 'DELETE',
+        body: { leafIds },
       }),
       invalidatesTags: ['Node'],
     }),

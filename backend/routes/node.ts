@@ -106,19 +106,4 @@ routes.post('/node/:id/preview', upload.single('image'), async (req, res) => {
   }
 })
 
-// routes.delete('/node/:id/leafs', async (req, res) => {
-//   const nodeId = parseInt(req.params.id)
-//   const body: DeleteLeafsRequest = req.body
-//   console.dir(req.body)
-
-//   // const leaf = await prisma.leaf.create({
-//   //   data: {
-//   //     content: '',
-//   //     node_id: nodeId,
-//   //   },
-//   // })
-//   const output: DeleteLeafsResponse = { deletedIds: body.leafIds }
-//   return res.json(output)
-// })
-
 export default routes

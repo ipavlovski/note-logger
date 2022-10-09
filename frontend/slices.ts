@@ -1,15 +1,14 @@
-import { createSlice, PayloadAction, createAsyncThunk } from '@reduxjs/toolkit'
-import client from 'frontend/client'
+import { createSlice, PayloadAction } from '@reduxjs/toolkit'
 import type { NodeWithProps } from 'backend/routes/node'
 
 interface NodeList {
-  selected: number[],
+  selected: number[]
   active: number | null
 }
 
 const nodeListInit: NodeList = {
   selected: [],
-  active: null
+  active: null,
 }
 
 export const nodeListSlice = createSlice({
@@ -18,10 +17,9 @@ export const nodeListSlice = createSlice({
   reducers: {
     selectNode(state, action: PayloadAction<number>) {
       state.active = action.payload
-    }
+    },
   },
 })
-
 
 interface NodeSelection {
   leafs: number[]
@@ -50,40 +48,6 @@ const initialState: NodeView = {
   selected: { ...emptySelection },
   editing: [],
 }
-
-
-export const uploadPreview = createAsyncThunk('views/upload-preview', async (nodeId: number) => {
-  // @ts-ignore
-  const descriptor: PermissionDescriptor = { name: 'clipboard-read' }
-  const result = await navigator.permissions.query(descriptor)
-
-  if (result.state == 'granted' || result.state == 'prompt') {
-    const allData = await navigator.clipboard.read()
-    const data = allData[0]
-
-    if (data.types.includes('image/png')) {
-      const blob = await data.getType('image/png')
-      const formData = new FormData()
-      formData.append('image', blob, 'stuff')
-
-      await client.upload(`/node/${nodeId}/preview`, formData)
-    }
-  }
-})
-
-// TODO: also uploadGalleryInline version from Monaco editor
-// how to wait on the async thunk result?
-
-export type DeleteLeafsRequest = { leafIds: number[] }
-export type DeleteLeafsResponse = { deletedIds: number[] }
-export const deleteLeafs = createAsyncThunk(
-  'views/delete-leafs',
-  async ({ leafIds, nodeId }: DeleteLeafsRequest & { nodeId: number }) => {
-    return await client.delete<DeleteLeafsRequest, DeleteLeafsResponse>(`/node/${nodeId}/leafs`, {
-      leafIds,
-    })
-  }
-)
 
 export const nodeViewSlice = createSlice({
   name: 'nodeView',
@@ -147,29 +111,8 @@ export const nodeViewSlice = createSlice({
     clearEditSelect(state) {
       state.selected = { ...emptySelection }
       state.editing = []
-    }
+    },
   },
-  // extraReducers: builder => {
-  //   builder
-  //     .addCase(deleteLeafs.fulfilled, (state, action) => {
-  //       console.log(`len before delete: ${state.nodeWithProps!.leafs.length}`)
-  //       const { deletedIds } = action.payload
-  //       if (state.nodeWithProps != null) {
-  //         state.nodeWithProps.leafs = state.nodeWithProps.leafs.filter(val => {
-  //           if (deletedIds.includes(val.id)) console.log(`deleting ${val.id}`)
-  //           return !deletedIds.includes(val.id)
-  //         })
-  //         state.selected = { ...emptySelection }
-  //         console.log(`len after delete: ${state.nodeWithProps.leafs.length}`)
-  //       }
-  //       return state
-  //     })
-  //     .addCase(parseNode.fulfilled, (state, action) => {
-  //       'error' in action.payload
-  //         ? showNotification({ title: 'Error', message: action.payload.error, color: 'red' })
-  //         : showNotification({ title: 'Success', message: action.payload.message, color: 'green' })
-  //     })
-  // },
 })
 
 export const {
@@ -179,7 +122,7 @@ export const {
   setLeafContent,
   startLeafEditing,
   stopLeafEditing,
-  clearEditSelect
+  clearEditSelect,
 } = nodeViewSlice.actions
 
 export const { selectNode } = nodeListSlice.actions

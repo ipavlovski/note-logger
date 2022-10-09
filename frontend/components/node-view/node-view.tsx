@@ -6,11 +6,9 @@ import Leafs from 'components/node-view/leafs'
 import Metadata from 'components/node-view/metadata'
 import Preview from 'components/node-view/preview'
 import { nodeApi } from 'frontend/api'
-import { toggleGallerySelect, togglePreviewSelect } from 'frontend/slices'
+import { clearEditSelect, toggleGallerySelect, togglePreviewSelect } from 'frontend/slices'
 import { useAppDispatch, useAppSelector } from 'frontend/store'
 import { getClipboardImage } from 'frontend/util'
-
-const SERVER_URL = `https://localhost:${import.meta.env.VITE_SERVER_PORT}`
 
 const useStyles = createStyles(theme => ({
   scrollable: {
@@ -63,6 +61,7 @@ const useShortcutHandler = () => {
   const dispatch = useAppDispatch()
   const [uploadGallery] = nodeApi.useUploadGalleryMutation()
   const [uploadPreview] = nodeApi.useUploadPreviewMutation()
+  const [deleteLeafs] = nodeApi.useDeleteLeafsMutation()
 
   ////////////// HANDLERS
 
@@ -72,7 +71,6 @@ const useShortcutHandler = () => {
         const formData = await getClipboardImage('gallery')
         await uploadGallery({ leafId: selectedLeafs[0], formData: formData })
         dispatch(toggleGallerySelect(selectedLeafs[0]))
-
       } catch (err) {
         const msg = err instanceof Error ? err.message : 'Unknown error'
         showNotification({ title: 'ctrl+v', message: msg, color: 'red' })
@@ -96,22 +94,23 @@ const useShortcutHandler = () => {
   }
 
   const handleDefaultPaste = () => {
-    showNotification({
-      title: 'ctrl+v',
-      message: `Nothing selected`,
-      color: 'yellow',
-      autoClose: 1600,
-    })
+    showNotification({ title: 'ctrl+v', message: `Nothing selected`, color: 'yellow' })
   }
 
-  const handleLeafDelete = () => {}
+  const handleLeafsDelete = () => {
+    deleteLeafs({ leafIds: selectedLeafs })
+    dispatch(clearEditSelect())
+  }
+
+  const handleDefaultDelete = () => {
+    showNotification({ title: 'delete', message: `Nothing selected`, color: 'yellow' })
+  }
 
   useHotkeys([
     [
       'delete',
       () => {
-        console.log('Deleting leafs...')
-        // nodeWithProps && dispatch(deleteLeafs({ leafIds: selectedLeafs, nodeId: nodeWithProps.id }))
+        selectedLeafs.length >= 1 ? handleLeafsDelete() : handleDefaultDelete()
       },
     ],
     [
