@@ -1,11 +1,6 @@
 import { createAsyncThunk, createSelector, createSlice, PayloadAction } from '@reduxjs/toolkit'
-
 import client from 'frontend/client'
-
-import type { LeafWithImages } from 'backend/routes/leaf'
 import type { NodeWithProps } from 'backend/routes/node'
-import { showNotification } from '@mantine/notifications'
-import { RootState } from 'frontend/store'
 
 interface NodeSelection {
   leafs: number[]
@@ -35,14 +30,6 @@ const initialState: NodeView = {
   editing: [],
 }
 
-// export const fetchNode = createAsyncThunk('views/fetch-node', async (nodeId: number) => {
-//   return await client.get<NodeWithProps | null>(`/node/${nodeId}`)
-// })
-
-// export const createNewLeaf = createAsyncThunk('views/insert-leaf', async (nodeId: number) => {
-//   return await client.put<null, { leaf: LeafWithImages }>(`/node/${nodeId}/leaf`, null)
-// })
-
 // export const parseNode = createAsyncThunk('views/parse-node', async (nodeId: number) => {
 //   return await client.safeGet<{ message: string }>(`/node/${nodeId}/parse`)
 // })
@@ -65,31 +52,6 @@ export const uploadPreview = createAsyncThunk('views/upload-preview', async (nod
     }
   }
 })
-
-export const uploadGallery = createAsyncThunk(
-  'views/upload-gallery',
-  async (type: 'gallery' | 'inline', { getState }) => {
-    const state = getState() as RootState
-    const leafId = state.nodeView.selected.leafs[0]
-
-    // @ts-ignore
-    const descriptor: PermissionDescriptor = { name: 'clipboard-read' }
-    const result = await navigator.permissions.query(descriptor)
-
-    if (result.state == 'granted' || result.state == 'prompt') {
-      const allData = await navigator.clipboard.read()
-      const data = allData[0]
-
-      if (data.types.includes('image/png')) {
-        const blob = await data.getType('image/png')
-        const formData = new FormData()
-        formData.append('image', blob, 'gallery')
-
-        await client.upload(`/leaf/${leafId}/upload`, formData)
-      }
-    }
-  }
-)
 
 // TODO: also uploadGalleryInline version from Monaco editor
 // how to wait on the async thunk result?
@@ -167,9 +129,6 @@ const nodeViewSlice = createSlice({
   },
   // extraReducers: builder => {
   //   builder
-  //     .addCase(fetchNode.pending, (state, action) => {
-  //       state.status = 'loading'
-  //     })
   //     .addCase(deleteLeafs.fulfilled, (state, action) => {
   //       console.log(`len before delete: ${state.nodeWithProps!.leafs.length}`)
   //       const { deletedIds } = action.payload
@@ -190,12 +149,6 @@ const nodeViewSlice = createSlice({
   //     })
   // },
 })
-
-// export const isEditing = (state: RootState, leafId: number) =>
-//   createSelector(
-//     (state: RootState) => state.nodeView.editing,
-//     (editing) => editing.includes(leafId)
-//   )
 
 export const {
   toggleLeafSelect,

@@ -64,7 +64,6 @@ function Leaf({ leaf }: { leaf: LeafWithImages }) {
 
   const isEditing = useAppSelector(store => store.nodeView.editing.includes(leaf.id))
 
-  const images = leaf.images.filter(({ type }) => type == 'gallery')
 
   return (
     <div
@@ -79,7 +78,8 @@ function Leaf({ leaf }: { leaf: LeafWithImages }) {
           {new Date(leaf.createdAt).toLocaleString()}
         </Text>
 
-        <div>{images.length > 0 && <Gallery images={images} />}</div>
+        <Gallery input={leaf.images} />
+
 
         <div
           className={cx(classes.innerLeaf, selectedLeafs.includes(leaf.id) && classes.selected)}

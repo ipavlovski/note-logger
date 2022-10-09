@@ -8,7 +8,7 @@ import { Carousel, useAnimationOffsetEffect, Embla } from '@mantine/carousel'
 
 const  SERVER_URL = `https://localhost:${import.meta.env.VITE_SERVER_PORT}`
 
-export default function Gallery({ images }: { images: PrismaImage[] }) {
+export default function Gallery({ input }: { input: PrismaImage[] }) {
   const [initSlide, setInitSlide] = useState(0)
   const [opened, setOpened] = useState(false)
 
@@ -19,6 +19,10 @@ export default function Gallery({ images }: { images: PrismaImage[] }) {
 
   // fixes a weird offset thing going on...
   useAnimationOffsetEffect(embla, transitionDuration)
+
+  // get only gallery images
+  const images = input.filter(({ type }) => type == 'gallery')
+  if (images.length == 0) return <div></div>
 
   const items = images.map((image, ind) => {
     const cols = image.height <= image.width ? 3 : 2

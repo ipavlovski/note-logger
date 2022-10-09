@@ -3,10 +3,10 @@ import { useHotkeys } from '@mantine/hooks'
 import { showNotification } from '@mantine/notifications'
 import Leafs from 'components/node-view/leafs'
 import Metadata from 'components/node-view/metadata'
-import { uploadGallery, uploadPreview } from 'components/node-view/node-view-slice'
 import Preview from 'components/node-view/preview'
 import { nodeApi } from 'frontend/api'
 import { useAppDispatch, useAppSelector } from 'frontend/store'
+import { getClipboardImage } from 'frontend/util'
 
 const SERVER_URL = `https://localhost:${import.meta.env.VITE_SERVER_PORT}`
 
@@ -50,14 +50,57 @@ const useStyles = createStyles(theme => ({
   },
 }))
 
-export default function NodeView() {
+const useShortcutHandler = () => {
   const dispatch = useAppDispatch()
-  const { leafs: selectedLeafs, preview: selectedPreview } = useAppSelector(
-    store => store.nodeView.selected
-  )
-  const { active } = useAppSelector(state => state.nodeList)
-  const { data: nodeWithProps } = nodeApi.useGetNodeByIdQuery(active!, { skip: active == null })
-  const { classes, cx } = useStyles()
+  const {
+    leafs: selectedLeafs,
+    preview: selectedPreview,
+    gallery: selectedGallery,
+    metadata: selectedMetadata,
+  } = useAppSelector(store => store.nodeView.selected)
+
+  const [uploadGallery] = nodeApi.useUploadGalleryMutation()
+
+  ////////////// HANDLERS
+
+  const handleLeafPaste = async () => {
+    if (selectedLeafs.length == 1) {
+      try {
+        const formData = await getClipboardImage('gallery')
+        await uploadGallery({ leafId: selectedLeafs[0], formData: formData })
+      } catch (err) {
+        const msg = err instanceof Error ? err.message : 'Unknown error'
+        showNotification({
+          title: 'ctrl+v',
+          message: msg,
+          color: 'yellow',
+          autoClose: 1600,
+        })
+      }
+    } else {
+      showNotification({
+        title: 'ctrl+v',
+        message: `Please select ONE leaf only`,
+        color: 'yellow',
+        autoClose: 1600,
+      })
+    }
+  }
+
+  const handlePreviewPaste = () => {
+    // dispatch(uploadPreview(nodeWithProps!.id))
+  }
+
+  const handleDefaultPaste = () => {
+    showNotification({
+      title: 'ctrl+v',
+      message: `Nothing selected`,
+      color: 'yellow',
+      autoClose: 1600,
+    })
+  }
+
+  const handleLeafDelete = () => {}
 
   useHotkeys([
     [
@@ -69,46 +112,37 @@ export default function NodeView() {
     ],
     [
       'ctrl+v',
-      async () => {
-        if (selectedLeafs.length >= 1) {
-          if (selectedLeafs.length > 1) {
-            showNotification({
-              title: 'Failed to insert image.',
-              message: `Please select ONE leaf.`,
-              color: 'red',
-              autoClose: 1600,
-            })
-            return
-          }
-
-          dispatch(uploadGallery('gallery'))
-
-          return
-        }
-
-        if (selectedPreview) {
-          dispatch(uploadPreview(nodeWithProps!.id))
-
-          return
-        }
+      () => {
+        selectedLeafs.length >= 1
+          ? handleLeafPaste()
+          : selectedPreview != null
+          ? handlePreviewPaste()
+          : handleDefaultPaste()
       },
     ],
   ])
+}
 
+export default function NodeView() {
+  const { active } = useAppSelector(state => state.nodeList)
+  const { data: node } = nodeApi.useGetNodeByIdQuery(active!, { skip: active == null })
+  const { classes } = useStyles()
 
-  if (!nodeWithProps) return <h3>no item selected</h3>
+  useShortcutHandler()
+
+  if (!node) return <h3>no item selected</h3>
 
   return (
     <div>
-      <Text<'a'> href={nodeWithProps.uri} component="a" className={classes.header}>
-        {nodeWithProps.title}
+      <Text<'a'> href={node.uri} component="a" className={classes.header}>
+        {node.title}
       </Text>
 
-      <Preview nodeId={nodeWithProps.id} preview={nodeWithProps.preview} />
+      <Preview nodeId={node.id} preview={node.preview} />
 
       <Metadata />
 
-      <Leafs nodeId={nodeWithProps.id} leafs={nodeWithProps.leafs} />
+      <Leafs nodeId={node.id} leafs={node.leafs} />
     </div>
   )
 }

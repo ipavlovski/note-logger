@@ -26,11 +26,19 @@ export const nodeApi = createApi({
       query: nodeId => ({ url: `node/${nodeId}/leaf`, method: 'PUT' }),
       invalidatesTags: ['Node'],
     }),
-    updateLeafContents: builder.mutation<LeafWithImages, { leafId: number, content: string}>({
-      query: ({leafId, content}) => ({ 
-        url: `leaf/${leafId}/update`, 
+    updateLeafContents: builder.mutation<LeafWithImages, { leafId: number; content: string }>({
+      query: ({ leafId, content }) => ({
+        url: `leaf/${leafId}/update`,
         method: 'POST',
-        body: { content }
+        body: { content },
+      }),
+      invalidatesTags: ['Node'],
+    }),
+    uploadGallery: builder.mutation<LeafWithImages, { leafId: number; formData: FormData }>({
+      query: ({ leafId, formData }) => ({
+        url: `leaf/${leafId}/upload`,
+        method: 'POST',
+        body: formData,
       }),
       invalidatesTags: ['Node'],
     }),
