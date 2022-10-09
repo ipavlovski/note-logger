@@ -1,7 +1,7 @@
 import { createStyles, Group, Image, Text } from '@mantine/core'
 import { IconRefresh } from '@tabler/icons'
 import { HistoryWithNode } from 'backend/routes/query'
-import { selectNode } from 'frontend/slices'
+import { clearEditSelect, selectNode } from 'frontend/slices'
 import Omnibar from 'components/node-list/omnibar'
 import { nodeApi } from 'frontend/api'
 import { useAppDispatch, useAppSelector } from 'frontend/store'
@@ -97,7 +97,10 @@ function TreeItem({ item }: { item: HistoryWithNode }) {
       <Text
         size={'sm'}
         className={cx(classes.node, item.node.id == active && classes.selected)}
-        onClick={() => dispatch(selectNode(item.node_id))}>
+        onClick={() => {
+          dispatch(clearEditSelect())
+          dispatch(selectNode(item.node_id))
+        }}>
         {item.node.title}
       </Text>
     </Group>

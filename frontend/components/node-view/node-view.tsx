@@ -6,6 +6,7 @@ import Leafs from 'components/node-view/leafs'
 import Metadata from 'components/node-view/metadata'
 import Preview from 'components/node-view/preview'
 import { nodeApi } from 'frontend/api'
+import { toggleGallerySelect, togglePreviewSelect } from 'frontend/slices'
 import { useAppDispatch, useAppSelector } from 'frontend/store'
 import { getClipboardImage } from 'frontend/util'
 
@@ -52,15 +53,16 @@ const useStyles = createStyles(theme => ({
 }))
 
 const useShortcutHandler = () => {
-  const dispatch = useAppDispatch()
   const {
     leafs: selectedLeafs,
     preview: selectedPreview,
     gallery: selectedGallery,
     metadata: selectedMetadata,
   } = useAppSelector(store => store.nodeView.selected)
-
+  const { active: nodeId } = useAppSelector(state => state.nodeList)
+  const dispatch = useAppDispatch()
   const [uploadGallery] = nodeApi.useUploadGalleryMutation()
+  const [uploadPreview] = nodeApi.useUploadPreviewMutation()
 
   ////////////// HANDLERS
 
@@ -69,27 +71,28 @@ const useShortcutHandler = () => {
       try {
         const formData = await getClipboardImage('gallery')
         await uploadGallery({ leafId: selectedLeafs[0], formData: formData })
+        dispatch(toggleGallerySelect(selectedLeafs[0]))
+
       } catch (err) {
         const msg = err instanceof Error ? err.message : 'Unknown error'
-        showNotification({
-          title: 'ctrl+v',
-          message: msg,
-          color: 'yellow',
-          autoClose: 1600,
-        })
+        showNotification({ title: 'ctrl+v', message: msg, color: 'red' })
       }
     } else {
-      showNotification({
-        title: 'ctrl+v',
-        message: `Please select ONE leaf only`,
-        color: 'yellow',
-        autoClose: 1600,
-      })
+      showNotification({ title: 'ctrl+v', message: `Select ONE leaf only`, color: 'yellow' })
     }
   }
 
-  const handlePreviewPaste = () => {
-    // dispatch(uploadPreview(nodeWithProps!.id))
+  const handlePreviewPaste = async () => {
+    try {
+      const formData = await getClipboardImage('gallery')
+      if (nodeId) {
+        await uploadPreview({ nodeId: nodeId, formData: formData })
+        dispatch(togglePreviewSelect())
+      }
+    } catch (err) {
+      const msg = err instanceof Error ? err.message : 'Unknown error'
+      showNotification({ title: 'ctrl+v', message: msg, color: 'red' })
+    }
   }
 
   const handleDefaultPaste = () => {
@@ -128,7 +131,6 @@ export default function NodeView() {
   const { active } = useAppSelector(state => state.nodeList)
   const { data: node } = nodeApi.useGetNodeByIdQuery(active!, { skip: active == null })
   const { classes } = useStyles()
-
   useShortcutHandler()
 
   if (!node) return <h3>no item selected</h3>

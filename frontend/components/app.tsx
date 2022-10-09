@@ -17,7 +17,7 @@ export default function App() {
         theme={{
           colorScheme: 'dark',
         }}>
-        <NotificationsProvider position="top-right">
+        <NotificationsProvider position="top-right" autoClose={1600}>
           {/* <Routes> */}
           {/* <Route path="/"> */}
           <Box mx={16} my={32}>

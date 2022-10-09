@@ -1,6 +1,5 @@
 import { Prisma, PrismaClient } from '@prisma/client'
 import { LeafWithImages } from 'backend/routes/leaf'
-import { DeleteLeafsRequest, DeleteLeafsResponse } from 'components/node-view/node-view-slice'
 import { Router } from 'express'
 import parser from 'backend/api/parser'
 import { v4 as uuidv4 } from 'uuid'
@@ -88,9 +87,9 @@ routes.post('/node/:id/preview', upload.single('image'), async (req, res) => {
     await writeFile(`${STORAGE_DIRECTORY}/${path}`, req.file.buffer)
 
     const image = sharp(req.file.buffer)
-    const metadata = await image.metadata()
-    if (metadata.width == null || metadata.height == null)
-      throw new Error('Issue extracting metadata.')
+    // const metadata = await image.metadata()
+    // if (metadata.width == null || metadata.height == null)
+    //   throw new Error('Issue extracting metadata.')
 
     console.log(`new path: ${path}`)
     await prisma.node.update({
@@ -107,19 +106,19 @@ routes.post('/node/:id/preview', upload.single('image'), async (req, res) => {
   }
 })
 
-routes.delete('/node/:id/leafs', async (req, res) => {
-  const nodeId = parseInt(req.params.id)
-  const body: DeleteLeafsRequest = req.body
-  console.dir(req.body)
+// routes.delete('/node/:id/leafs', async (req, res) => {
+//   const nodeId = parseInt(req.params.id)
+//   const body: DeleteLeafsRequest = req.body
+//   console.dir(req.body)
 
-  // const leaf = await prisma.leaf.create({
-  //   data: {
-  //     content: '',
-  //     node_id: nodeId,
-  //   },
-  // })
-  const output: DeleteLeafsResponse = { deletedIds: body.leafIds }
-  return res.json(output)
-})
+//   // const leaf = await prisma.leaf.create({
+//   //   data: {
+//   //     content: '',
+//   //     node_id: nodeId,
+//   //   },
+//   // })
+//   const output: DeleteLeafsResponse = { deletedIds: body.leafIds }
+//   return res.json(output)
+// })
 
 export default routes

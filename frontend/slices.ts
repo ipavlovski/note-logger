@@ -144,6 +144,10 @@ export const nodeViewSlice = createSlice({
       const leafId = action.payload
       state.editing = state.editing.filter(id => id != leafId)
     },
+    clearEditSelect(state) {
+      state.selected = { ...emptySelection }
+      state.editing = []
+    }
   },
   // extraReducers: builder => {
   //   builder
@@ -175,6 +179,7 @@ export const {
   setLeafContent,
   startLeafEditing,
   stopLeafEditing,
+  clearEditSelect
 } = nodeViewSlice.actions
 
 export const { selectNode } = nodeListSlice.actions

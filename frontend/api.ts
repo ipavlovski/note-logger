@@ -42,5 +42,13 @@ export const nodeApi = createApi({
       }),
       invalidatesTags: ['Node'],
     }),
+    uploadPreview: builder.mutation<{ path: string }, { nodeId: number; formData: FormData }>({
+      query: ({ nodeId, formData }) => ({
+        url: `/node/${nodeId}/preview`,
+        method: 'POST',
+        body: formData,
+      }),
+      invalidatesTags: ['Node'],
+    }),
   }),
 })

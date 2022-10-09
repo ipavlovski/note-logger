@@ -8,8 +8,13 @@ import { useAppDispatch, useAppSelector } from 'frontend/store'
 const SERVER_URL = `https://localhost:${import.meta.env.VITE_SERVER_PORT}`
 
 const useStyles = createStyles(theme => ({
-  selectedPreview: {
-    border: `2px solid ${theme.colors.dark[1]}`,
+  selected: {
+    padding: 2,
+    borderRadius: `${theme.radius.md}px`,
+    border: '2px solid #dfcc43',
+  },
+  preview: {
+    userSelect: 'none',
   },
   hidden: {
     display: 'none',
@@ -34,7 +39,7 @@ export default function Preview({ nodeId, preview }: { nodeId: number; preview: 
     <AspectRatio
       ratio={16 / 9}
       mx="auto"
-      className={cx(selectedPreview && classes.selectedPreview)}
+      className={cx(classes.preview, selectedPreview && classes.selected)}
       onClick={event => {
         // when shift is pressed, toggle selection of the element
         event.shiftKey && dispatch(togglePreviewSelect())
@@ -46,14 +51,6 @@ export default function Preview({ nodeId, preview }: { nodeId: number; preview: 
       ) : (
         <Skeleton animate={false} radius="lg" />
       )}
-      <Group>
-        <IconRefresh
-          className={preview ? classes.hidden : classes.refresh}
-          onClick={() => {
-            // dispatch(parseNode(nodeId))
-          }}
-        />
-      </Group>
     </AspectRatio>
   )
 }
