@@ -1,12 +1,13 @@
 import { Prisma, PrismaClient } from '@prisma/client'
 import { LeafWithImages } from 'backend/routes/leaf'
 import { Router } from 'express'
-import parser from 'backend/api/parser'
 import { v4 as uuidv4 } from 'uuid'
 import { writeFile } from 'fs/promises'
 import sharp from 'sharp'
 import { STORAGE_DIRECTORY } from 'backend/config'
 import multer from 'multer'
+import { youtubeVideoParser } from 'backend/parsers/youtube-video'
+import { youtubeChannelParser } from 'backend/parsers/youtube-channel'
 
 const prisma = new PrismaClient()
 const routes = Router()
@@ -45,14 +46,36 @@ routes.get('/node/:id', async (req, res) => {
   return res.json(results)
 })
 
+
+
+
+
+// need to figure out how to self-type on boolean=true
+export interface Parser<T> {
+  matcher: (uri: string) => string | null
+  fetcher: (id: string) => Promise<T | null>
+  updater: (nodeId: number, data: T) => Promise<void>
+}
+
 routes.get('/node/:id/parse', async (req, res) => {
   const nodeId = parseInt(req.params.id)
 
   try {
     const node = await prisma.node.findFirstOrThrow({ where: { id: nodeId } })
 
-    await parser(nodeId, node.uri)
-
+    const parsers: Parser<any>[] = [youtubeVideoParser, youtubeChannelParser]
+  
+    for (const parser of parsers) {
+      const match = parser.matcher(node.uri)
+      if (!match) continue
+  
+  
+      const data = await parser.fetcher(match)
+      if (!data) return
+  
+      await parser.updater(nodeId, data)
+    }
+    
     return res.json({ message: 'success' })
   } catch (err) {
     console.error(err)
