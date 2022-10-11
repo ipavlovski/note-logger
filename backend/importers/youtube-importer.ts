@@ -2,7 +2,8 @@ import * as cheerio from 'cheerio'
 import { readFile } from 'fs/promises'
 import { DateTime } from 'luxon'
 import { PrismaClient } from '@prisma/client'
-import { YoutubeAPI } from '../api/apis'
+
+import { YoutubeAPI } from 'backend/api/youtube-api'
 
 const prisma = new PrismaClient()
 

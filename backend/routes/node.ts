@@ -6,8 +6,10 @@ import { writeFile } from 'fs/promises'
 import sharp from 'sharp'
 import { STORAGE_DIRECTORY } from 'backend/config'
 import multer from 'multer'
-import { youtubeVideoParser } from 'backend/parsers/youtube-video'
-import { youtubeChannelParser } from 'backend/parsers/youtube-channel'
+import { youtubeVideoParser, youtubeChannelParser } from 'backend/parsers/youtube-parser'
+import { domainParser } from 'backend/parsers/domain-parser'
+import { redditPostParser } from 'backend/parsers/reddit-parser'
+import { seCommonParser, seUncommonParser } from 'backend/parsers/se-parser'
 
 const prisma = new PrismaClient()
 const routes = Router()
@@ -46,15 +48,10 @@ routes.get('/node/:id', async (req, res) => {
   return res.json(results)
 })
 
-
-
-
-
-// need to figure out how to self-type on boolean=true
-export interface Parser<T> {
-  matcher: (uri: string) => string | null
-  fetcher: (id: string) => Promise<T | null>
-  updater: (nodeId: number, data: T) => Promise<void>
+export interface Parser {
+  name: string
+  matcher: (uri: string) => boolean
+  updater: (nodeId: number, uri: string) => Promise<void>
 }
 
 routes.get('/node/:id/parse', async (req, res) => {
@@ -63,19 +60,24 @@ routes.get('/node/:id/parse', async (req, res) => {
   try {
     const node = await prisma.node.findFirstOrThrow({ where: { id: nodeId } })
 
-    const parsers: Parser<any>[] = [youtubeVideoParser, youtubeChannelParser]
-  
+    const parsers: Parser[] = [
+      youtubeVideoParser,
+      youtubeChannelParser,
+      seCommonParser,
+      seUncommonParser,
+      redditPostParser,
+      domainParser,
+    ]
+
     for (const parser of parsers) {
       const match = parser.matcher(node.uri)
       if (!match) continue
-  
-  
-      const data = await parser.fetcher(match)
-      if (!data) return
-  
-      await parser.updater(nodeId, data)
+
+      console.log(`Using ${parser.name} to parse data`)
+      await parser.updater(nodeId, node.uri)
+      break
     }
-    
+
     return res.json({ message: 'success' })
   } catch (err) {
     console.error(err)

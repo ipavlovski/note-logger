@@ -48,7 +48,7 @@ model Metadata {
     type    String
     node    Node   @relation(fields: [node_id], references: [id])
 
-    @@unique([node_id, key], name: "metadata_key")
+    @@unique([node_id, key, value], name: "metadata_key")
 }
 
 model Icon {

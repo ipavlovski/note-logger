@@ -1,9 +1,8 @@
 import * as cheerio from 'cheerio'
-
 import { readFile } from 'fs/promises'
 import { DateTime } from 'luxon'
-
 import { PrismaClient } from '@prisma/client'
+
 const prisma = new PrismaClient()
 
 interface HistoryItem {

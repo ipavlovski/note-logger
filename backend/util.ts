@@ -3,17 +3,17 @@ import { writeFile } from 'fs/promises'
 import sharp from 'sharp'
 import { v4 as uuidv4 } from 'uuid'
 
-import { YOUTUBE_API_KEY } from 'backend/config'
-import fetch from 'node-fetch'
-import { Prisma, PrismaClient } from '@prisma/client'
 import { exec } from 'child_process'
-import { createWriteStream, existsSync, mkdirSync } from 'fs'
+import { createWriteStream } from 'fs'
 import { stat } from 'fs/promises'
+import fetch from 'node-fetch'
 import { promisify } from 'util'
-import * as cheerio from 'cheerio'
-import type { CheerioAPI } from 'cheerio'
+import { Prisma, PrismaClient } from '@prisma/client'
+import { googleFaviconCache } from 'backend/api/domain-api'
 
 ////////////// IMAGE PROCESSING
+
+const prisma = new PrismaClient()
 
 export const fetchImageBuffer = async (url: string) => {
   // get the image
@@ -85,54 +85,72 @@ async function manualImageConverter(url: string, path: string) {
   await stat(path)
 }
 
-////////////// CHEERIO/HEAVYWEIGHT SOLUTIONS
+////////////// PRISMA
 
-async function getCheerioUrl(url: string) {
-  return await fetch(url)
-    .then(v => v.text())
-    .then(html => cheerio.load(html))
+interface Metadata {
+  key: string
+  type: string
+  value: any
 }
 
-async function extractCheerioFavicon($: CheerioAPI) {
-  const options = [
-    $('link[rel=apple-touch-icon-precomposed]').attr('href'),
-    $('link[rel=icon]').attr('href'),
-    $('link[rel="shortcut icon"]').attr('href'),
-  ]
-
-  const icons = options.filter(Boolean)
-  return icons.length > 0 ? icons[0] : null
+export async function updateMetadata(nodeId: number, metadata: Metadata[]) {
+  for (const data of metadata) {
+    try {
+      await prisma.node.update({
+        where: { id: nodeId },
+        data: {
+          metadata: {
+            create: { key: data.key, type: data.type, value: data.value },
+          },
+        },
+      })
+    } catch (e) {
+      if (e instanceof Prisma.PrismaClientKnownRequestError) {
+        if (e.code === 'P2002') {
+          console.log('Skipping a duplicate key')
+        } else {
+          throw e
+        }
+      }
+    }
+  }
 }
 
-async function extractCheerioTitle($: CheerioAPI) {
-  const options = [
-    $('meta[itemprop=name]').attr('content'),
-    $('meta[property=og:title]').attr('content'),
-  ]
-  const titles = options.filter(v => v && v.length > 0)
-  return titles.length > 0 ? titles[0] : null
-}
+export async function updateDomainIcon(nodeId: number, uri: string) {
+  const url = new URL(uri)
 
-////////////// LIGHTWEIGHT SOLUTIONS
+  // check for domain in existing entries
+  const nodeWithIcon = await prisma.node.findFirst({
+    where: { uri: { startsWith: url.origin }, AND: { iconId: { not: null } } },
+  })
 
-async function extractLightIcon(url: string, path: string) {
-  const size = `128`
-  const api = `https://www.google.com/s2/favicons?sz=${size}&domain=${url}`
-  console.log(api)
-
-  const imageData = await fetch(api).then(v => v.arrayBuffer())
-  const buffer = Buffer.from(imageData)
-  const sharpImage = sharp(buffer)
-  await sharpImage
-    .resize(120, 80, {
-      fit: 'inside',
+  if (nodeWithIcon) {
+    console.log(`Matching the node with existing icon from node:${nodeWithIcon.id}`)
+    // update the data
+    await prisma.node.update({
+      where: { id: nodeId },
+      data: {
+        iconId: nodeWithIcon.iconId,
+      },
     })
-    .webp({ quality: 100 })
-    .toFile(path)
-}
+    return
+  }
 
-async function extractLightTitle(url: string) {
-  const html = await fetch(url).then(res => res.text())
-  const matches = html.match(/<title>(.*?)<\/title>/)
-  return matches?.[1]
+  const iconUrl = await googleFaviconCache(uri)
+  console.log(`Downloading icon from ${iconUrl}`)
+
+  const buffer = await fetchImageBuffer(iconUrl)
+  const path = await saveAsIcon(buffer)
+
+  await prisma.node.update({
+    where: { id: nodeId },
+    data: {
+      icon: {
+        create: {
+          path: path,
+          source: iconUrl,
+        },
+      },
+    },
+  })
 }
