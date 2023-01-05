@@ -100,7 +100,7 @@ export async function updateMetadata(nodeId: number, metadata: Metadata[]) {
         where: { id: nodeId },
         data: {
           metadata: {
-            create: { key: data.key, type: data.type, value: data.value },
+            // create: { key: data.key, type: data.type, value: data.value },
           },
         },
       })

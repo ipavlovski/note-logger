@@ -23,32 +23,43 @@ model Node {
     previewId Int?
     preview   Preview? @relation(fields: [previewId], references: [id])
 
-    lastVisitedAt DateTime?
-    lastEditedAt  DateTime?
+    leafs Leaf[]
 
-    tags     Tag[]
-    metadata Metadata[]
-    leafs    Leaf[]
-    history  History[]
+    tags       Tag[]
+    properties Properties[]
+    categoryId Int?
+    category   Category?    @relation(fields: [categoryId], references: [id])
+
+    createdAt DateTime @default(now())
+    metadata  String   @default("{}")
 }
 
 model Tag {
-    id    Int     @id @default(autoincrement())
-    name  String  @unique
-    color String?
-    node  Node[]
+    id     Int     @id @default(autoincrement())
+    name   String  @unique
+    params String?
+    node   Node[]
+    order  Int     @default(0)
+}
+
+model Category {
+    id     Int     @id @default(autoincrement())
+    name   String  @unique
+    params String?
+    node   Node[]
+    order  Int     @default(0)
 }
 
 // key, value, type - type is Number/String/Boolean of the 'value'
-model Metadata {
+model Properties {
     id      Int    @id @default(autoincrement())
     node_id Int
     key     String
     value   String
     type    String
-    node    Node   @relation(fields: [node_id], references: [id])
+    node    Node[]
 
-    @@unique([node_id, key, value], name: "metadata_key")
+    @@unique([node_id, key, value], name: "property_unique_key")
 }
 
 model Icon {
@@ -65,14 +76,6 @@ model Preview {
 
     path   String  @unique
     source String? @unique
-}
-
-model History {
-    id          Int      @id @default(autoincrement())
-    node_id     Int
-    node        Node     @relation(fields: [node_id], references: [id])
-    visited_at  DateTime @unique
-    imported_at DateTime @default(now())
 }
 
 model Leaf {
