@@ -1,8 +1,7 @@
-import { Divider, Grid, Image, Modal } from '@mantine/core'
 import { Carousel, Embla, useAnimationOffsetEffect } from '@mantine/carousel'
-import { useState } from 'react'
-
+import { Divider, Grid, Image, Modal } from '@mantine/core'
 import type { Image as PrismaImage } from '@prisma/client'
+import { useState } from 'react'
 
 const SERVER_URL = `https://localhost:${import.meta.env.VITE_SERVER_PORT}`
 

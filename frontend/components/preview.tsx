@@ -1,6 +1,6 @@
-import { AspectRatio, createStyles, Group, Image, Skeleton } from '@mantine/core'
-import { IconRefresh } from '@tabler/icons'
+import { AspectRatio, createStyles, Image, Skeleton } from '@mantine/core'
 import type { Preview as IPreview } from '@prisma/client'
+
 import { useAppStore } from 'components/app'
 
 const SERVER_URL = `https://localhost:${import.meta.env.VITE_SERVER_PORT}`

@@ -1,14 +1,12 @@
-import { BrowserRouter, Route, Routes } from 'react-router-dom'
-import { MantineProvider, Box, Grid } from '@mantine/core'
+import { Box, Grid, MantineProvider } from '@mantine/core'
 import { NotificationsProvider } from '@mantine/notifications'
-
-import NodeList from 'components/node-list/node-list'
-import NodeView from 'components/node-view/node-view'
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
+import create from 'zustand'
+
+import NodeList from 'components/node-list'
+import NodeView from 'components/node-view'
 
 const queryClient = new QueryClient()
-
-import create from 'zustand'
 
 interface AppState {
   active: number

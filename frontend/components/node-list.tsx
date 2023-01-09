@@ -5,7 +5,7 @@ import { useRef } from 'react'
 
 import { NodeWithIcon } from 'backend/routes'
 import { useAppStore } from 'components/app'
-import Omnibar from 'components/node-list/omnibar'
+import Omnibar from 'components/omnibar'
 
 const SERVER_URL = `https://localhost:${import.meta.env.VITE_SERVER_PORT}`
 
@@ -97,10 +97,8 @@ function TreeItem({ node }: { node: NodeWithIcon }) {
         size={'sm'}
         className={cx(classes.node, node.id == active && classes.selected)}
         onClick={() => {
-          console.log(`Setting the active node: ${node.id}`)
           setActive(node.id)
           clearEditSelect()
-
         }}>
         {node.title}
       </Text>
@@ -116,7 +114,7 @@ export default function NodeList() {
   // }, [isSuccess])
 
   const { data: historyItems } = useQuery({
-    queryKey: ['repoData'],
+    queryKey: ['nodeList'],
     queryFn: () =>
       fetch(`${SERVER_URL}/history`, {
         method: 'POST',
@@ -140,7 +138,7 @@ export default function NodeList() {
 
   const treeItems =
     historyItems && historyItems.length > 0 ? (
-      historyItems.map((node) => <TreeItem node={node} key={node.id}></TreeItem>)
+      historyItems.map(node => <TreeItem node={node} key={node.id}></TreeItem>)
     ) : (
       <Text>No items</Text>
     )

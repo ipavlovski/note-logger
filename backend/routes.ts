@@ -1,5 +1,5 @@
 import { Prisma, PrismaClient } from '@prisma/client'
-import { handleURI } from 'backend/handlers/handlers'
+import { handleURI } from 'backend/handlers'
 import { Router } from 'express'
 import multer from 'multer'
 import sharp from 'sharp'
@@ -12,8 +12,6 @@ const prisma = new PrismaClient()
 const routes = Router()
 const storage = multer.memoryStorage()
 const upload = multer({ storage: storage })
-
-
 
 routes.post('/uri', async (req, res) => {
   //   const dateFrom = new Date(req.params.date)
@@ -43,18 +41,15 @@ routes.post('/uri', async (req, res) => {
     if (existingNode != null) throw new Error('Node with URI already exists')
 
     const result = await handleURI(uri)
-    if (! result) throw new Error("Failed to create a node!")
+    if (!result) throw new Error('Failed to create a node!')
 
     console.log(`Success creating a node with id: ${result.id}`)
-    return res.json({ success: `created a node with URI id: ${result.id}`})
+    return res.json({ success: `created a node with URI id: ${result.id}` })
   } catch (err) {
     console.error(err)
     return res.json({ error: err instanceof Error ? err.message : 'unknown error' })
   }
 })
-
-
-
 
 const nodeWithIcon = Prisma.validator<Prisma.NodeArgs>()({
   include: { icon: true },
@@ -66,8 +61,6 @@ routes.post('/history', async (req, res) => {
   const results = await prisma.node.findMany({ include: { icon: true } })
   return res.json(results)
 })
-
-
 
 const nodeWithProps = Prisma.validator<Prisma.NodeArgs>()({
   include: {
@@ -102,7 +95,6 @@ routes.get('/node/:id', async (req, res) => {
   }
 })
 
-
 export type LeafWithImages = Prisma.LeafGetPayload<typeof leafWithImages>
 
 const leafWithImages = Prisma.validator<Prisma.LeafArgs>()({
@@ -125,7 +117,6 @@ routes.put('/node/:id/leaf', async (req, res) => {
   return res.json(leaf)
 })
 
-
 routes.post('/leaf/:id/update', async (req, res) => {
   var leafId = parseInt(req.params.id)
   var content = req.body.content
@@ -135,7 +126,6 @@ routes.post('/leaf/:id/update', async (req, res) => {
   await prisma.leaf.update({ where: { id: leafId }, data: { content: content } })
   return res.json({ success: 1 })
 })
-
 
 routes.delete('/leafs', async (req, res) => {
   const { leafIds } = req.body as { leafIds: number[] }
@@ -149,12 +139,6 @@ routes.delete('/leafs', async (req, res) => {
     return res.status(400).json({ error: msg })
   }
 })
-
-
-
-
-
-
 
 routes.post('/node/:id/preview', upload.single('image'), async (req, res) => {
   const nodeId = parseInt(req.params.id)
@@ -188,7 +172,6 @@ routes.post('/node/:id/preview', upload.single('image'), async (req, res) => {
   }
 })
 
-
 routes.post('/leaf/:id/upload', upload.single('image'), async (req, res) => {
   const leafId = parseInt(req.params.id)
 
@@ -220,8 +203,5 @@ routes.post('/leaf/:id/upload', upload.single('image'), async (req, res) => {
     return res.sendStatus(400)
   }
 })
-
-
-
 
 export default routes

@@ -5,11 +5,10 @@ import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { NodeWithProps } from 'backend/routes'
 import { useAppStore } from 'components/app'
 
-import Leafs from 'components/node-view/leafs'
-import Metadata from 'components/node-view/metadata'
-import Preview from 'components/node-view/preview'
-
-import { getClipboardImage } from 'components/node-view/monaco'
+import Leafs from 'components/leafs'
+import Metadata from 'components/metadata'
+import { getClipboardImage } from 'components/monaco'
+import Preview from 'components/preview'
 
 const SERVER_URL = `https://localhost:${import.meta.env.VITE_SERVER_PORT}`
 

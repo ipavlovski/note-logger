@@ -21,7 +21,7 @@
       "name": "main-app",
       "type": "node",
       "request": "launch",
-      "args": ["backend/app.ts"],
+      "args": ["backend/init.ts"],
       "runtimeExecutable": "node",
       "runtimeArgs": [
         "--nolazy", 

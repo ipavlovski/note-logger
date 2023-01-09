@@ -1,7 +1,7 @@
 {
   "scripts": {
     "repl": "while true; do /usr/bin/ts-node -e 'console.clear(); console.log(\"ready\")' -i; sleep 0; done",
-    "tsnd": "/usr/bin/tsnd -r dotenv/config -r tsconfig-paths/register --exit-child --respawn --clear backend/app.ts",
+    "tsnd": "/usr/bin/tsnd -r dotenv/config -r tsconfig-paths/register --exit-child --respawn --clear backend/init.ts",
     "prisma": "prisma migrate dev --name init",
     "dev": "vite frontend frontend"
   },

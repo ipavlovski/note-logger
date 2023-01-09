@@ -1,13 +1,13 @@
 import { Container, createStyles, Divider, Text } from '@mantine/core'
 import { IconCirclePlus } from '@tabler/icons'
+import { useMutation, useQueryClient } from '@tanstack/react-query'
 import { MouseEvent } from 'react'
 
 import type { LeafWithImages } from 'backend/routes'
-import Gallery from 'components/node-view/gallery'
-import Monaco from 'components/node-view/monaco'
-import Remark from 'components/node-view/remark'
-import { useMutation, useQueryClient } from '@tanstack/react-query'
 import { useAppStore } from 'components/app'
+import Gallery from 'components/gallery'
+import Monaco from 'components/monaco'
+import Remark from 'components/remark'
 
 const SERVER_URL = `https://localhost:${import.meta.env.VITE_SERVER_PORT}`
 
