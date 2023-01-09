@@ -9,6 +9,12 @@ const routes = Router()
 // })
 // export type HistoryWithNode = Prisma.HistoryGetPayload<typeof historyWithNode>
 
+
+const nodeList = Prisma.validator<Prisma.NodeArgs>()({
+  include: { icon: true }
+})
+
+
 routes.get('/history/:date', async (req, res) => {
 //   const dateFrom = new Date(req.params.date)
 

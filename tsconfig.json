@@ -31,7 +31,7 @@
       "esModuleInterop": true,
       "types": ["node"],
       "moduleResolution": "Node",
-      "lib": ["ES2020"],
+      "lib": ["ES2020", "DOM"],
       "strict": true,
     },
     "ignoreDiagnostics": [2393, 2300],

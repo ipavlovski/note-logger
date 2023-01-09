@@ -1,4 +1,4 @@
-import fetch from 'node-fetch'
+// import fetch from 'node-fetch'
 
 import { YOUTUBE_API_KEY } from 'backend/config'
 
@@ -11,6 +11,21 @@ interface VideoResult {
   channelId: string
   channelTitle: string
 }
+
+interface YoutubeChannelData {
+  description: string
+  title: string
+  created: string
+  icon: string
+}
+
+interface YoutubeVideoData {
+  title: string
+  description: string
+  published: string
+  thumbnail: string
+}
+
 
 export class YoutubeAPI {
   static async queryVideo(videoId: string): Promise<VideoResult> {
@@ -32,12 +47,6 @@ export class YoutubeAPI {
   static async parseChannel(channelId: string) {}
 }
 
-interface YoutubeChannelData {
-  description: string
-  title: string
-  created: string
-  icon: string
-}
 
 export async function fetchChannelData(channelId: string) {
   const base = 'https://youtube.googleapis.com/youtube/v3'
@@ -56,12 +65,7 @@ export async function fetchChannelData(channelId: string) {
   return { title, description, created, icon } as YoutubeChannelData
 }
 
-interface YoutubeVideoData {
-  title: string
-  description: string
-  published: string
-  thumbnail: string
-}
+
 export async function fetchVideoData(videoId: string) {
   const base = 'https://youtube.googleapis.com/youtube/v3'
 
@@ -81,4 +85,17 @@ export async function fetchVideoData(videoId: string) {
     videoData.items[0].snippet.thumbnails.default?.url
 
   return { title, description, published, thumbnail } as YoutubeVideoData
+}
+
+
+export function extractYoutubeId(url: string) {
+  const matches = [...url.matchAll(/(.*)(www.youtube.com\/watch\?v=)(.{11})/g)]
+  if (matches.length == 0) throw new Error('Incorrect youtube URL!')
+  return matches[0][3]
+}
+
+export function buildYoutubeUri(videoId: string, seconds?: number) {
+  return seconds != undefined ?
+  `https://www.youtube.com/watch?v=${videoId}&t=${seconds}s` :
+  `https://www.youtube.com/watch?v=${videoId}`
 }

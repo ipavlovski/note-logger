@@ -1,17 +1,17 @@
 import { createStyles, Group, Image, Text } from '@mantine/core'
 import { IconRefresh } from '@tabler/icons'
-import { HistoryWithNode } from 'backend/routes/query'
-import { clearEditSelect, selectNode } from 'frontend/slices'
+import { useQuery } from '@tanstack/react-query'
+import { useRef } from 'react'
+
+import { NodeWithIcon } from 'backend/routes'
+import { useAppStore } from 'components/app'
 import Omnibar from 'components/node-list/omnibar'
-import { nodeApi } from 'frontend/api'
-import { useAppDispatch, useAppSelector } from 'frontend/store'
-import { useEffect, useRef } from 'react'
 
 const SERVER_URL = `https://localhost:${import.meta.env.VITE_SERVER_PORT}`
 
 export interface HistoryTree {
   title: string
-  item: HistoryWithNode | null
+  item: NodeWithIcon | null
   children: HistoryTree[]
 }
 
@@ -65,43 +65,44 @@ const useStyles = createStyles(theme => ({
     },
   },
   icon: {
-    minWidth: 120,
+    minWidth: 40,
+    maxWidth: 40,
     padding: 4,
     // margin: 4
   },
 }))
 
-const date = new Date().toISOString()
-
-function TreeItem({ item }: { item: HistoryWithNode }) {
-  const dispatch = useAppDispatch()
+function TreeItem({ node }: { node: NodeWithIcon }) {
   const { classes, cx } = useStyles()
-  const { active } = useAppSelector(state => state.nodeList)
-
-  const [parseNode] = nodeApi.useParseNodeByIdMutation()
+  const active = useAppStore(state => state.active)
+  const setActive = useAppStore(state => state.setActive)
+  const clearEditSelect = useAppStore(state => state.clearEditSelect)
 
   return (
     <Group noWrap>
-      {item.node.icon != null ? (
+      {node.icon != null ? (
         <div className={classes.icon}>
-          <Image radius={'md'} src={`${SERVER_URL}/${item.node.icon.path}`} />
+          <Image radius={'md'} src={`${SERVER_URL}/${node.icon.path}`} />
         </div>
       ) : (
         <IconRefresh
           className={classes.refresh}
           onClick={() => {
-            parseNode(item.node.id)
+            console.log('refresh action')
+            // parseNode(node.id)
           }}
         />
       )}
       <Text
         size={'sm'}
-        className={cx(classes.node, item.node.id == active && classes.selected)}
+        className={cx(classes.node, node.id == active && classes.selected)}
         onClick={() => {
-          dispatch(clearEditSelect())
-          dispatch(selectNode(item.node_id))
+          console.log(`Setting the active node: ${node.id}`)
+          setActive(node.id)
+          clearEditSelect()
+
         }}>
-        {item.node.title}
+        {node.title}
       </Text>
     </Group>
   )
@@ -109,15 +110,20 @@ function TreeItem({ item }: { item: HistoryWithNode }) {
 
 export default function NodeList() {
   const { classes, cx } = useStyles()
-  const dispatch = useAppDispatch()
-  // const { treeRoots } = useAppSelector(state => state.nodeList)
-  // const [selectedNodeId, setSelectedNodeId] = useState<number>()
 
-  const { data: historyItems, isSuccess } = nodeApi.useGetHistoryByDateQuery(date)
+  // useEffect(() => {
+  //   isSuccess && dispatch(selectNode(historyItems[0].node_id))
+  // }, [isSuccess])
 
-  useEffect(() => {
-    isSuccess && dispatch(selectNode(historyItems[0].node_id))
-  }, [isSuccess])
+  const { data: historyItems } = useQuery({
+    queryKey: ['repoData'],
+    queryFn: () =>
+      fetch(`${SERVER_URL}/history`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ uri: '' }),
+      }).then((res): Promise<NodeWithIcon[]> => res.json()),
+  })
 
   const ref = useRef() as React.MutableRefObject<HTMLDivElement>
   const onScroll = () => {
@@ -125,23 +131,19 @@ export default function NodeList() {
       const { scrollTop, scrollHeight, clientHeight } = ref.current
       if (Math.floor(scrollTop + clientHeight) === scrollHeight) {
         console.log('FETCH MORE STUFF')
-        // if (treeRoots.length > 0) {
-        //   console.log('fetching...')
-        //   const latest = treeRoots
-        //     .map(v => v.visited_at)
-        //     .sort()
-        //     .at(0)!
-        //   console.log('FETCH MORE STUFF...')
+        // if (treeRoots.length > 0) console.log('fetching...')
+        // const latest = treeRoots.map(v => v.visited_at).sort().at(0)!
         // dispatch(fetchHistory({ isoDate: latest as unknown as string }))
       }
     }
   }
 
-  const treeItems = historyItems ? (
-    historyItems.map(historyNode => <TreeItem item={historyNode} key={historyNode.id}></TreeItem>)
-  ) : (
-    <Text>No items</Text>
-  )
+  const treeItems =
+    historyItems && historyItems.length > 0 ? (
+      historyItems.map((node) => <TreeItem node={node} key={node.id}></TreeItem>)
+    ) : (
+      <Text>No items</Text>
+    )
 
   return (
     <div>

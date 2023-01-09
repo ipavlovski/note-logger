@@ -5,9 +5,10 @@ import { createServer as createSecureServer, ServerOptions } from 'https'
 import morgan from 'morgan'
 
 import { STORAGE_DIRECTORY } from 'backend/config'
-import leafRoutes from 'backend/routes/leaf'
-import nodeRoutes from 'backend/routes/node'
-import queryRoutes from 'backend/routes/query'
+// import leafRoutes from 'backend/routes/leaf'
+// import nodeRoutes from 'backend/routes/node'
+// import queryRoutes from 'backend/routes/query'
+import routes from 'backend/routes'
 
 ////////////// APP
 
@@ -26,9 +27,10 @@ app.use(express.static(STORAGE_DIRECTORY))
 
 ////////////// ROUTES
 
-app.use(leafRoutes)
-app.use(nodeRoutes)
-app.use(queryRoutes)
+app.use(routes)
+// app.use(leafRoutes)
+// app.use(nodeRoutes)
+// app.use(queryRoutes)
 
 ////////////// HTTPS
 

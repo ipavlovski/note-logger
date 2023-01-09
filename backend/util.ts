@@ -15,42 +15,6 @@ import { googleFaviconCache } from 'backend/api/domain-api'
 
 const prisma = new PrismaClient()
 
-export const fetchImageBuffer = async (url: string) => {
-  // get the image
-  const imageData = await fetch(url).then(v => v.arrayBuffer())
-
-  // create the buffer objects from the image data
-  const buffer = Buffer.from(imageData)
-
-  return buffer
-}
-
-export const saveAsPreview = async (buffer: Buffer) => {
-  const sharpImage = sharp(buffer)
-
-  // get the image format
-  const { format } = await sharpImage.metadata()
-
-  // get the path, and write file to buffer
-  const path = `preview/${uuidv4()}.${format}`
-  await writeFile(`${STORAGE_DIRECTORY}/${path}`, buffer)
-
-  return path
-}
-
-export const saveAsIcon = async (buffer: Buffer) => {
-  const path = `icons/${uuidv4()}.webp`
-  const sharpImage = sharp(buffer)
-
-  await sharpImage
-    .resize(120, 80, {
-      fit: 'inside',
-    })
-    .webp()
-    .toFile(`${STORAGE_DIRECTORY}/${path}`)
-
-  return path
-}
 
 ////////////// MANUAL CONVERTER
 

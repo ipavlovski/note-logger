@@ -1,9 +1,7 @@
 import { AspectRatio, createStyles, Group, Image, Skeleton } from '@mantine/core'
 import { IconRefresh } from '@tabler/icons'
 import type { Preview as IPreview } from '@prisma/client'
-
-import { togglePreviewSelect } from 'frontend/slices'
-import { useAppDispatch, useAppSelector } from 'frontend/store'
+import { useAppStore } from 'components/app'
 
 const SERVER_URL = `https://localhost:${import.meta.env.VITE_SERVER_PORT}`
 
@@ -31,9 +29,10 @@ const useStyles = createStyles(theme => ({
 }))
 
 export default function Preview({ nodeId, preview }: { nodeId: number; preview: IPreview | null }) {
+  const togglePreviewSelect = useAppStore(state => state.togglePreviewSelect)
+  const selectedPreview = useAppStore(state => state.selection.preview)
+
   const { classes, cx } = useStyles()
-  const selectedPreview = useAppSelector(store => store.nodeView.selected.preview)
-  const dispatch = useAppDispatch()
 
   return (
     <AspectRatio
@@ -42,7 +41,7 @@ export default function Preview({ nodeId, preview }: { nodeId: number; preview: 
       className={cx(classes.preview, selectedPreview && classes.selected)}
       onClick={event => {
         // when shift is pressed, toggle selection of the element
-        event.shiftKey && dispatch(togglePreviewSelect())
+        event.shiftKey && togglePreviewSelect()
         // this prevents residual selects when shift is pressed
         event.preventDefault()
       }}>

@@ -1,14 +1,17 @@
 import { createStyles, Text } from '@mantine/core'
 import { useHotkeys } from '@mantine/hooks'
 import { showNotification } from '@mantine/notifications'
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
+import { NodeWithProps } from 'backend/routes'
+import { useAppStore } from 'components/app'
 
 import Leafs from 'components/node-view/leafs'
 import Metadata from 'components/node-view/metadata'
 import Preview from 'components/node-view/preview'
-import { nodeApi } from 'frontend/api'
-import { clearEditSelect, toggleGallerySelect, togglePreviewSelect } from 'frontend/slices'
-import { useAppDispatch, useAppSelector } from 'frontend/store'
-import { getClipboardImage } from 'frontend/util'
+
+import { getClipboardImage } from 'components/node-view/monaco'
+
+const SERVER_URL = `https://localhost:${import.meta.env.VITE_SERVER_PORT}`
 
 const useStyles = createStyles(theme => ({
   scrollable: {
@@ -51,26 +54,64 @@ const useStyles = createStyles(theme => ({
 }))
 
 const useShortcutHandler = () => {
-  const {
-    leafs: selectedLeafs,
-    preview: selectedPreview,
-    gallery: selectedGallery,
-    metadata: selectedMetadata,
-  } = useAppSelector(store => store.nodeView.selected)
-  const { active: nodeId } = useAppSelector(state => state.nodeList)
-  const dispatch = useAppDispatch()
-  const [uploadGallery] = nodeApi.useUploadGalleryMutation()
-  const [uploadPreview] = nodeApi.useUploadPreviewMutation()
-  const [deleteLeafs] = nodeApi.useDeleteLeafsMutation()
+  const selectedLeafs = useAppStore(state => state.selection.leafs)
+  const nodeId = useAppStore(state => state.active)
+  const selectedPreview = useAppStore(state => state.selection.preview)
+  const { clearEditSelect, toggleGallerySelect, togglePreviewSelect } = useAppStore(state => state)
 
-  ////////////// HANDLERS
+  const queryClient = useQueryClient()
+
+  const deleteLeafs = useMutation(
+    (leafIds: number[]) => {
+      return fetch(`${SERVER_URL}/leafs`, {
+        method: 'DELETE',
+        body: JSON.stringify({ leafIds }),
+        headers: { 'Content-Type': 'application/json' },
+      })
+    },
+    {
+      onSuccess: () => {
+        queryClient.invalidateQueries(['activeNode'])
+      },
+    }
+  )
+
+  const uploadPreview = useMutation(
+    ({ nodeId, formData }: { nodeId: number; formData: FormData }) => {
+      return fetch(`${SERVER_URL}/node/${nodeId}/preview`, {
+        method: 'POST',
+        body: formData,
+      })
+    },
+    {
+      onSuccess: () => {
+        queryClient.invalidateQueries(['activeNode'])
+      },
+    }
+  )
+
+  const uploadGallery = useMutation(
+    ({ leafId, formData }: { leafId: number; formData: FormData }) => {
+      return fetch(`${SERVER_URL}/leaf/${leafId}/upload`, {
+        method: 'POST',
+        body: formData,
+      })
+    },
+    {
+      onSuccess: () => {
+        queryClient.invalidateQueries(['activeNode'])
+      },
+    }
+  )
+
+  //////////// HANDLERS
 
   const handleLeafPaste = async () => {
     if (selectedLeafs.length == 1) {
       try {
         const formData = await getClipboardImage('gallery')
-        await uploadGallery({ leafId: selectedLeafs[0], formData: formData })
-        dispatch(toggleGallerySelect(selectedLeafs[0]))
+        await uploadGallery.mutateAsync({ leafId: selectedLeafs[0], formData: formData })
+        toggleGallerySelect(selectedLeafs[0])
       } catch (err) {
         const msg = err instanceof Error ? err.message : 'Unknown error'
         showNotification({ title: 'ctrl+v', message: msg, color: 'red' })
@@ -84,8 +125,8 @@ const useShortcutHandler = () => {
     try {
       const formData = await getClipboardImage('gallery')
       if (nodeId) {
-        await uploadPreview({ nodeId: nodeId, formData: formData })
-        dispatch(togglePreviewSelect())
+        await uploadPreview.mutateAsync({ nodeId: nodeId, formData: formData })
+        togglePreviewSelect()
       }
     } catch (err) {
       const msg = err instanceof Error ? err.message : 'Unknown error'
@@ -98,8 +139,8 @@ const useShortcutHandler = () => {
   }
 
   const handleLeafsDelete = () => {
-    deleteLeafs({ leafIds: selectedLeafs })
-    dispatch(clearEditSelect())
+    deleteLeafs.mutate(selectedLeafs)
+    clearEditSelect()
   }
 
   const handleDefaultDelete = () => {
@@ -127,10 +168,15 @@ const useShortcutHandler = () => {
 }
 
 export default function NodeView() {
-  const { active } = useAppSelector(state => state.nodeList)
-  const { data: node } = nodeApi.useGetNodeByIdQuery(active!, { skip: active == null })
   const { classes } = useStyles()
   useShortcutHandler()
+
+  const active = useAppStore(state => state.active)
+  const { data: node } = useQuery({
+    queryKey: ['activeNode', active],
+    queryFn: () =>
+      fetch(`${SERVER_URL}/node/${active}`).then((res): Promise<NodeWithProps> => res.json()),
+  })
 
   if (!node) return <h3>no item selected</h3>
 

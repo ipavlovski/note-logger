@@ -5,28 +5,78 @@ import { ClipboardEvent, useRef } from 'react'
 import { Observable, timer } from 'rxjs'
 import { debounce } from 'rxjs/operators'
 
-import type { LeafWithImages } from 'backend/routes/leaf'
-import { nodeApi } from 'frontend/api'
-import { stopLeafEditing } from 'frontend/slices'
-import { useAppDispatch } from 'frontend/store'
-import { getClipboardImage } from 'frontend/util'
+import type { LeafWithImages } from 'backend/routes'
+import { useMutation, useQueryClient } from '@tanstack/react-query'
+import { useAppStore } from 'components/app'
 
 const SERVER_URL = `https://localhost:${import.meta.env.VITE_SERVER_PORT}`
+
+// blobTag - 'gallery', 'inline', ...
+export async function getClipboardImage(blobTag: string) {
+  // @ts-ignore
+  const descriptor: PermissionDescriptor = { name: 'clipboard-read' }
+  const result = await navigator.permissions.query(descriptor)
+
+  if (result.state == 'granted' || result.state == 'prompt') {
+    const allData = await navigator.clipboard.read()
+    const data = allData[0]
+
+    if (data.types.includes('image/png')) {
+      const blob = await data.getType('image/png')
+      const formData = new FormData()
+      formData.append('image', blob, blobTag)
+
+      return formData
+    }
+    throw new Error(`Missing clipboard handler`)
+  }
+  throw new Error('Failed to get clipboard permissions')
+}
 
 interface MonacoProps {
   leaf: LeafWithImages
   markdown: string
 }
 export default function Monaco({ leaf, markdown }: MonacoProps) {
-  const dispatch = useAppDispatch()
   const editorRef = useRef<null | editor.IStandaloneCodeEditor>(null)
-  const [updateContents] = nodeApi.useUpdateLeafContentsMutation()
-  const [uploadGallery] = nodeApi.useUploadGalleryMutation()
+
+  const queryClient = useQueryClient()
+
+  const stopLeafEditing = useAppStore(state => state.stopLeafEditing)
+
+  const uploadGallery = useMutation(
+    async ({ leafId, formData }: { leafId: number; formData: FormData }) => {
+      return fetch(`${SERVER_URL}/leaf/${leafId}/upload`, {
+        method: 'POST',
+        body: formData,
+      }).then(v => v.json())
+    },
+    {
+      onSuccess: () => {
+        queryClient.invalidateQueries(['activeNode'])
+      },
+    }
+  )
+
+  const updateContents = useMutation(
+    ({ leafId, content }: { leafId: number; content: string }) => {
+      return fetch(`${SERVER_URL}/leaf/${leafId}/update`, {
+        method: 'POST',
+        body: JSON.stringify({ content }),
+        headers: { 'Content-Type': 'application/json' },
+      })
+    },
+    {
+      onSuccess: () => {
+        queryClient.invalidateQueries(['activeNode'])
+      },
+    }
+  )
 
   const handleMonacoPaste = async (e: ClipboardEvent<HTMLInputElement>) => {
     try {
       const formData = await getClipboardImage('inline')
-      const { path } = await uploadGallery({ leafId: leaf.id, formData: formData }).unwrap()
+      const { path } = await uploadGallery.mutateAsync({ leafId: leaf.id, formData: formData })
       path && editorRef.current!.trigger('keyboard', 'type', { text: `![](${SERVER_URL}/${path})` })
 
       e.stopPropagation()
@@ -55,7 +105,7 @@ export default function Monaco({ leaf, markdown }: MonacoProps) {
       .pipe(debounce(() => timer(300)))
       .subscribe(() => {
         const content = editor.getValue()
-        if (content) updateContents({ content: content, leafId: leaf.id })
+        if (content) updateContents.mutate({ content: content, leafId: leaf.id })
       })
 
     editor.addCommand(monaco.KeyMod.CtrlCmd | monaco.KeyCode.KeyM, () => {
@@ -70,9 +120,8 @@ export default function Monaco({ leaf, markdown }: MonacoProps) {
       console.log('escape')
 
       const content = editor.getValue()
-      if (content) updateContents({ content: content, leafId: leaf.id })
-
-      dispatch(stopLeafEditing(leaf.id))
+      if (content) updateContents.mutate({ content: content, leafId: leaf.id })
+      stopLeafEditing(leaf.id)
     })
   }
 

@@ -2,13 +2,14 @@ import { Container, createStyles, Divider, Text } from '@mantine/core'
 import { IconCirclePlus } from '@tabler/icons'
 import { MouseEvent } from 'react'
 
-import type { LeafWithImages } from 'backend/routes/leaf'
+import type { LeafWithImages } from 'backend/routes'
 import Gallery from 'components/node-view/gallery'
 import Monaco from 'components/node-view/monaco'
 import Remark from 'components/node-view/remark'
-import { nodeApi } from 'frontend/api'
-import { startLeafEditing, toggleLeafSelect } from 'frontend/slices'
-import { useAppDispatch, useAppSelector } from 'frontend/store'
+import { useMutation, useQueryClient } from '@tanstack/react-query'
+import { useAppStore } from 'components/app'
+
+const SERVER_URL = `https://localhost:${import.meta.env.VITE_SERVER_PORT}`
 
 const useStyles = createStyles(theme => ({
   outerLeaf: {
@@ -56,16 +57,17 @@ const useStyles = createStyles(theme => ({
 
 function Leaf({ leaf }: { leaf: LeafWithImages }) {
   const { classes, cx } = useStyles()
-  const dispatch = useAppDispatch()
-  const { leafs: selectedLeafs } = useAppSelector(store => store.nodeView.selected)
 
-  const isEditing = useAppSelector(store => store.nodeView.editing.includes(leaf.id))
+  const selectedLeafs = useAppStore(state => state.selection.leafs)
+  const toggleLeafSelect = useAppStore(state => state.toggleLeafSelect)
+  const startLeafEditing = useAppStore(state => state.startLeafEditing)
+  const isEditing = useAppStore(state => state.editing.includes(leaf.id))
 
   return (
     <div
       onClick={event => {
         // when shift is pressed, toggle selection of the element
-        event.shiftKey && dispatch(toggleLeafSelect(leaf.id))
+        event.shiftKey && toggleLeafSelect(leaf.id)
         // this prevents residual selects when shift is pressed
         event.preventDefault()
       }}>
@@ -80,7 +82,7 @@ function Leaf({ leaf }: { leaf: LeafWithImages }) {
           className={cx(classes.innerLeaf, selectedLeafs.includes(leaf.id) && classes.selected)}
           onDoubleClick={(event: MouseEvent<HTMLDivElement>) => {
             // is bang-shift-key to prevent accidental editing during shift-selection op
-            !event.shiftKey && dispatch(startLeafEditing(leaf.id))
+            !event.shiftKey && startLeafEditing(leaf.id)
           }}>
           {isEditing ? (
             <Monaco leaf={leaf} markdown={leaf.content} />
@@ -95,8 +97,18 @@ function Leaf({ leaf }: { leaf: LeafWithImages }) {
 
 export default function Leafs({ nodeId, leafs }: { nodeId: number; leafs: LeafWithImages[] }) {
   const { classes, cx } = useStyles()
-  const [createNewLeaf, newLeafResult] = nodeApi.useCreateNewLeafMutation()
-  console.log(newLeafResult)
+  const queryClient = useQueryClient()
+
+  const createNewLeaf = useMutation(
+    (nodeId: number) => {
+      return fetch(`${SERVER_URL}/node/${nodeId}/leaf`, { method: 'PUT' })
+    },
+    {
+      onSuccess: () => {
+        queryClient.invalidateQueries(['activeNode'])
+      },
+    }
+  )
 
   return (
     <div className={classes.scrollable}>
@@ -106,7 +118,7 @@ export default function Leafs({ nodeId, leafs }: { nodeId: number; leafs: LeafWi
 
       <Divider
         onDoubleClick={() => {
-          createNewLeaf(nodeId)
+          createNewLeaf.mutate(nodeId)
         }}
         m="md"
         variant="dashed"

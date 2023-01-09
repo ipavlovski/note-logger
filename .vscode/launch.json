@@ -19,7 +19,7 @@
     },
     {
       "name": "main-app",
-      "type": "pwa-node",
+      "type": "node",
       "request": "launch",
       "args": ["backend/app.ts"],
       "runtimeExecutable": "node",
@@ -28,7 +28,7 @@
         "-r", "ts-node/register",
         "-r", "tsconfig-paths/register"            
       ],
-      "protocol": "inspector",
+      // "protocol": "inspector",
       "skipFiles": ["<node_internals>/**"],
       "sourceMaps": true,
       "resolveSourceMapLocations": ["${workspaceFolder}/**", "!**/node_modules/**"],
