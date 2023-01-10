@@ -7,6 +7,7 @@ import { writeFile } from 'fs/promises'
 import { z } from 'zod'
 import { v4 as uuidv4 } from 'uuid'
 import { STORAGE_DIRECTORY } from 'backend/config'
+import { timelineQuery, TimelineQuery } from 'backend/query'
 
 const prisma = new PrismaClient()
 const routes = Router()
@@ -33,7 +34,7 @@ routes.post('/uri', async (req, res) => {
 
   try {
     // TODO: this should be a zod-validator
-    const uri = req.body.uri
+    const uri: string = req.body.uri
     console.log(`the uri: ${uri}`)
 
     // check if a node already exists
@@ -57,10 +58,40 @@ const nodeWithIcon = Prisma.validator<Prisma.NodeArgs>()({
 
 export type NodeWithIcon = Prisma.NodeGetPayload<typeof nodeWithIcon>
 
+// routes.post('/history', async (req, res) => {
+//   const results = await prisma.node.findMany({ include: { icon: true } })
+//   return res.json(results)
+// })
+
+
+// var props: TimelineQuery = {
+//   endDate: new Date(),
+//   range: 'week',
+//   split: 'day',
+//   virtualNodes: false,
+//   includeArchived: false,
+// }
+
+
 routes.post('/history', async (req, res) => {
-  const results = await prisma.node.findMany({ include: { icon: true } })
-  return res.json(results)
+  try {
+    const props: TimelineQuery = req.body
+    const results = await timelineQuery(props)
+    
+    return res.json(results)
+  } catch (err) {
+    console.error(err)
+    return res.json({ error: err instanceof Error ? err.message : 'unknown error' })
+  }
 })
+
+
+
+
+
+
+
+
 
 const nodeWithProps = Prisma.validator<Prisma.NodeArgs>()({
   include: {

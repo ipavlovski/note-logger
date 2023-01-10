@@ -86,6 +86,7 @@ model Leaf {
     content   String
     createdAt DateTime @default(now())
     order     Int      @default(0)
+    archived  Boolean  @default(false)
 }
 
 model Image {
