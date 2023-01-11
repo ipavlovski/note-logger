@@ -7,7 +7,7 @@ import { writeFile } from 'fs/promises'
 import { z } from 'zod'
 import { v4 as uuidv4 } from 'uuid'
 import { STORAGE_DIRECTORY } from 'backend/config'
-import { timelineQuery, TimelineQuery } from 'backend/query'
+import { timelineQuery } from 'backend/query'
 
 const prisma = new PrismaClient()
 const routes = Router()
@@ -63,7 +63,6 @@ export type NodeWithIcon = Prisma.NodeGetPayload<typeof nodeWithIcon>
 //   return res.json(results)
 // })
 
-
 // var props: TimelineQuery = {
 //   endDate: new Date(),
 //   range: 'week',
@@ -72,26 +71,29 @@ export type NodeWithIcon = Prisma.NodeGetPayload<typeof nodeWithIcon>
 //   includeArchived: false,
 // }
 
+const TimelineProps = z.object({
+  endDate: z.coerce.date(),
+  range: z.enum(['day', 'week', 'month']),
+  split: z.enum(['day', 'week', 'month']),
+  virtualNodes: z.boolean(),
+  includeArchived: z.boolean(),
+})
 
-routes.post('/history', async (req, res) => {
+// extract the inferred type
+export type TimelineProps = z.infer<typeof TimelineProps>
+
+routes.post('/timeline', async (req, res) => {
   try {
-    const props: TimelineQuery = req.body
+    const props = TimelineProps.parse(req.body)
+    // const props: TimelineQuery = req.body
     const results = await timelineQuery(props)
-    
+
     return res.json(results)
   } catch (err) {
     console.error(err)
     return res.json({ error: err instanceof Error ? err.message : 'unknown error' })
   }
 })
-
-
-
-
-
-
-
-
 
 const nodeWithProps = Prisma.validator<Prisma.NodeArgs>()({
   include: {

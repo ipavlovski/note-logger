@@ -1,24 +1,20 @@
 import { Prisma, PrismaClient } from '@prisma/client'
 import type { Node, Icon } from '@prisma/client'
 import { DateTime } from 'luxon'
+import { TimelineProps } from 'backend/routes'
 
 const prisma = new PrismaClient()
 
-type TimeSplit = 'day' | 'week' | 'month'
+type TimeSplit = TimelineProps['split']
 
-export interface TimelineQuery {
-  endDate: Date
-  range: TimeSplit
-  split: TimeSplit
-  virtualNodes: boolean
-  includeArchived: boolean
-}
+type NodeWithParent = Node & { parent: Node | null; icon: Icon | null }
 
-type Metadata = { type: ''; title: ''; icon: 'generated?' }
+type NodeWithIcon = Node & { icon: Icon | null }
 
-interface CustomQuery {
-  category: string[]
-  tags: string[]
+export interface TreeBranch {
+  item: NodeWithIcon | { title: string; uri: string }
+  depth: number
+  children: TreeBranch[]
 }
 
 function getDateRange(endDate: Date, range: TimeSplit, dayStartHour = 5) {
@@ -53,8 +49,6 @@ function getDateSplits(start: Date, end: Date, split: TimeSplit) {
   return acc
 }
 
-type NodeWithParent = Node & { parent: Node | null; icon: Icon | null }
-type NodeWithIcon = Node & { icon: Icon | null }
 function linearizeItem(nodeWithParents: NodeWithParent, acc: NodeWithIcon[]) {
   let { parent, ...node } = nodeWithParents
   acc.push(node)
@@ -86,13 +80,6 @@ async function getMatches(start: Date, end: Date, includeArchived: boolean) {
   return [...nodeMatches, ...leafMatches]
 }
 
-interface TreeBranch {
-  item: NodeWithIcon | { title: string; uri: string }
-  depth: number
-  children: TreeBranch[]
-}
-
-
 function appendVirtualTreeNodes(treeRoots: TreeBranch[]) {
   const newTreeRoots: TreeBranch[] = []
 
@@ -101,7 +88,7 @@ function appendVirtualTreeNodes(treeRoots: TreeBranch[]) {
 
     if (!virtualRoot) {
       const newNode: TreeBranch = {
-        item: { title: nodeName, uri: `virtual://${nodeName}`},
+        item: { title: nodeName, uri: `virtual://${nodeName}` },
         depth: 0,
         children: [],
       }
@@ -155,20 +142,28 @@ function getTreeFromLineup(lineups: NodeWithIcon[][], virtualNodes: boolean) {
   return virtualNodes ? appendVirtualTreeNodes(treeRoots) : treeRoots
 }
 
-export async function timelineQuery(props: TimelineQuery) {
+export interface TimelineNode {
+  startDate: string,
+  treeRoots: TreeBranch[]
+}
+
+export async function timelineQuery(props: TimelineProps): Promise<TimelineNode[]> {
   const startDate = getDateRange(props.endDate, props.range)
   const dateSplits = getDateSplits(startDate, props.endDate, props.split)
 
-  const results = []
+  const results: TimelineNode[] = []
   for (const dateSplit of dateSplits) {
     const matches = await getMatches(dateSplit.start, dateSplit.end, props.includeArchived)
+    if (matches.length == 0) continue
     const lineups = matches.map(match => {
       var acc: NodeWithIcon[] = []
       linearizeItem(match, acc)
       return acc.reverse()
     })
     const treeRoots = getTreeFromLineup(lineups, props.virtualNodes)
-    results.push({startDate: dateSplit.start, treeRoots: treeRoots})
+
+    
+    results.push({ startDate: dateSplit.start.toISOString(), treeRoots: treeRoots })
   }
 
   return results
