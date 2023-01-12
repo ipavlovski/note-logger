@@ -185,7 +185,7 @@ export default function NodeView() {
         {node.title}
       </Text>
 
-      <Preview nodeId={node.id} preview={node.preview} />
+      <Preview nodeId={node.id} preview={node.preview} uri={node.uri} />
 
       <Metadata />
 
