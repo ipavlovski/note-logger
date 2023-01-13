@@ -5,10 +5,10 @@ import { useAppStore } from 'components/app'
 
 const SERVER_URL = `https://localhost:${import.meta.env.VITE_SERVER_PORT}`
 
-import { useState, useRef, useEffect } from 'react'
-import PlayerStates from 'youtube-player/dist/constants/PlayerStates'
+import { useEffect, useRef, useState } from 'react'
 import youTubePlayer from 'youtube-player'
-import type { YouTubePlayer, Options } from 'youtube-player/dist/types'
+import PlayerStates from 'youtube-player/dist/constants/PlayerStates'
+import type { YouTubePlayer } from 'youtube-player/dist/types'
 
 const useStyles = createStyles(theme => ({
   selected: {
