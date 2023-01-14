@@ -2,7 +2,7 @@ import { createStyles, Text } from '@mantine/core'
 import { useHotkeys } from '@mantine/hooks'
 import { showNotification } from '@mantine/notifications'
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
-import { NodeWithProps } from 'backend/routes'
+import { NodeWithChildren, NodeWithProps, NodeWithSiblings } from 'backend/routes'
 import { useAppStore } from 'components/app'
 
 import Leafs from 'components/leafs'
@@ -174,7 +174,7 @@ export default function NodeView() {
   const { data: node } = useQuery({
     queryKey: ['activeNode', active],
     queryFn: () =>
-      fetch(`${SERVER_URL}/node/${active}`).then((res): Promise<NodeWithProps> => res.json()),
+      fetch(`${SERVER_URL}/node/${active}`).then((res): Promise<NodeWithSiblings> => res.json()),
   })
 
   if (!node) return <h3>no item selected</h3>
@@ -185,9 +185,10 @@ export default function NodeView() {
         {node.title}
       </Text>
 
-      <Preview nodeId={node.id} preview={node.preview} uri={node.uri} />
+      {/* <Preview nodeId={node.id} preview={node.preview} uri={node.uri} /> */}
+      <Preview node={node} />
 
-      <Metadata />
+      {/* <Metadata /> */}
 
       <Leafs nodeId={node.id} leafs={node.leafs} />
     </div>

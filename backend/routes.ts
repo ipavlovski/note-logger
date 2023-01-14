@@ -1,5 +1,5 @@
 import { Prisma, PrismaClient } from '@prisma/client'
-import { handleURI } from 'backend/handlers'
+import { buildYoutubeUri, extractYoutubeId, handleURI } from 'backend/handlers'
 import { Router } from 'express'
 import multer from 'multer'
 import sharp from 'sharp'
@@ -97,31 +97,56 @@ routes.post('/timeline', async (req, res) => {
 
 const nodeWithProps = Prisma.validator<Prisma.NodeArgs>()({
   include: {
-    parent: true,
-    children: true,
     leafs: { include: { images: true } },
     icon: true,
     preview: true,
     tags: true,
+    properties: true,
+    category: true,
+  },
+})
+
+const nodeWithChildren = Prisma.validator<Prisma.NodeArgs>()({
+  include: {
+    children: true,
   },
 })
 
 export type NodeWithProps = Prisma.NodeGetPayload<typeof nodeWithProps>
-
+export type NodeWithChildren = Prisma.NodeGetPayload<typeof nodeWithChildren>
+export type NodeWithSiblings = NodeWithProps & { siblings: NodeWithChildren }
 routes.get('/node/:id', async (req, res) => {
   try {
-    const results: NodeWithProps = await prisma.node.findFirstOrThrow({
+    const nodeMatch: NodeWithProps = await prisma.node.findFirstOrThrow({
       where: { id: parseInt(req.params.id) },
       include: {
-        parent: true,
-        children: true,
         leafs: { include: { images: true } },
         icon: true,
         preview: true,
         tags: true,
+        properties: true,
+        category: true,
       },
     })
-    return res.json(results)
+
+    if (nodeMatch.uri.startsWith('https://www.youtube.com/watch')) {
+      const youtubeId = extractYoutubeId(nodeMatch.uri)
+
+      const siblings: NodeWithChildren = await prisma.node.findFirstOrThrow({
+        where: { uri: buildYoutubeUri(youtubeId) },
+        include: {
+          children: true,
+        },
+      })
+
+      return res.json({ ...nodeMatch, siblings })
+    }
+
+    // if (nodeMatch.uri.startsWith('pdf://')) {
+
+    // }
+
+    return res.json({ ...nodeMatch, siblings: [] })
   } catch (err) {
     console.error(err)
     return res.json({ error: err instanceof Error ? err.message : 'unknown error' })

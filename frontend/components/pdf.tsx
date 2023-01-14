@@ -16,44 +16,44 @@ import { VariableSizeList } from 'react-window'
 import { createStyles, MantineProvider } from '@mantine/core'
 import { useResizeObserver } from '@mantine/hooks'
 
-export default function App() {
-  return (
-    <MantineProvider
-      withGlobalStyles
-      withNormalizeCSS
-      theme={{
-        colorScheme: 'dark',
-        globalStyles: (theme) => ({
-          '.PdfPage': {
-            position: 'relative',
-          },
+// export default function App() {
+//   return (
+//     <MantineProvider
+//       withGlobalStyles
+//       withNormalizeCSS
+//       theme={{
+//         colorScheme: 'dark',
+//         globalStyles: (theme) => ({
+//           '.PdfPage': {
+//             position: 'relative',
+//           },
 
-          '.PdfPage__textLayer': {
-            position: 'absolute',
-            left: 0,
-            top: 0,
-            right: 0,
-            bottom: 0,
-            overflow: 'hidden',
-            opacity: 0.2,
-            lineHeight: 1,
-          },
-          '.PdfPage__textLayer > span': {
-            color: 'transparent',
-            position: 'absolute',
-            whiteSpace: 'pre',
-            cursor: 'text',
-            transformOrigin: '0% 0%',
-          },
-        }),
-      }}
-    >
-      <PDF />
-    </MantineProvider>
-  )
-}
+//           '.PdfPage__textLayer': {
+//             position: 'absolute',
+//             left: 0,
+//             top: 0,
+//             right: 0,
+//             bottom: 0,
+//             overflow: 'hidden',
+//             opacity: 0.2,
+//             lineHeight: 1,
+//           },
+//           '.PdfPage__textLayer > span': {
+//             color: 'transparent',
+//             position: 'absolute',
+//             whiteSpace: 'pre',
+//             cursor: 'text',
+//             transformOrigin: '0% 0%',
+//           },
+//         }),
+//       }}
+//     >
+//       <PDF />
+//     </MantineProvider>
+//   )
+// }
 
-function PDF() {
+export default function PDF() {
   const [scale, setScale] = useState(1)
   const [page, setPage] = useState(1)
   const windowRef = useRef<VariableSizeList>() // <React.MutableRefObject<undefined>>

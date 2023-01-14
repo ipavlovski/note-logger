@@ -48,6 +48,7 @@ const useStyles = createStyles(theme => ({
       backgroundColor: '#7a2a73',
       borderRadius: 12,
     },
+    marginTop: 32,
   },
   divider: {
     cursor: 'grab',

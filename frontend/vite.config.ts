@@ -34,6 +34,11 @@ export default ({ mode }: { mode: string }) => {
           find: 'frontend',
           replacement: `${__dirname}`,
         },
+
+        // {
+        //   find: 'backend',
+        //   replacement: `${__dirname}/../backend`,
+        // },
       ],
     },
     css: {

@@ -83,6 +83,29 @@ export default function App() {
         withNormalizeCSS
         theme={{
           colorScheme: 'dark',
+          globalStyles: (theme) => ({
+            '.PdfPage': {
+              position: 'relative',
+            },
+  
+            '.PdfPage__textLayer': {
+              position: 'absolute',
+              left: 0,
+              top: 0,
+              right: 0,
+              bottom: 0,
+              overflow: 'hidden',
+              opacity: 0.2,
+              lineHeight: 1,
+            },
+            '.PdfPage__textLayer > span': {
+              color: 'transparent',
+              position: 'absolute',
+              whiteSpace: 'pre',
+              cursor: 'text',
+              transformOrigin: '0% 0%',
+            },
+          }),
         }}>
         <NotificationsProvider position="top-right" autoClose={1600}>
           <Box mx={16} my={32}>
