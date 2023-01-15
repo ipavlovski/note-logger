@@ -52,6 +52,33 @@ routes.post('/uri', async (req, res) => {
   }
 })
 
+const UriYoutubeArgs = z.object({
+  timestamp: z.number(),
+  title: z.string(),
+})
+
+routes.post('/uri/:id', async (req, res) => {
+  try {
+    const parent = await prisma.node.findFirstOrThrow({ where: { id: parseInt(req.params.id) } })
+    const props = UriYoutubeArgs.parse(req.body)
+    const uri = `${parent.uri}[${props.timestamp}]`
+
+    const results = await prisma.node.create({
+      data: {
+        parent: { connect: { id: parent.id } },
+        title: props.title,
+        uri,
+        icon: { connect: { id: parent.iconId! } },
+      },
+    })
+
+    return res.json(results)
+  } catch (err) {
+    console.error(err)
+    return res.status(400).json({ error: err instanceof Error ? err.message : 'unknown error' })
+  }
+})
+
 const nodeWithIcon = Prisma.validator<Prisma.NodeArgs>()({
   include: { icon: true },
 })

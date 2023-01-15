@@ -419,24 +419,19 @@ export async function fetchVideoData(videoId: string): Promise<YoutubeVideoData>
 }
 
 // https://stackoverflow.com/questions/3452546/how-do-i-get-the-youtube-video-id-from-a-url
+// str1.match(/\[.*\]$/g)
+// str1.replace(/\[.*\]$/, '')
+// url1.match(/(\[)(.*)(\])$/)
+
 export function extractYoutubeId(url: string) {
   const matches = [...url.matchAll(/(.*)(www.youtube.com\/watch\?v=)(.{11})/g)]
   if (matches.length == 0) throw new Error('Incorrect youtube URL!')
   return matches[0][3]
 }
 
-
-// export function buildYoutubeUri(videoId: string, seconds?: number) {
-//   return seconds != undefined
-//     ? `https://www.youtube.com/watch?v=${videoId}&t=${seconds}s`
-//     : `https://www.youtube.com/watch?v=${videoId}`
-// }
-
-
 export function buildYoutubeUri(videoId: string) {
   return `https://www.youtube.com/watch?v=${videoId}`
 }
-
 
 
 function youtubeVideoMatcher(uri: string) {

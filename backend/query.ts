@@ -143,7 +143,7 @@ function getTreeFromLineup(lineups: NodeWithIcon[][], virtualNodes: boolean) {
 }
 
 export interface TimelineNode {
-  startDate: string,
+  startDate: string
   treeRoots: TreeBranch[]
 }
 
@@ -162,9 +162,9 @@ export async function timelineQuery(props: TimelineProps): Promise<TimelineNode[
     })
     const treeRoots = getTreeFromLineup(lineups, props.virtualNodes)
 
-    
     results.push({ startDate: dateSplit.start.toISOString(), treeRoots: treeRoots })
   }
+  results.sort((v1, v2) => new Date(v2.startDate).valueOf() - new Date(v1.startDate).valueOf())
 
   return results
 }

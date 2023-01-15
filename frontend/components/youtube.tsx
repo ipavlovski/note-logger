@@ -1,6 +1,7 @@
 import { AspectRatio, createStyles, Popover, TextInput, Tooltip } from '@mantine/core'
 import { getHotkeyHandler, useDisclosure } from '@mantine/hooks'
 import { showNotification } from '@mantine/notifications'
+import { useMutation, useQueryClient } from '@tanstack/react-query'
 // import { extractYoutubeId } from 'backend/handlers'
 import { NodeWithSiblings } from 'backend/routes'
 import { useEffect, useReducer, useRef, useState } from 'react'
@@ -46,16 +47,11 @@ function extractYoutubeId(url: string) {
 export function YouTube({ node }: { node: NodeWithSiblings }) {
   const [player, setPlayer] = useState<YouTubePlayer>()
   const [duration, setDuration] = useState<number>()
-  // const [timestamps, append] = useState<number[]>([])
 
   const youtubeRef = useRef<HTMLDivElement>(null)
   const { classes, cx } = useStyles()
 
-  // const timestamps = useAppStore((state) => state.timestamps)
-  // const append = useAppStore((state) => state.append)
-
   const videoId = extractYoutubeId(node.siblings.uri)
-  // const children = node.siblings.children[0]
 
   useEffect(() => {
     const player = youTubePlayer(youtubeRef.current!, {
@@ -90,39 +86,64 @@ export function YouTube({ node }: { node: NodeWithSiblings }) {
       <AspectRatio ratio={16 / 9} mx="auto">
         <div ref={youtubeRef} className={classes.player} />
       </AspectRatio>
-      <ProgressBar player={player} duration={duration} chapterNodes={node.siblings.children} />
+      <ProgressBar
+        parentId={node.siblings.id}
+        player={player}
+        duration={duration}
+        chapterNodes={node.siblings.children}
+      />
     </>
   )
 }
 
 type Chapter = { id?: number; uri?: string; title?: string; millisec: number }
 type ProgressBarArgs = {
+  parentId: number
   player: YouTubePlayer | undefined
   duration: number | undefined
   chapterNodes: NodeWithSiblings['siblings']['children']
 }
-function ProgressBar({ player, duration, chapterNodes }: ProgressBarArgs) {
+
+type ActionTypes =
+  | { type: 'create'; chapter: Chapter }
+  | { type: 'update'; chapters: Chapter[] }
+  | { type: 'delete'; chapter: Chapter }
+  | { type: 'replace'; chapters: Chapter[] }
+function ProgressBar({ parentId, player, duration, chapterNodes }: ProgressBarArgs) {
   const { classes, cx } = useStyles()
 
-  // str1.match(/\[.*\]$/g)
-  // str1.replace(/\[.*\]$/, '')
-  // url1.match(/(\[)(.*)(\])$/)
+  useEffect(() => {
+    const chapters = chapterNodes.map(node => {
+      const millisec = parseFloat(node.uri.match(/(\[)(.*)(\])$/)![2])
+      return { id: node.id, uri: node.uri, title: node.title, millisec: millisec }
+    })
+    chapterDispatch({ type: 'replace', chapters })
+  }, [parentId])
 
-  const originalChapters = chapterNodes.map(node => {
-    const millisec = parseFloat(node.uri.match(/(\[)(.*)(\])$/)![2])
-    return { id: node.id, uri: node.uri, title: node.title, millisec: millisec }
-  })
-  // const [chapters, setChapters] = useState<Chapter[]>(originalChapters)
+  const [chapters, chapterDispatch] = useReducer((chapters: Chapter[], action: ActionTypes) => {
+    if (action.type == 'create') {
+      return chapters.concat(action.chapter)
+    }
 
-  const reducer = (chapters: Chapter[], incomingChapter: Chapter) => {
-    const match = chapters.find(chapter => chapter.millisec == incomingChapter.millisec)
-    if (match) {
-      match.title = incomingChapter.title
+    if (action.type == 'update') {
+      action.chapters.forEach(incomingChapter => {
+        const match = chapters.find(chapter => chapter.millisec == incomingChapter.millisec)
+        match && Object.assign(match, incomingChapter)
+      })
+
       return chapters
     }
-    return chapters.concat(incomingChapter)
-  }
-  const [chapters, chapterDispatch] = useReducer(reducer, originalChapters)
+
+    if (action.type == 'delete') {
+      return chapters.filter(chapter => chapter.millisec != action.chapter.millisec)
+    }
+
+    if (action.type == 'replace') {
+      return action.chapters
+    }
+
+    return chapters
+  }, [])
 
   return (
     <div
@@ -130,7 +151,8 @@ function ProgressBar({ player, duration, chapterNodes }: ProgressBarArgs) {
         if (player) {
           player.getCurrentTime().then(currentTime => {
             chapterDispatch({
-              millisec: Math.round(currentTime * 1000) / 1000,
+              type: 'create',
+              chapter: { millisec: Math.round(currentTime * 1000) / 1000 },
             })
             console.log(`time: ${currentTime}`)
           })
@@ -141,6 +163,7 @@ function ProgressBar({ player, duration, chapterNodes }: ProgressBarArgs) {
         duration &&
         chapters.map(chapter => (
           <YoutubeChapter
+            parentId={parentId}
             player={player}
             duration={duration}
             chapter={chapter}
@@ -153,13 +176,22 @@ function ProgressBar({ player, duration, chapterNodes }: ProgressBarArgs) {
 }
 
 type YoutubeChapterArgs = {
+  parentId: number
   player: YouTubePlayer
   duration: number
   chapter: Chapter
-  chapterDispatch: React.Dispatch<Chapter>
-  // chapterNode: NodeWithSiblings['siblings']['children'][0]
+  chapterDispatch: React.Dispatch<ActionTypes>
 }
-function YoutubeChapter({ player, duration, chapter, chapterDispatch }: YoutubeChapterArgs) {
+
+const SERVER_URL = `https://localhost:${import.meta.env.VITE_SERVER_PORT}`
+
+function YoutubeChapter({
+  parentId,
+  player,
+  duration,
+  chapter,
+  chapterDispatch,
+}: YoutubeChapterArgs) {
   const { classes, cx } = useStyles()
 
   const percent = Math.floor((chapter.millisec / duration) * 100)
@@ -167,19 +199,33 @@ function YoutubeChapter({ player, duration, chapter, chapterDispatch }: YoutubeC
   const [opened, setOpened] = useState(false)
 
   const [value, setValue] = useState('')
-  const handleSave = () => {
-    showNotification({ title: 'Saved', color: 'teal', message: value })
-    setOpened(false)
-    chapterDispatch({ millisec: chapter.millisec, title: value })
-    setValue('')
 
-    // const targetChapter = chapter.find(v => v)
-    // setChapters()
+  const queryClient = useQueryClient()
+
+  const addYoutubeChapter = useMutation(
+    ({ nodeId, timestamp, title }: { nodeId: number; timestamp: number; title: string }) => {
+      return fetch(`${SERVER_URL}/uri/${nodeId}`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ timestamp, title }),
+      })
+    },
+    {
+      onSuccess: () => queryClient.invalidateQueries(['activeNode', 'nodeList']),
+    }
+  )
+
+  const handleSave = () => {
+    addYoutubeChapter.mutate({ nodeId: parentId, timestamp: chapter.millisec, title: value })
+
+    // IF success, or IF failyre
+    showNotification({ title: `Status: ${addYoutubeChapter.status}`, color: 'teal', message: value })
+    setOpened(false)
+    setValue('')
   }
 
   const target = (
     <div
-      // on={() => setOpened(false)}
       onClick={() => {
         console.log(player)
         setOpened(o => !o)
