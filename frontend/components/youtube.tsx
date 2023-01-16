@@ -1,9 +1,10 @@
 import { AspectRatio, createStyles, Popover, TextInput, Tooltip } from '@mantine/core'
-import { getHotkeyHandler, useDisclosure } from '@mantine/hooks'
+import { getHotkeyHandler, useDisclosure, useHotkeys } from '@mantine/hooks'
 import { showNotification } from '@mantine/notifications'
 import { useMutation, useQueryClient } from '@tanstack/react-query'
 // import { extractYoutubeId } from 'backend/handlers'
 import { NodeWithSiblings } from 'backend/routes'
+import { useAppStore } from 'components/app'
 import { useEffect, useReducer, useRef, useState } from 'react'
 import youTubePlayer from 'youtube-player'
 import PlayerStates from 'youtube-player/dist/constants/PlayerStates'
@@ -12,6 +13,9 @@ import type { YouTubePlayer } from 'youtube-player/dist/types'
 const useStyles = createStyles(theme => ({
   player: {
     padding: 0,
+    ['& .ytp-pause-overlay']: {
+      display: 'none',
+    }
   },
   bar: {
     marginTop: '1rem',
@@ -34,6 +38,9 @@ const useStyles = createStyles(theme => ({
   savedPoint: {
     backgroundColor: '#779ad1',
   },
+  activePoint: {
+    backgroundColor: '#36843c',
+  },
 }))
 
 function extractYoutubeId(url: string) {
@@ -52,6 +59,29 @@ export function YouTube({ node }: { node: NodeWithSiblings }) {
   const { classes, cx } = useStyles()
 
   const videoId = extractYoutubeId(node.siblings.uri)
+
+  // note: will only work when youtube is open (which is exactly what we want)
+  useHotkeys([
+    [
+      'space',
+      async () => {
+        const stateCode  = await player?.getPlayerState()
+        if (stateCode) {
+          const status = Object.entries(PlayerStates).find(v => v[1] == stateCode)![0]
+
+          if (status == 'PLAYING') player?.pauseVideo()
+          if (status == 'PAUSED') player?.playVideo()
+          if (status == 'VIDEO_CUED') showNotification({ color: 'teal', message: `QUEUED` })
+
+          // console.log('STATE', playerState, stateVal![0])
+          // console.log(Object.values(PlayerStates))
+          // const status = Object.values(PlayerStates).filter(value => typeof value === 'string') as string[]
+          
+        }
+        
+      },
+    ],
+  ])
 
   useEffect(() => {
     const player = youTubePlayer(youtubeRef.current!, {
@@ -197,10 +227,10 @@ function YoutubeChapter({
   const percent = Math.floor((chapter.millisec / duration) * 100)
 
   const [opened, setOpened] = useState(false)
-
   const [value, setValue] = useState('')
-
   const queryClient = useQueryClient()
+  const activeNode = useAppStore(state => state.active)
+  const setActiveNode = useAppStore(state => state.setActive)
 
   const addYoutubeChapter = useMutation(
     ({ nodeId, timestamp, title }: { nodeId: number; timestamp: number; title: string }) => {
@@ -224,20 +254,24 @@ function YoutubeChapter({
     setValue('')
   }
 
-  const target = (
+  const chapterCircle = (
     <div
       onClick={() => {
-        console.log(player)
         setOpened(o => !o)
         player!.seekTo(chapter.millisec, true)
+        chapter.id && setActiveNode(chapter.id)
         console.log(`clicked on ${chapter.millisec}`)
       }}
-      className={cx(classes.point, chapter.title != null && classes.savedPoint)}
+      className={cx(
+        classes.point,
+        chapter.title != null && classes.savedPoint,
+        chapter.id == activeNode && classes.activePoint
+      )}
       style={{ left: `${percent}%` }}></div>
   )
 
   return chapter.title != null ? (
-    <Tooltip label={chapter.title}>{target}</Tooltip>
+    <Tooltip label={chapter.title}>{chapterCircle}</Tooltip>
   ) : (
     <Popover
       opened={opened}
@@ -246,7 +280,7 @@ function YoutubeChapter({
       onChange={setOpened}
       withArrow
       shadow="md">
-      <Popover.Target>{target}</Popover.Target>
+      <Popover.Target>{chapterCircle}</Popover.Target>
       <Popover.Dropdown
         sx={theme => ({
           background: theme.colorScheme === 'dark' ? theme.colors.dark[7] : theme.white,
