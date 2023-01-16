@@ -168,3 +168,40 @@ export async function timelineQuery(props: TimelineProps): Promise<TimelineNode[
 
   return results
 }
+
+// const data=[
+//   { value: "1", label: 'default/', group: 'default' },
+//   { value: "2", label: 'docs/', group: 'docs' },
+//   { value: "3", label: 'docs/apartment/', group: 'docs' },
+//   { value: "5", label: 'docs/apartment/custom/', group: 'docs' },
+//   { value: "6", label: 'car/taxes/', group: 'car' },
+//   { value: "7", label: 'car/other/', group: 'car' },
+// ]
+
+// type SuggestionNode = {
+//   value: string
+//   label: string
+//   group: string
+// }
+export async function getSuggestionTree(type: 'file' | 'note') {
+  if (type != 'file' && type != 'note') throw new Error("Wrong type input for suggestion tree.")
+
+  // IMPORTANT: 'folders' need to carry metadata of { type: "folder" }
+  // this is true for both note:// and file:// URIs
+  const results = await prisma.node.findMany({
+    where: { uri: { startsWith: `${type}://` }, metadata: { equals: '{"type":"folder"}' } },
+    select: { uri: true, title: true },
+  })
+
+  const suggestionTree = results.map(({title, uri}) => {
+
+    var uriPath = uri.split(`${type}://`)[1]
+
+    return { 
+      value: uriPath,
+      group: uriPath.split("/")[0]
+    }
+  })
+
+  return suggestionTree
+}

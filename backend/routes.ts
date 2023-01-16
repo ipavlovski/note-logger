@@ -7,12 +7,81 @@ import { writeFile } from 'fs/promises'
 import { z } from 'zod'
 import { v4 as uuidv4 } from 'uuid'
 import { STORAGE_DIRECTORY } from 'backend/config'
-import { timelineQuery } from 'backend/query'
+import { getSuggestionTree, timelineQuery } from 'backend/query'
 
 const prisma = new PrismaClient()
 const routes = Router()
 const storage = multer.memoryStorage()
 const upload = multer({ storage: storage })
+
+const SuggestionTypes = z.enum(['file', 'note'])
+
+routes.get('/suggestions/:type', async (req, res) => {
+  try {
+    const type = SuggestionTypes.parse(req.body)
+    const suggestions = await getSuggestionTree(type)
+
+    return res.json(suggestions)
+  } catch (err) {
+    console.error(err)
+    return res.status(400).json({ error: err instanceof Error ? err.message : 'unknown error' })
+  }
+})
+
+routes.post('/note', async (req, res) => {
+  try {
+  } catch (err) {
+    console.error(err)
+    return res.status(400).json({ error: err instanceof Error ? err.message : 'unknown error' })
+  }
+})
+
+routes.post('/file', upload.single('image'), async (req, res) => {
+  try {
+    if (req.file == null) throw new Error('Attached file is missing')
+
+    const type = req.file.originalname
+    const ext = req.file.mimetype == 'image/png' ? 'png' : 'unknown'
+
+    // const path = `preview/${uuidv4()}.${ext}`
+    // await writeFile(`${STORAGE_DIRECTORY}/${path}`, req.file.buffer)
+
+     // split path into 2 components: uri + filename
+    // check if the uri path exists
+    // extrac the filename from the end
+
+  } catch (err) {
+    console.error(err)
+    return res.status(400).json({ error: err instanceof Error ? err.message : 'unknown error' })
+  }
+})
+
+const FilePageArgs = z.object({
+  title: z.string(),
+  page: z.number(),
+})
+
+routes.post('/file/:id', async (req, res) => {
+  try {
+    const parent = await prisma.node.findFirstOrThrow({ where: { id: parseInt(req.params.id) } })
+    const props = FilePageArgs.parse(req.body)
+    const uri = `${parent.uri}[${props.page}]`
+
+    const results = await prisma.node.create({
+      data: {
+        parent: { connect: { id: parent.id } },
+        title: props.title,
+        uri,
+        icon: { connect: { id: parent.iconId! } },
+      },
+    })
+
+    return res.json(results)
+  } catch (err) {
+    console.error(err)
+    return res.status(400).json({ error: err instanceof Error ? err.message : 'unknown error' })
+  }
+})
 
 routes.post('/uri', async (req, res) => {
   //   const dateFrom = new Date(req.params.date)
