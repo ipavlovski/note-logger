@@ -20,8 +20,14 @@ import {
   IconLink,
   IconNotes,
 } from '@tabler/icons'
-import { useMutation, useQueryClient } from '@tanstack/react-query'
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { useState } from 'react'
+
+type PathSuggestion = {
+  value: string
+  label: string
+  group: string
+}
 
 const SERVER_URL = `https://localhost:${import.meta.env.VITE_SERVER_PORT}`
 
@@ -166,29 +172,80 @@ function UrlUpload() {
   )
 }
 
-
-const data=[
-  { value: "1", label: 'default/', group: 'default' },
-  { value: "2", label: 'docs/', group: 'docs' },
-  { value: "3", label: 'docs/apartment/', group: 'docs' },
-  { value: "5", label: 'docs/apartment/custom/', group: 'docs' },
-  { value: "6", label: 'car/taxes/', group: 'car' },
-  { value: "7", label: 'car/other/', group: 'car' },
-]
-
 function PdfUpload() {
+  const [fileTitle, setFileTitle] = useState('')
+  const [uriPath, setUriPath] = useState<string | null>(null)
   const [filename, setFilename] = useState('')
-  const [uriPath, setUriPath] = useState('')
   const [file, setFile] = useState<File | null>(null)
   const { classes, cx } = useStyles()
+  const queryClient = useQueryClient()
 
-  const handleEnter = () => {
-    // showNotification({ message: `Uploading file to uri: ${uriInput}`, color: 'teal' })
-    // console.log(uriInput)
-    console.log(file)
-    if (file) {
-      console.log(new Date(file.lastModified).toISOString())
-      // console.log(file.)
+  const { data: pathSuggestions } = useQuery({
+    queryKey: ['fileSuggestions'],
+    queryFn: async () => {
+      return fetch(`${SERVER_URL}/paths/file`)
+        .then((res): Promise<PathSuggestion[]> => res.json())
+        .then(res => res.map(v => ({ ...v, label: v.value })))
+    },
+  })
+
+  const createNewFileFolder = useMutation(
+    async (query: string) => {
+      await fetch(`${SERVER_URL}/paths/file`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ type: 'file', uri: query }),
+      })
+    },
+    {
+      onSuccess: () => {
+        queryClient.invalidateQueries(['fileSuggestions'])
+      },
+    }
+  )
+
+  const uploadFile = useMutation(
+    (formData: FormData) => {
+      return fetch(`${SERVER_URL}/file`, { method: 'POST', body: formData })
+    },
+    { onSuccess: () => queryClient.invalidateQueries(['activeNode']) }
+  )
+
+  const submitHandler = async () => {
+    try {
+      // validate title
+      if (fileTitle == '') throw new Error('Must input node title.')
+
+      // validate uri path
+      if (uriPath == '') throw new Error('Must specify filepath.')
+
+      // validate filename: end in '.pdf', 'only 1 dot', alpha-numerics only
+      if (filename == '') throw new Error('Must input filename.')
+
+      // ensure file exists
+      if (!file) throw new Error('File is not ready')
+
+      // prep the metadata
+      const info = {
+        uriPath,
+        fileTitle,
+        filename,
+        metadata: { lastModified: new Date(file.lastModified).toISOString(), fileSize: file.size },
+      }
+
+      const formData = new FormData()
+      formData.append('file', file, JSON.stringify(info))
+      const { status } = await uploadFile.mutateAsync(formData)
+
+      // notify
+      showNotification({ color: 'green', message: `Status: ${status}` })
+
+      // reset all the input fields AND close the popup
+    } catch (err) {
+      showNotification({
+        message: err instanceof Error ? err.message : 'unknown error',
+        color: 'orange',
+      })
     }
   }
 
@@ -204,33 +261,38 @@ function PdfUpload() {
           background: theme.colorScheme === 'dark' ? theme.colors.dark[7] : theme.white,
         })}>
         <Group>
-        <TextInput
+          <TextInput
             placeholder="Node Title"
-            // label="Upload PDF file:"
-            // value={filename}
             style={{ flexGrow: 1 }}
-            // onChange={event => setFilename(event.target.value)}
-            onKeyDown={getHotkeyHandler([['Enter', handleEnter]])}
+            value={fileTitle}
+            onChange={event => setFileTitle(event.target.value)}
+            // label="Upload PDF file:"
+            // onKeyDown={getHotkeyHandler([['Enter', handleEnter]])}
           />
           <Select
             placeholder="File uri: eg. path/to/file.pdf"
             style={{ flexGrow: 1 }}
             searchable
             creatable
-            getCreateLabel={(query) => `+ Create ${query}`}
-            data={data}
+            getCreateLabel={query => `+ Create ${query}`}
+            onCreate={(query: string) => {
+              createNewFileFolder.mutate(query)
+              return null
+            }}
+            data={pathSuggestions ?? []}
             // label="Upload PDF file:"
-            // value={uriPath}
+            value={uriPath}
+            onChange={setUriPath}
             // onChange={event => setUriPath(event.target.value)}
             // onKeyDown={getHotkeyHandler([['Enter', handleEnter]])}
           />
           <TextInput
             placeholder="File uri: eg. path/to/file.pdf"
-            // label="Upload PDF file:"
             value={filename}
             style={{ flexGrow: 1 }}
             onChange={event => setFilename(event.target.value)}
-            onKeyDown={getHotkeyHandler([['Enter', handleEnter]])}
+            // label="Upload PDF file:"
+            // onKeyDown={getHotkeyHandler([['Enter', handleEnter]])}
           />
           <FileButton
             onChange={file => {
@@ -247,17 +309,13 @@ function PdfUpload() {
             )}
           </FileButton>
           <UnstyledButton mt={6}>
-              <IconCheck size={24} stroke={1.5} />
+            <IconCheck size={24} stroke={1.5} onClick={submitHandler} />
           </UnstyledButton>
         </Group>
       </Popover.Dropdown>
     </Popover>
   )
 }
-
-
-
-
 
 function NoteUpload() {
   const { classes, cx } = useStyles()
@@ -283,22 +341,22 @@ function NoteUpload() {
           background: theme.colorScheme === 'dark' ? theme.colors.dark[7] : theme.white,
         })}>
         <Group>
-        <Select
+          <Select
             placeholder="File uri: eg. path/to/note"
             style={{ flexGrow: 1 }}
             searchable
             creatable
-            getCreateLabel={(query) => `+ Create ${query}`}
-            data={data}
+            getCreateLabel={query => `+ Create ${query}`}
+            data={[]}
             // label="Upload PDF file:"
             // value={uriPath}
             // onChange={event => setUriPath(event.target.value)}
             // onKeyDown={getHotkeyHandler([['Enter', handleEnter]])}
           />
           <TextInput
+            style={{ flexGrow: 1 }}
             placeholder="Insert a text-node title here"
             value={uriInput}
-            style={{ flexGrow: 1 }}
             onChange={event => setUriInput(event.target.value)}
             onKeyDown={getHotkeyHandler([['Enter', handleEnter]])}
           />

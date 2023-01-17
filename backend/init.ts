@@ -1,12 +1,13 @@
-import { server } from 'backend/server'
 import { existsSync, mkdirSync } from 'node:fs'
 
+import { server } from 'backend/server'
 import { STORAGE_DIRECTORY, SERVER_PORT } from 'backend/config'
 
 // ensure that the folders are up and running
-existsSync(`${STORAGE_DIRECTORY}/icons`) || mkdirSync(`${STORAGE_DIRECTORY}/icons`)
-existsSync(`${STORAGE_DIRECTORY}/images`) || mkdirSync(`${STORAGE_DIRECTORY}/images`)
-existsSync(`${STORAGE_DIRECTORY}/preview`) || mkdirSync(`${STORAGE_DIRECTORY}/preview`)
+const dirs = ['icons', 'images', 'preview', 'files']
+dirs.forEach(
+  dir => existsSync(`${STORAGE_DIRECTORY}/${dir}`) || mkdirSync(`${STORAGE_DIRECTORY}/${dir}`)
+)
 
 // start the server
 server.listen(SERVER_PORT, () => {

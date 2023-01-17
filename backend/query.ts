@@ -2,6 +2,9 @@ import { Prisma, PrismaClient } from '@prisma/client'
 import type { Node, Icon } from '@prisma/client'
 import { DateTime } from 'luxon'
 import { TimelineProps } from 'backend/routes'
+import { access, copyFile } from 'fs/promises'
+import { STORAGE_DIRECTORY } from 'backend/config'
+import { v4 as uuidv4 } from 'uuid'
 
 const prisma = new PrismaClient()
 
@@ -104,7 +107,7 @@ function appendVirtualTreeNodes(treeRoots: TreeBranch[]) {
       getOrCreateVirtualNode('youtube').push(treeRoot)
     } else if (treeRoot.item.uri.startsWith('note://')) {
       getOrCreateVirtualNode('note').push(treeRoot)
-    } else if (treeRoot.item.uri.startsWith('file://com')) {
+    } else if (treeRoot.item.uri.startsWith('file://')) {
       getOrCreateVirtualNode('file').push(treeRoot)
     } else {
       getOrCreateVirtualNode('web').push(treeRoot)
@@ -169,39 +172,88 @@ export async function timelineQuery(props: TimelineProps): Promise<TimelineNode[
   return results
 }
 
-// const data=[
-//   { value: "1", label: 'default/', group: 'default' },
-//   { value: "2", label: 'docs/', group: 'docs' },
-//   { value: "3", label: 'docs/apartment/', group: 'docs' },
-//   { value: "5", label: 'docs/apartment/custom/', group: 'docs' },
-//   { value: "6", label: 'car/taxes/', group: 'car' },
-//   { value: "7", label: 'car/other/', group: 'car' },
-// ]
+export async function getOrCreateImageIcon(iconName: string) {
+  // get the source, throw error if doesnt exist
+  const source = `node_modules/@tabler/icons/icons-png/${iconName}.png`
 
-// type SuggestionNode = {
-//   value: string
-//   label: string
-//   group: string
-// }
+  // check for an existing icon
+  const existingIcon = await prisma.icon.findFirst({ where: { source: { equals: source } } })
+  if (existingIcon) return existingIcon
+
+  // check source exists, copy the file to destination
+  await access(source)
+  const path = `icons/${uuidv4()}.png`
+  await copyFile(source, `${STORAGE_DIRECTORY}/${path}`)
+
+  // create the icon
+  const newIcon = await prisma.icon.create({ data: { path, source } })
+  return newIcon
+}
+
 export async function getSuggestionTree(type: 'file' | 'note') {
-  if (type != 'file' && type != 'note') throw new Error("Wrong type input for suggestion tree.")
+  if (type != 'file' && type != 'note') throw new Error('Wrong type input for suggestion tree.')
 
   // IMPORTANT: 'folders' need to carry metadata of { type: "folder" }
   // this is true for both note:// and file:// URIs
   const results = await prisma.node.findMany({
-    where: { uri: { startsWith: `${type}://` }, metadata: { equals: '{"type":"folder"}' } },
+    where: {
+      uri: { startsWith: `${type}://`, not: { endsWith: `${type == 'file' ? '.pdf' : '.note'}` } },
+    },
     select: { uri: true, title: true },
   })
 
-  const suggestionTree = results.map(({title, uri}) => {
-
+  const suggestionTree = results.map(({ uri }) => {
     var uriPath = uri.split(`${type}://`)[1]
 
-    return { 
+    return {
       value: uriPath,
-      group: uriPath.split("/")[0]
+      group: uriPath.split('/')[0],
     }
   })
 
   return suggestionTree
+}
+
+// will return ID of the newly created path on success (throw errors on failure)
+export async function createSuggestedPath({ type, uri }: { type: 'file' | 'note'; uri: string }) {
+  // must adhere to the proper path uri (file:// or note://, which will be built in the end)
+  if (type != 'file' && type != 'note') throw new Error('Wrong type input for suggested path.')
+
+  // check that path only contains lowercase alphanumerics + dash/underscore
+  const regex = /^[a-z\d-_\/]+$/
+  if (!regex.test(uri)) throw new Error('URI path can only have [a-z0-9_-] chracters')
+
+  // split by '/', remove any empty elements (duplicate '/'s)
+  // ensure that the 'depth' of the path doesn't exceed 3 (which is max-depth)
+  const splitPath = uri.split('/').filter(str => str != '')
+  if (splitPath.length > 3) throw new Error('URI path can have max-depth of 3 folders')
+  if (splitPath.length == 0) throw new Error('URI path must include at least one folder')
+
+  // get the initial 'seed' node
+  let lastId: number | undefined
+  for (let i = 1; i <= splitPath.length; i++) {
+    const match = await prisma.node.findFirst({
+      where: { uri: `${type}://${splitPath.slice(0, i).join('/')}` },
+      select: { id: true },
+    })
+
+    if (match) {
+      lastId = match.id
+      continue
+    }
+
+    const icon = await getOrCreateImageIcon('notes')
+    const { id: newId } = await prisma.node.create({
+      data: {
+        title: splitPath[i - 1],
+        uri: `${type}://${splitPath.slice(0, i).join('/')}`,
+        parent: lastId ? { connect: { id: lastId } } : undefined,
+        icon: { connect: { id: icon.id } },
+      },
+      select: { id: true },
+    })
+    lastId = newId
+  }
+
+  return lastId!
 }

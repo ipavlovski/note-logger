@@ -3,25 +3,47 @@ import { buildYoutubeUri, extractYoutubeId, handleURI } from 'backend/handlers'
 import { Router } from 'express'
 import multer from 'multer'
 import sharp from 'sharp'
-import { writeFile } from 'fs/promises'
+import { access, writeFile } from 'fs/promises'
 import { z } from 'zod'
 import { v4 as uuidv4 } from 'uuid'
 import { STORAGE_DIRECTORY } from 'backend/config'
-import { getSuggestionTree, timelineQuery } from 'backend/query'
+import {
+  createSuggestedPath,
+  getOrCreateImageIcon,
+  getSuggestionTree,
+  timelineQuery,
+} from 'backend/query'
 
 const prisma = new PrismaClient()
 const routes = Router()
 const storage = multer.memoryStorage()
-const upload = multer({ storage: storage })
+const upload = multer({ storage: storage, preservePath: true })
 
-const SuggestionTypes = z.enum(['file', 'note'])
+const SuggestionPathType = z.enum(['file', 'note'])
 
-routes.get('/suggestions/:type', async (req, res) => {
+routes.get('/paths/:type', async (req, res) => {
   try {
-    const type = SuggestionTypes.parse(req.body)
+    const type = SuggestionPathType.parse(req.params.type)
     const suggestions = await getSuggestionTree(type)
 
     return res.json(suggestions)
+  } catch (err) {
+    console.error(err)
+    return res.status(400).json({ error: err instanceof Error ? err.message : 'unknown error' })
+  }
+})
+
+const SuggestionPathDef = z.object({
+  uri: z.string(),
+  type: SuggestionPathType,
+})
+
+routes.post('/paths/:type', async (req, res) => {
+  try {
+    const pathDef = SuggestionPathDef.parse(req.body)
+    const id = await createSuggestedPath(pathDef)
+
+    return res.json({ id })
   } catch (err) {
     console.error(err)
     return res.status(400).json({ error: err instanceof Error ? err.message : 'unknown error' })
@@ -36,20 +58,57 @@ routes.post('/note', async (req, res) => {
   }
 })
 
-routes.post('/file', upload.single('image'), async (req, res) => {
+const FileUploadInfo = z.object({
+  uriPath: z.string(),
+  fileTitle: z.string(),
+  filename: z.string(),
+  metadata: z.object({
+    lastModified: z.string(),
+    fileSize: z.number(),
+  }),
+})
+
+routes.post('/file', upload.single('file'), async (req, res) => {
   try {
     if (req.file == null) throw new Error('Attached file is missing')
+    const info = FileUploadInfo.parse(JSON.parse(decodeURI(req.file.originalname)))
+    console.log(info)
 
-    const type = req.file.originalname
-    const ext = req.file.mimetype == 'image/png' ? 'png' : 'unknown'
+    // ensure the file is correct (maybe check it size?)
+    // req.file.buffer
 
-    // const path = `preview/${uuidv4()}.${ext}`
-    // await writeFile(`${STORAGE_DIRECTORY}/${path}`, req.file.buffer)
+    // validate the filename
+    info.filename
 
-     // split path into 2 components: uri + filename
-    // check if the uri path exists
-    // extrac the filename from the end
+    // validte uriPath -> check that parent exists
+    info.uriPath
 
+    // validate file title -> needs to be of certain length
+    info.fileTitle
+
+    // prep the paths
+    const path = `files/${info.filename}`
+    const dest = `${STORAGE_DIRECTORY}/${path}`
+
+    // throw error if file with same name already exsists
+    // await access(dest)
+    await writeFile(dest, req.file.buffer)
+
+    // prep the icon
+    const icon = await getOrCreateImageIcon('book')
+
+    // create the entry
+    const node = await prisma.node.create({
+      data: {
+        title: info.fileTitle,
+        uri: `file://${info.uriPath}/${info.filename}`,
+        icon: { connect: { id: icon.id } },
+        parent: { connect: { uri: `file://${info.uriPath}` } },
+        metadata: JSON.stringify(info.metadata)
+      },
+    })
+
+    return res.sendStatus(201)
   } catch (err) {
     console.error(err)
     return res.status(400).json({ error: err instanceof Error ? err.message : 'unknown error' })

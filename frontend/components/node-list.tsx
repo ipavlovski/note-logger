@@ -149,7 +149,7 @@ function TreeItem({ node }: { node: TimelineNode }) {
       )
 
     return (
-      <div>
+      <div key={treeBranch.item.uri}>
         {item}
         {children}
       </div>
