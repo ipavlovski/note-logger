@@ -15,6 +15,7 @@ import React, { useState, useRef, useEffect, useCallback } from 'react'
 import { VariableSizeList } from 'react-window'
 import { createStyles, MantineProvider } from '@mantine/core'
 import { useResizeObserver } from '@mantine/hooks'
+import { NodeWithSiblings } from 'backend/routes'
 
 // export default function App() {
 //   return (
@@ -53,11 +54,16 @@ import { useResizeObserver } from '@mantine/hooks'
 //   )
 // }
 
-export default function PDF() {
+export default function PDF({ node }: { node: NodeWithSiblings }) {
   const [scale, setScale] = useState(1)
   const [page, setPage] = useState(1)
   const windowRef = useRef<VariableSizeList>() // <React.MutableRefObject<undefined>>
-  const url = 'sample.pdf'
+  // https://localhost:3002/preview/7c983989-9d38-4041-9935-e877c453f1bf.png
+  // const url = 'sample.pdf'
+  // const url = node.uri.split('file://')[1]
+  const filename = node.uri.split('/').pop()
+  const url = `files/${filename}`
+  console.log(`url is: ${url}`)
 
   const scrollToItem = () => {
     windowRef.current && windowRef.current.scrollToItem(page - 1, 'start')
@@ -65,27 +71,28 @@ export default function PDF() {
 
   return (
     <div className="App">
-      <h1>Pdf Viewer</h1>
-      <div>
-        <input value={page} onChange={(e) => setPage(parseInt(e.target.value))} />
-        <button type="button" onClick={scrollToItem}>
-          goto
-        </button>
-        Zoom
-        <button type="button" onClick={() => setScale((v) => v + 0.1)}>
-          +
-        </button>
-        <button type="button" onClick={() => setScale((v) => v - 0.1)}>
-          -
-        </button>
-      </div>
-      <br />
       <PdfUrlViewer url={url} scale={scale} windowRef={windowRef} />
-      <p>https://mozilla.github.io/pdf.js/examples/index.html#interactive-examples</p>
-      <p>https://react-window.now.sh/#/examples/list/variable-size</p>
     </div>
   )
 }
+
+{/* <h1>Pdf Viewer</h1> */}
+// <div>
+// <input value={page} onChange={e => setPage(parseInt(e.target.value))} />
+// <button type="button" onClick={scrollToItem}>
+//   goto
+// </button>
+// Zoom
+// <button type="button" onClick={() => setScale(v => v + 0.1)}>
+//   +
+// </button>
+// <button type="button" onClick={() => setScale(v => v - 0.1)}>
+//   -
+// </button>
+// </div>
+//      {/* <br /> */}
+// <p>https://mozilla.github.io/pdf.js/examples/index.html#interactive-examples</p>
+// <p>https://react-window.now.sh/#/examples/list/variable-size</p>
 
 type PageArgs = { children: React.ReactNode; style: React.CSSProperties }
 const Page = React.memo(({ children, style }: PageArgs) => {
@@ -126,7 +133,7 @@ const PdfPage = React.memo(({ page, scale }: { page: PDFPageProxy; scale: number
         // console.log("Page rendered");
       })
 
-      page.getTextContent().then((textContent) => {
+      page.getTextContent().then(textContent => {
         // console.log(textContent);
         if (!textLayerRef.current) {
           return
@@ -166,7 +173,7 @@ const PdfUrlViewer = (props: PdfUrlViewerArgs) => {
   useEffect(() => {
     var loadingTask: PDFDocumentLoadingTask = pdfjs.getDocument(url)
     loadingTask.promise.then(
-      (pdf) => {
+      pdf => {
         pdfRef.current = pdf
 
         setItemCount(pdf._pdfInfo.numPages)
@@ -177,7 +184,7 @@ const PdfUrlViewer = (props: PdfUrlViewerArgs) => {
           console.log('Page loaded')
         })
       },
-      (reason) => {
+      reason => {
         // PDF loading error
         console.error(reason)
       }
@@ -221,8 +228,8 @@ const PdfViewer = (props: PdfViewerArgs) => {
   const fetchPage = useCallback(
     (index: number) => {
       if (!pages[index]) {
-        getPdfPage(index).then((page) => {
-          setPages((prev) => {
+        getPdfPage(index).then(page => {
+          setPages(prev => {
             const next = [...prev]
             next[index] = page
             return next
@@ -270,8 +277,7 @@ const PdfViewer = (props: PdfViewerArgs) => {
         width={internalWidth}
         height={internalHeight}
         itemCount={itemCount}
-        itemSize={handleItemSize}
-      >
+        itemSize={handleItemSize}>
         {({ index, style }) => {
           fetchPage(index)
           return (

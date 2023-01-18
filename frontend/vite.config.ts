@@ -16,12 +16,13 @@ export default ({ mode }: { mode: string }) => {
         key: './secrets/homelab.key',
         cert: './secrets/homelab.crt',
       },
-      // proxy: {
-      //   '/images': {
-      //     target: 'https://localhost:3002/images',
-      //     changeOrigin: true,
-      //   },
-      // },
+      proxy: {
+        '/files': {
+          target: 'https://localhost:3002/',
+          changeOrigin: true,
+          secure: false,
+        },
+      },
     },
 
     resolve: {

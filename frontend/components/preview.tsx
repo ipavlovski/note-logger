@@ -69,8 +69,8 @@ export default function Preview({ node }: { node: NodeWithSiblings }) {
       }}>
       {node.uri.startsWith('https://www.youtube.com/watch') ? (
         <YouTube node={node} />
-      ) : node.uri.startsWith('pdf://') ? (
-        <PDF />
+      ) : node.uri.startsWith('file://') ? (
+        <PDF node={node}/>
       ) : (
         <Thumbnail preview={node.preview} />
       )}
