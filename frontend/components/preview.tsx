@@ -56,6 +56,8 @@ export default function Preview({ node }: { node: NodeWithSiblings }) {
 
   return node.uri.startsWith('https://www.youtube.com/watch') ? (
     <YouTube node={node} />
+  ) : node.uri.startsWith('file://') ? (
+    <PDF node={node} />
   ) : (
     <AspectRatio
       ratio={16 / 9}
@@ -67,13 +69,7 @@ export default function Preview({ node }: { node: NodeWithSiblings }) {
         // this prevents residual selects when shift is pressed
         event.preventDefault()
       }}>
-      {node.uri.startsWith('https://www.youtube.com/watch') ? (
-        <YouTube node={node} />
-      ) : node.uri.startsWith('file://') ? (
-        <PDF node={node}/>
-      ) : (
-        <Thumbnail preview={node.preview} />
-      )}
+      <Thumbnail preview={node.preview} />
     </AspectRatio>
   )
 }

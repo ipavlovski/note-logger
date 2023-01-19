@@ -17,82 +17,41 @@ import { createStyles, MantineProvider } from '@mantine/core'
 import { useResizeObserver } from '@mantine/hooks'
 import { NodeWithSiblings } from 'backend/routes'
 
-// export default function App() {
-//   return (
-//     <MantineProvider
-//       withGlobalStyles
-//       withNormalizeCSS
-//       theme={{
-//         colorScheme: 'dark',
-//         globalStyles: (theme) => ({
-//           '.PdfPage': {
-//             position: 'relative',
-//           },
-
-//           '.PdfPage__textLayer': {
-//             position: 'absolute',
-//             left: 0,
-//             top: 0,
-//             right: 0,
-//             bottom: 0,
-//             overflow: 'hidden',
-//             opacity: 0.2,
-//             lineHeight: 1,
-//           },
-//           '.PdfPage__textLayer > span': {
-//             color: 'transparent',
-//             position: 'absolute',
-//             whiteSpace: 'pre',
-//             cursor: 'text',
-//             transformOrigin: '0% 0%',
-//           },
-//         }),
-//       }}
-//     >
-//       <PDF />
-//     </MantineProvider>
-//   )
-// }
-
 export default function PDF({ node }: { node: NodeWithSiblings }) {
   const [scale, setScale] = useState(1)
   const [page, setPage] = useState(1)
   const windowRef = useRef<VariableSizeList>() // <React.MutableRefObject<undefined>>
-  // https://localhost:3002/preview/7c983989-9d38-4041-9935-e877c453f1bf.png
-  // const url = 'sample.pdf'
-  // const url = node.uri.split('file://')[1]
+
+  // the URL is based on the vite proxy at the moment...
   const filename = node.uri.split('/').pop()
   const url = `files/${filename}`
   console.log(`url is: ${url}`)
 
   const scrollToItem = () => {
-    windowRef.current && windowRef.current.scrollToItem(page - 1, 'start')
+    windowRef.current && windowRef.current.scrollToItem(page, 'start')
   }
+
+  useEffect(() => {
+    //   pdfRef.current?.destroy()
+    console.log(`RE-RENDERING THE COMPONENT for ${filename}`)
+  }, [filename])
 
   return (
     <div className="App">
       <PdfUrlViewer url={url} scale={scale} windowRef={windowRef} />
+      <button type="button" onClick={() => setScale(v => v + 0.1)}>
+        +
+      </button>
+      <button type="button" onClick={() => setScale(v => v - 0.1)}>
+        -
+      </button>
+      <input value={page} onChange={e => setPage(parseInt(e.target.value))} />
+      <button type="button" onClick={scrollToItem}>
+        goto
+      </button>
     </div>
   )
 }
-
-{/* <h1>Pdf Viewer</h1> */}
-// <div>
-// <input value={page} onChange={e => setPage(parseInt(e.target.value))} />
-// <button type="button" onClick={scrollToItem}>
-//   goto
-// </button>
-// Zoom
-// <button type="button" onClick={() => setScale(v => v + 0.1)}>
-//   +
-// </button>
-// <button type="button" onClick={() => setScale(v => v - 0.1)}>
-//   -
-// </button>
-// </div>
-//      {/* <br /> */}
-// <p>https://mozilla.github.io/pdf.js/examples/index.html#interactive-examples</p>
-// <p>https://react-window.now.sh/#/examples/list/variable-size</p>
 
 type PageArgs = { children: React.ReactNode; style: React.CSSProperties }
 const Page = React.memo(({ children, style }: PageArgs) => {
@@ -181,7 +140,7 @@ const PdfUrlViewer = (props: PdfUrlViewerArgs) => {
         // Fetch the first page
         var pageNumber = 1
         pdf.getPage(pageNumber).then((page: PDFPageProxy) => {
-          console.log('Page loaded')
+          console.log(`Page ${page.pageNumber} loaded from total ${pdf.numPages}`)
         })
       },
       reason => {
@@ -189,6 +148,7 @@ const PdfUrlViewer = (props: PdfUrlViewerArgs) => {
         console.error(reason)
       }
     )
+
   }, [url])
 
   const handleGetPdfPage = useCallback((index: number) => {
