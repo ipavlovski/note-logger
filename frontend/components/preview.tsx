@@ -1,10 +1,10 @@
-import { AspectRatio, createStyles, Image, Popover, Skeleton, TextInput } from '@mantine/core'
+import { AspectRatio, createStyles, Image, Skeleton } from '@mantine/core'
 import type { Preview as IPreview } from '@prisma/client'
-import { NodeWithProps, NodeWithSiblings } from 'backend/routes'
+import { NodeWithSiblings } from 'backend/routes'
 
 import { useAppStore } from 'components/app'
 import PDF from 'components/pdf'
-import { YouTube } from 'components/youtube'
+import YouTube from 'components/youtube'
 
 const SERVER_URL = `https://localhost:${import.meta.env.VITE_SERVER_PORT}`
 
@@ -39,15 +39,6 @@ function Thumbnail({ preview }: { preview: IPreview | null }) {
   )
 }
 
-type PreviewArgs = {
-  nodeId: number
-  preview: IPreview | null
-  uri: string
-  siblings?: {
-    parent: NodeWithProps
-    children: NodeWithProps[]
-  }
-}
 // export default function Preview({ nodeId, preview, uri, siblings }: PreviewArgs) {
 export default function Preview({ node }: { node: NodeWithSiblings }) {
   const { classes, cx } = useStyles()
@@ -56,7 +47,7 @@ export default function Preview({ node }: { node: NodeWithSiblings }) {
 
   return node.uri.startsWith('https://www.youtube.com/watch') ? (
     <YouTube node={node} />
-  ) : node.uri.startsWith('file://') ? (
+  ) : node.uri.startsWith('file://') && node.uri.includes('.pdf') ? (
     <PDF node={node} />
   ) : (
     <AspectRatio

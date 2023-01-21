@@ -1,69 +1,97 @@
+import { PDFDocumentLoadingTask, PDFDocumentProxy, PDFPageProxy } from 'pdfjs-dist'
+import React, { createContext, useCallback, useContext, useEffect, useRef, useState } from 'react'
+import { VariableSizeList, areEqual } from 'react-window'
+import { createStyles, Group } from '@mantine/core'
+import { useResizeObserver } from '@mantine/hooks'
+import { NodeWithSiblings, ChildNode } from 'backend/routes'
+
 // https://codesandbox.io/s/github/vodkhang/react-pdf-viewer
-// note:
+// import * as pdfjs from 'pdfjs-dist/build/pdf'
+// pdfjs.GlobalWorkerOptions.workerSrc =
+//   'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.2.146/pdf.worker.min.js'
+
 
 // @ts-ignore
 const pdfjs = await import('pdfjs-dist/build/pdf')
 // @ts-ignore
 const pdfjsWorker = await import('pdfjs-dist/build/pdf.worker.entry')
 
-// import * as pdfjs from 'pdfjs-dist/build/pdf'
-// pdfjs.GlobalWorkerOptions.workerSrc =
-//   'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.2.146/pdf.worker.min.js'
 
-import { PDFDocumentLoadingTask, PDFDocumentProxy, PDFPageProxy } from 'pdfjs-dist'
-import React, { useState, useRef, useEffect, useCallback } from 'react'
-import { VariableSizeList } from 'react-window'
-import { createStyles, MantineProvider } from '@mantine/core'
-import { useResizeObserver } from '@mantine/hooks'
-import { NodeWithSiblings } from 'backend/routes'
 
-export default function PDF({ node }: { node: NodeWithSiblings }) {
+const useStateDef = () => {
+  const windowRef = useRef<VariableSizeList>() // <React.MutableRefObject<undefined>>
+  const pdfRef = useRef<PDFDocumentProxy>()
+  const [itemCount, setItemCount] = useState(0)
   const [scale, setScale] = useState(1)
   const [page, setPage] = useState(1)
-  const windowRef = useRef<VariableSizeList>() // <React.MutableRefObject<undefined>>
+  const [pages, setPages] = useState<PDFPageProxy[]>([])
 
-  // the URL is based on the vite proxy at the moment...
+  return {
+    pdfRef,
+    itemCount,
+    setItemCount,
+    scale,
+    setScale,
+    page,
+    setPage,
+    windowRef,
+    pages,
+    setPages,
+  }
+}
+
+const PdfContext = createContext<ReturnType<typeof useStateDef> | undefined>(undefined)
+
+export default function PDF({ node }: { node: NodeWithSiblings }) {
+  // var { pathname } = new URL(node.siblings.uri)
+  // const url = `files/${pathname.split('/')[1]}`
+
   const filename = node.uri.split('/').pop()
   const url = `files/${filename}`
   console.log(`url is: ${url}`)
 
-  const scrollToItem = () => {
-    windowRef.current && windowRef.current.scrollToItem(page, 'start')
-  }
-
-  useEffect(() => {
-    //   pdfRef.current?.destroy()
-    console.log(`RE-RENDERING THE COMPONENT for ${filename}`)
-  }, [filename])
-
   return (
     <div className="App">
-      <PdfUrlViewer url={url} scale={scale} windowRef={windowRef} />
-      <button type="button" onClick={() => setScale(v => v + 0.1)}>
-        +
-      </button>
-      <button type="button" onClick={() => setScale(v => v - 0.1)}>
-        -
-      </button>
-      <input value={page} onChange={e => setPage(parseInt(e.target.value))} />
-      <button type="button" onClick={scrollToItem}>
-        goto
-      </button>
+      <PdfContext.Provider value={useStateDef()}>
+        <ProgressBar nodes={node.siblings.children} />
+        <PDFWindow url={url} />
+      </PdfContext.Provider>
     </div>
   )
 }
 
-type PageArgs = { children: React.ReactNode; style: React.CSSProperties }
-const Page = React.memo(({ children, style }: PageArgs) => {
-  const internalStyle = {
-    ...style,
-    display: 'flex',
-    alignItems: 'center',
-    justifyContent: 'center',
-    outline: '1px solid #ccc',
-  }
-  return <div style={internalStyle}>{children}</div>
-})
+function PDFWindow({ url }: { url: string }) {
+  const { setScale, windowRef, pdfRef, setPages, pages } = useContext(PdfContext)!
+
+  useEffect(() => {
+    
+    return () => {
+      // windowRef.current?.resetAfterIndex(0)
+      // pdfRef.current?.destroy()
+    }
+  }, [url])
+
+  return (
+    <div className="App">
+      <Group>
+        <button type="button" onClick={() => setScale((v) => v + 0.1)}>
+          +
+        </button>
+        <button type="button" onClick={() => setScale((v) => v - 0.1)}>
+          -
+        </button>
+        <button
+          onClick={() => {
+            console.log(pages)
+          }}
+        >
+          show pages
+        </button>
+      </Group>
+      <PdfUrlViewer url={url} />
+    </div>
+  )
+}
 
 const PdfPage = React.memo(({ page, scale }: { page: PDFPageProxy; scale: number }) => {
   const canvasRef = useRef<HTMLCanvasElement>(null)
@@ -71,6 +99,7 @@ const PdfPage = React.memo(({ page, scale }: { page: PDFPageProxy; scale: number
 
   useEffect(() => {
     if (!page) {
+      console.log('PAGE MISSING!?')
       return
     }
     const viewport = page.getViewport({ scale })
@@ -89,10 +118,10 @@ const PdfPage = React.memo(({ page, scale }: { page: PDFPageProxy; scale: number
       }
       const renderTask = page.render(renderContext)
       renderTask.promise.then(function () {
-        // console.log("Page rendered");
+        // console.log('Page rendered')
       })
 
-      page.getTextContent().then(textContent => {
+      page.getTextContent().then((textContent) => {
         // console.log(textContent);
         if (!textLayerRef.current) {
           return
@@ -106,6 +135,8 @@ const PdfPage = React.memo(({ page, scale }: { page: PDFPageProxy; scale: number
           textDivs: [],
         })
       })
+    } else {
+      console.log('NO CANVAS!?')
     }
   }, [page, scale])
 
@@ -115,117 +146,83 @@ const PdfPage = React.memo(({ page, scale }: { page: PDFPageProxy; scale: number
       <div ref={textLayerRef} className="PdfPage__textLayer" />
     </div>
   )
-})
+}, areEqual)
 
-type PdfUrlViewerArgs = {
-  url: string
-  scale: number
-  windowRef: React.MutableRefObject<VariableSizeList<any> | undefined>
-}
-const PdfUrlViewer = (props: PdfUrlViewerArgs) => {
-  const { url, ...others } = props
-
-  const pdfRef = useRef<PDFDocumentProxy>()
-
-  const [itemCount, setItemCount] = useState(0)
+function PdfUrlViewer({ url }: { url: string }) {
+  const { windowRef, pdfRef, itemCount, setItemCount, setPages } = useContext(PdfContext)!
 
   useEffect(() => {
     var loadingTask: PDFDocumentLoadingTask = pdfjs.getDocument(url)
     loadingTask.promise.then(
-      pdf => {
-        pdfRef.current = pdf
+      (pdf) => {
 
+        console.log(`Reloading PDF with ${pdf._pdfInfo.numPages}`)
+        pdfRef.current = pdf
         setItemCount(pdf._pdfInfo.numPages)
 
         // Fetch the first page
         var pageNumber = 1
+        setPages([])
         pdf.getPage(pageNumber).then((page: PDFPageProxy) => {
-          console.log(`Page ${page.pageNumber} loaded from total ${pdf.numPages}`)
+          console.log('PAGE LOADED')
         })
       },
-      reason => {
+      (reason) => {
         // PDF loading error
         console.error(reason)
       }
     )
-
   }, [url])
 
-  const handleGetPdfPage = useCallback((index: number) => {
-    return pdfRef.current!.getPage(index + 1)
-  }, [])
-
-  return <PdfViewer {...others} itemCount={itemCount} getPdfPage={handleGetPdfPage} />
+  return <PdfViewer />
 }
 
-interface PdfViewerArgs {
-  width?: number | string
-  height?: number | string
-  scale?: number
-  gap?: number
-  itemCount: number
-  getPdfPage: (index: number) => Promise<PDFPageProxy>
-  windowRef: any
-}
-
-const PdfViewer = (props: PdfViewerArgs) => {
-  const {
-    width = '100%',
-    height = '600px',
-    scale = 1,
-    gap = 40,
-    itemCount,
-    getPdfPage,
-    windowRef,
-  } = props
-
-  const [pages, setPages] = useState<PDFPageProxy[]>([])
-
-  const listRef = useRef<any>(null)
-
+function PdfViewer() {
+  // const [pages, setPages] = useState<PDFPageProxy[]>([])
+  // const listRef = useRef<any>(null)
   const [ref, { width: internalWidth = 400, height: internalHeight = 600 }] = useResizeObserver()
+  const { windowRef, pdfRef, itemCount, scale, pages, setPages } = useContext(PdfContext)!
 
   const fetchPage = useCallback(
     (index: number) => {
       if (!pages[index]) {
-        getPdfPage(index).then(page => {
-          setPages(prev => {
+        pdfRef.current!.getPage(index + 1).then((page) => {
+          setPages((prev) => {
+            console.log(`SETTING PAGES: ${index+1}/${pages.length}`)
             const next = [...prev]
             next[index] = page
             return next
           })
-          listRef.current?.resetAfterIndex(index)
+          windowRef.current?.resetAfterIndex(index)
         })
       }
     },
-    [getPdfPage, pages]
+    [pages]
   )
 
   const handleItemSize = useCallback(
     (index: number) => {
+      const gap = 40
       const page = pages[index]
       return page ? page.getViewport({ scale }).height + gap : 50
     },
-    [pages, scale, gap]
+    [pages, scale]
   )
 
   const handleListRef = useCallback(
-    (elem: any) => {
-      listRef.current = elem
-      if (windowRef) {
-        windowRef.current = elem
-      }
+    (elem: VariableSizeList) => {
+      windowRef.current = elem
     },
     [windowRef]
   )
 
   useEffect(() => {
-    listRef.current?.resetAfterIndex(0)
+    windowRef.current?.resetAfterIndex(0)
   }, [scale])
 
   const style = {
-    width,
-    height,
+    width: '100%',
+    height: '600px',
     border: '1px solid #ccc',
     background: '#ddd',
   }
@@ -237,7 +234,8 @@ const PdfViewer = (props: PdfViewerArgs) => {
         width={internalWidth}
         height={internalHeight}
         itemCount={itemCount}
-        itemSize={handleItemSize}>
+        itemSize={handleItemSize}
+      >
         {({ index, style }) => {
           fetchPage(index)
           return (
@@ -248,5 +246,73 @@ const PdfViewer = (props: PdfViewerArgs) => {
         }}
       </VariableSizeList>
     </div>
+  )
+}
+
+const Page = React.memo(
+  ({ children, style }: { children: React.ReactNode; style: React.CSSProperties }) => {
+    const internalStyle = {
+      ...style,
+      display: 'flex',
+      alignItems: 'center',
+      justifyContent: 'center',
+      outline: '1px solid #ccc',
+    }
+    return <div style={internalStyle}>{children}</div>
+  },
+  areEqual
+)
+
+const useStyles = createStyles((theme, _params, getRef) => ({
+  player: {},
+  bar: {
+    marginTop: '1rem',
+    marginBottom: '1rem',
+    borderBottom: '4px solid rgb(85, 79, 79)',
+    position: 'relative',
+  },
+  point: {
+    width: 16,
+    height: 16,
+    backgroundColor: '#b5afc4',
+    borderRadius: '50%',
+    position: 'absolute',
+    left: '23%',
+    top: -6,
+    cursor: 'pointer',
+  },
+}))
+
+
+function ProgressBar({ nodes }: { nodes: ChildNode[] }) {
+  const { classes, cx } = useStyles()
+
+  return (
+    <div className={classes.bar}>
+      {nodes.map((node) => (
+        <Point node={node} key={node.id} />
+      ))}
+    </div>
+  )
+}
+
+function Point({ node }: { node: ChildNode }) {
+  const { classes, cx } = useStyles()
+  const { windowRef, itemCount } = useContext(PdfContext)!
+  // const setActiveNodeId = useAppStore((state) => state.setActiveNodeId)
+
+  var { searchParams } = new URL(node.uri)
+  var page = parseInt(searchParams.get('p')!)
+
+  const clickHandler = () => {
+    console.log(`clicked on uri: ${node.uri} @ ${page} / ${itemCount}`)
+    windowRef.current && windowRef.current.scrollToItem(page - 1, 'start')
+    // setActiveNodeId(node.id)
+  }
+
+  const percent = Math.floor((page / itemCount) * 100)
+
+  return (
+    <div className={classes.point} style={{ left: `${percent}%` }} onClick={clickHandler}></div>
   )
 }

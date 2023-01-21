@@ -2,20 +2,39 @@ import { AspectRatio, createStyles, Popover, TextInput, Tooltip } from '@mantine
 import { getHotkeyHandler, useDisclosure, useHotkeys } from '@mantine/hooks'
 import { showNotification } from '@mantine/notifications'
 import { useMutation, useQueryClient } from '@tanstack/react-query'
-// import { extractYoutubeId } from 'backend/handlers'
-import { NodeWithSiblings } from 'backend/routes'
-import { useAppStore } from 'components/app'
-import { useEffect, useReducer, useRef, useState } from 'react'
+import { createContext, useContext, useEffect, useReducer, useRef, useState } from 'react'
 import youTubePlayer from 'youtube-player'
 import PlayerStates from 'youtube-player/dist/constants/PlayerStates'
 import type { YouTubePlayer } from 'youtube-player/dist/types'
+
+import type { NodeWithSiblings, ChildNode } from 'backend/routes'
+import { useAppStore } from 'components/app'
+
+//  =============================
+//              STATE
+//  =============================
+
+const useStateDef = () => {
+  const [player, setPlayer] = useState<YouTubePlayer>()
+  const [duration, setDuration] = useState<number>()
+  const [points, setPoints] = useState<{ ms: number }[]>([])
+  const [siblingsId, setSiblingsId] = useState<number>()
+
+  return { player, setPlayer, duration, setDuration, points, setPoints, siblingsId, setSiblingsId }
+}
+
+const YoutubeContext = createContext<ReturnType<typeof useStateDef> | undefined>(undefined)
+
+//  =============================
+//              HOOKS
+//  =============================
 
 const useStyles = createStyles(theme => ({
   player: {
     padding: 0,
     ['& .ytp-pause-overlay']: {
       display: 'none',
-    }
+    },
   },
   bar: {
     marginTop: '1rem',
@@ -43,52 +62,59 @@ const useStyles = createStyles(theme => ({
   },
 }))
 
-function extractYoutubeId(url: string) {
-  const matches = [...url.matchAll(/(.*)(www.youtube.com\/watch\?v=)(.{11})/g)]
-  if (matches.length == 0) throw new Error('Incorrect youtube URL!')
-  return matches[0][3]
-}
+const useShortcuts = () => {
+  const { player } = useContext(YoutubeContext)!
 
-// https://www.youtube.com/watch?v=AHYNxpqKqwo
-// { videoNode }: { videoNode: VideoNode }
-export function YouTube({ node }: { node: NodeWithSiblings }) {
-  const [player, setPlayer] = useState<YouTubePlayer>()
-  const [duration, setDuration] = useState<number>()
-
-  const youtubeRef = useRef<HTMLDivElement>(null)
-  const { classes, cx } = useStyles()
-
-  const videoId = extractYoutubeId(node.siblings.uri)
-
-  // note: will only work when youtube is open (which is exactly what we want)
   useHotkeys([
     [
       'space',
       async () => {
-        const stateCode  = await player?.getPlayerState()
+        const stateCode = await player?.getPlayerState()
         if (stateCode) {
           const status = Object.entries(PlayerStates).find(v => v[1] == stateCode)![0]
 
           if (status == 'PLAYING') player?.pauseVideo()
           if (status == 'PAUSED') player?.playVideo()
           if (status == 'VIDEO_CUED') showNotification({ color: 'teal', message: `QUEUED` })
-
-          // console.log('STATE', playerState, stateVal![0])
-          // console.log(Object.values(PlayerStates))
-          // const status = Object.values(PlayerStates).filter(value => typeof value === 'string') as string[]
-          
         }
-        
       },
     ],
   ])
+}
+
+//  ============================
+//              MAIN
+//  ============================
+
+const ORIGIN_URL = `https://localhost:${import.meta.env.VITE_PORT}`
+const SERVER_URL = `https://localhost:${import.meta.env.VITE_SERVER_PORT}`
+
+export default function YouTube({ node }: { node: NodeWithSiblings }) {
+  var { searchParams } = new URL(node.siblings.uri)
+  var videoId = searchParams.get('v')!
+
+  return (
+    <YoutubeContext.Provider value={useStateDef()}>
+      <Player videoId={videoId} siblingsId={node.siblings.id} />
+      <ProgressBar nodes={node.siblings.children} />
+    </YoutubeContext.Provider>
+  )
+}
+
+function Player({ videoId, siblingsId }: { videoId: string, siblingsId: number }) {
+  const { classes } = useStyles()
+  const { setDuration, setPlayer, setSiblingsId } = useContext(YoutubeContext)!
+  setSiblingsId(siblingsId)
+  useShortcuts()
+
+  const youtubeRef = useRef<HTMLDivElement>(null)
 
   useEffect(() => {
     const player = youTubePlayer(youtubeRef.current!, {
       videoId: videoId,
       playerVars: {
         enablejsapi: 1,
-        origin: 'https://localhost:9002',
+        origin: ORIGIN_URL,
         modestbranding: 1,
       },
     })
@@ -103,8 +129,6 @@ export function YouTube({ node }: { node: NodeWithSiblings }) {
       player.getDuration().then(d => setDuration(d))
     })
 
-    console.log('Player is ready')
-
     return () => {
       console.log('Destroying player...')
       player.destroy()
@@ -112,125 +136,53 @@ export function YouTube({ node }: { node: NodeWithSiblings }) {
   }, [videoId])
 
   return (
-    <>
-      <AspectRatio ratio={16 / 9} mx="auto">
-        <div ref={youtubeRef} className={classes.player} />
-      </AspectRatio>
-      <ProgressBar
-        parentId={node.siblings.id}
-        player={player}
-        duration={duration}
-        chapterNodes={node.siblings.children}
-      />
-    </>
+    <AspectRatio ratio={16 / 9} mx="auto" className={classes.player}>
+      <div ref={youtubeRef} className={classes.player} />
+    </AspectRatio>
   )
 }
 
-type Chapter = { id?: number; uri?: string; title?: string; millisec: number }
-type ProgressBarArgs = {
-  parentId: number
-  player: YouTubePlayer | undefined
-  duration: number | undefined
-  chapterNodes: NodeWithSiblings['siblings']['children']
-}
-
-type ActionTypes =
-  | { type: 'create'; chapter: Chapter }
-  | { type: 'update'; chapters: Chapter[] }
-  | { type: 'delete'; chapter: Chapter }
-  | { type: 'replace'; chapters: Chapter[] }
-function ProgressBar({ parentId, player, duration, chapterNodes }: ProgressBarArgs) {
+function ProgressBar({ nodes }: { nodes: ChildNode[] }) {
   const { classes, cx } = useStyles()
+  const { player, points, setPoints } = useContext(YoutubeContext)!
 
-  useEffect(() => {
-    const chapters = chapterNodes.map(node => {
-      const millisec = parseFloat(node.uri.match(/(\[)(.*)(\])$/)![2])
-      return { id: node.id, uri: node.uri, title: node.title, millisec: millisec }
-    })
-    chapterDispatch({ type: 'replace', chapters })
-  }, [parentId])
-
-  const [chapters, chapterDispatch] = useReducer((chapters: Chapter[], action: ActionTypes) => {
-    if (action.type == 'create') {
-      return chapters.concat(action.chapter)
-    }
-
-    if (action.type == 'update') {
-      action.chapters.forEach(incomingChapter => {
-        const match = chapters.find(chapter => chapter.millisec == incomingChapter.millisec)
-        match && Object.assign(match, incomingChapter)
+  const addNewPoint = () => {
+    if (player) {
+      player.getCurrentTime().then(currentTime => {
+        const ms = Math.round(currentTime * 1000) / 1000
+        setPoints(prev => [...prev, { ms }])
+        console.log(`Created point at: ${ms} ms`)
       })
-
-      return chapters
     }
-
-    if (action.type == 'delete') {
-      return chapters.filter(chapter => chapter.millisec != action.chapter.millisec)
-    }
-
-    if (action.type == 'replace') {
-      return action.chapters
-    }
-
-    return chapters
-  }, [])
+  }
 
   return (
-    <div
-      onDoubleClick={() => {
-        if (player) {
-          player.getCurrentTime().then(currentTime => {
-            chapterDispatch({
-              type: 'create',
-              chapter: { millisec: Math.round(currentTime * 1000) / 1000 },
-            })
-            console.log(`time: ${currentTime}`)
-          })
-        }
-      }}
-      className={classes.bar}>
-      {player &&
-        duration &&
-        chapters.map(chapter => (
-          <YoutubeChapter
-            parentId={parentId}
-            player={player}
-            duration={duration}
-            chapter={chapter}
-            key={chapter.millisec}
-            chapterDispatch={chapterDispatch}
-          />
-        ))}
+    <div className={classes.bar} onDoubleClick={addNewPoint}>
+      {nodes.map(node => (
+        <ExistingPoint node={node} key={node.id} />
+      ))}
+      {points.map(point => (
+        <NewPoint ms={point.ms} key={point.ms} />
+      ))}
     </div>
   )
 }
 
-type YoutubeChapterArgs = {
-  parentId: number
-  player: YouTubePlayer
-  duration: number
-  chapter: Chapter
-  chapterDispatch: React.Dispatch<ActionTypes>
-}
 
-const SERVER_URL = `https://localhost:${import.meta.env.VITE_SERVER_PORT}`
+//  ==============================
+//              POINTS            
+//  ==============================
 
-function YoutubeChapter({
-  parentId,
-  player,
-  duration,
-  chapter,
-  chapterDispatch,
-}: YoutubeChapterArgs) {
+
+
+function NewPoint({ ms }: { ms: number }) {
   const { classes, cx } = useStyles()
-
-  const percent = Math.floor((chapter.millisec / duration) * 100)
-
-  const [opened, setOpened] = useState(false)
-  const [value, setValue] = useState('')
+  const [isPopoverOpened, setPopoverOpened] = useState(false)
+  const [titleValue, setTitleValue] = useState('')
   const queryClient = useQueryClient()
-  const activeNode = useAppStore(state => state.active)
-  const setActiveNode = useAppStore(state => state.setActive)
+  const { duration, player, siblingsId } = useContext(YoutubeContext)!
+
+  const percent = Math.floor((ms / duration!) * 100)
 
   const addYoutubeChapter = useMutation(
     ({ nodeId, timestamp, title }: { nodeId: number; timestamp: number; title: string }) => {
@@ -246,41 +198,32 @@ function YoutubeChapter({
   )
 
   const handleSave = () => {
-    addYoutubeChapter.mutate({ nodeId: parentId, timestamp: chapter.millisec, title: value })
+    addYoutubeChapter.mutate({ nodeId: siblingsId!, timestamp: ms, title: titleValue })
 
-    // IF success, or IF failyre
-    showNotification({ title: `Status: ${addYoutubeChapter.status}`, color: 'teal', message: value })
-    setOpened(false)
-    setValue('')
+    // IF success, or IF failure
+    // IMPORTANT: remove the item from the list
+    showNotification({ title: `Status: ${addYoutubeChapter.status}`, color: 'teal', message: titleValue })
+    setPopoverOpened(false)
+    setTitleValue('')
   }
 
-  const chapterCircle = (
-    <div
-      onClick={() => {
-        setOpened(o => !o)
-        player!.seekTo(chapter.millisec, true)
-        chapter.id && setActiveNode(chapter.id)
-        console.log(`clicked on ${chapter.millisec}`)
-      }}
-      className={cx(
-        classes.point,
-        chapter.title != null && classes.savedPoint,
-        chapter.id == activeNode && classes.activePoint
-      )}
-      style={{ left: `${percent}%` }}></div>
-  )
+  const clickOnNew = () => {
+    setPopoverOpened(o => !o)
+    player!.seekTo(ms, true)
+    console.log(`clicked on ${ms}`)
+  }
 
-  return chapter.title != null ? (
-    <Tooltip label={chapter.title}>{chapterCircle}</Tooltip>
-  ) : (
+  return (
     <Popover
-      opened={opened}
+      opened={isPopoverOpened}
       width={300}
       position="bottom"
-      onChange={setOpened}
+      onChange={setPopoverOpened}
       withArrow
       shadow="md">
-      <Popover.Target>{chapterCircle}</Popover.Target>
+      <Popover.Target>
+        <div className={classes.point} style={{ left: `${percent}%` }} onClick={clickOnNew}></div>
+      </Popover.Target>
       <Popover.Dropdown
         sx={theme => ({
           background: theme.colorScheme === 'dark' ? theme.colors.dark[7] : theme.white,
@@ -288,11 +231,39 @@ function YoutubeChapter({
         <TextInput
           placeholder="Title goes here."
           label="Press enter to submit..."
-          value={value}
-          onChange={event => setValue(event.target.value)}
+          value={titleValue}
+          onChange={event => setTitleValue(event.target.value)}
           onKeyDown={getHotkeyHandler([['Enter', handleSave]])}
         />
       </Popover.Dropdown>
     </Popover>
+  )
+}
+
+function ExistingPoint({ node }: { node: ChildNode }) {
+  const { classes, cx } = useStyles()
+  const { duration, player } = useContext(YoutubeContext)!
+  const setActiveNode = useAppStore(state => state.setActive)
+  const activeNode = useAppStore(state => state.active)
+
+  const ms = parseFloat(new URL(node.uri).searchParams.get('ms')!)
+  const percent = Math.floor((ms / duration!) * 100)
+
+  const classList = cx(
+    classes.point,
+    classes.savedPoint,
+    node.id == activeNode && classes.activePoint
+  )
+
+  const clickOnExisting = () => {
+    console.log(`clicked on uri: ${node.uri} @ ${ms}`)
+    player!.seekTo(ms, true)
+    setActiveNode(node.id)
+  }
+
+  return (
+    <Tooltip label={node.title}>
+      <div className={classList} style={{ left: `${percent}%` }} onClick={clickOnExisting}></div>
+    </Tooltip>
   )
 }

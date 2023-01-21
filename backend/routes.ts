@@ -1,18 +1,18 @@
 import { Prisma, PrismaClient } from '@prisma/client'
-import { buildYoutubeUri, extractYoutubeId, handleURI } from 'backend/handlers'
-import { Router } from 'express'
-import multer from 'multer'
-import sharp from 'sharp'
-import { access, writeFile } from 'fs/promises'
-import { z } from 'zod'
-import { v4 as uuidv4 } from 'uuid'
 import { STORAGE_DIRECTORY } from 'backend/config'
+import { handleURI } from 'backend/handlers'
 import {
   createSuggestedPath,
   getOrCreateImageIcon,
   getSuggestionTree,
-  timelineQuery,
+  timelineQuery
 } from 'backend/query'
+import { Router } from 'express'
+import { writeFile } from 'fs/promises'
+import multer from 'multer'
+import sharp from 'sharp'
+import { v4 as uuidv4 } from 'uuid'
+import { z } from 'zod'
 
 const prisma = new PrismaClient()
 const routes = Router()
@@ -98,13 +98,13 @@ routes.post('/file', upload.single('file'), async (req, res) => {
     const icon = await getOrCreateImageIcon('book')
 
     // create the entry
-    const node = await prisma.node.create({
+    await prisma.node.create({
       data: {
         title: info.fileTitle,
         uri: `file://${info.uriPath}/${info.filename}`,
         icon: { connect: { id: icon.id } },
         parent: { connect: { uri: `file://${info.uriPath}` } },
-        metadata: JSON.stringify(info.metadata)
+        metadata: JSON.stringify(info.metadata),
       },
     })
 
@@ -115,32 +115,6 @@ routes.post('/file', upload.single('file'), async (req, res) => {
   }
 })
 
-const FilePageArgs = z.object({
-  title: z.string(),
-  page: z.number(),
-})
-
-routes.post('/file/:id', async (req, res) => {
-  try {
-    const parent = await prisma.node.findFirstOrThrow({ where: { id: parseInt(req.params.id) } })
-    const props = FilePageArgs.parse(req.body)
-    const uri = `${parent.uri}[${props.page}]`
-
-    const results = await prisma.node.create({
-      data: {
-        parent: { connect: { id: parent.id } },
-        title: props.title,
-        uri,
-        icon: { connect: { id: parent.iconId! } },
-      },
-    })
-
-    return res.json(results)
-  } catch (err) {
-    console.error(err)
-    return res.status(400).json({ error: err instanceof Error ? err.message : 'unknown error' })
-  }
-})
 
 routes.post('/uri', async (req, res) => {
   //   const dateFrom = new Date(req.params.date)
@@ -180,23 +154,46 @@ routes.post('/uri', async (req, res) => {
   }
 })
 
-const UriYoutubeArgs = z.object({
-  timestamp: z.number(),
-  title: z.string(),
-})
+const UriPageOrTimestamp = z.union([
+  z.object({
+    title: z.string(),
+    timestamp: z.number(),
+  }),
+  z.object({
+    title: z.string(),
+    page: z.number(),
+  }),
+])
 
 routes.post('/uri/:id', async (req, res) => {
   try {
+    const props = UriPageOrTimestamp.parse(req.body)
     const parent = await prisma.node.findFirstOrThrow({ where: { id: parseInt(req.params.id) } })
-    const props = UriYoutubeArgs.parse(req.body)
-    const uri = `${parent.uri}[${props.timestamp}]`
 
+    // declare URI and ICON -> feel free to override icon in if-handlers
+    let uri = ''
+    let iconId = parent.iconId!
+
+    // handle youtube
+    if ('timestamp' in props) {
+      uri = `${parent.uri}&ms=${props.timestamp}`
+    }
+
+    // handle pdf case
+    if ('page' in props) {
+      uri = `${parent.uri}?pg=${props.page}`
+    }
+    
+    // if failed to set URI, throw an error
+    if (uri == '') throw new Error('Failed to set URI')
+
+    // 
     const results = await prisma.node.create({
       data: {
         parent: { connect: { id: parent.id } },
         title: props.title,
         uri,
-        icon: { connect: { id: parent.iconId! } },
+        icon: { connect: { id: iconId! } },
       },
     })
 
@@ -250,6 +247,11 @@ routes.post('/timeline', async (req, res) => {
   }
 })
 
+////////////// GET /NODE/:ID
+// get node by id
+// use custom handlers to populate 'siblings' property
+// depending
+
 const nodeWithProps = Prisma.validator<Prisma.NodeArgs>()({
   include: {
     leafs: { include: { images: true } },
@@ -261,17 +263,56 @@ const nodeWithProps = Prisma.validator<Prisma.NodeArgs>()({
   },
 })
 
-const nodeWithChildren = Prisma.validator<Prisma.NodeArgs>()({
-  include: {
-    children: true,
+const siblingNodes = Prisma.validator<Prisma.NodeArgs>()({
+  select: {
+    id: true,
+    uri: true,
+    title: true,
+    preview: true,
+    children: {
+      select: {
+        id: true,
+        uri: true,
+        title: true,
+        preview: true,
+      },
+    },
   },
 })
 
 export type NodeWithProps = Prisma.NodeGetPayload<typeof nodeWithProps>
-export type NodeWithChildren = Prisma.NodeGetPayload<typeof nodeWithChildren>
-export type NodeWithSiblings = NodeWithProps & { siblings: NodeWithChildren }
+export type SiblingNodes = Prisma.NodeGetPayload<typeof siblingNodes>
+export type NodeWithSiblings = NodeWithProps & { siblings: SiblingNodes }
+export type ChildNode = NodeWithSiblings['siblings']['children'][0]
+
+async function getNodeWithSiblings(
+  nodeMatch: NodeWithProps,
+  parentUri: string
+): Promise<NodeWithSiblings> {
+  const siblings: SiblingNodes = await prisma.node.findFirstOrThrow({
+    where: { uri: parentUri },
+    select: {
+      id: true,
+      uri: true,
+      title: true,
+      preview: true,
+      children: {
+        select: {
+          id: true,
+          uri: true,
+          title: true,
+          preview: true,
+        },
+      },
+    },
+  })
+
+  return { ...nodeMatch, siblings }
+}
+
 routes.get('/node/:id', async (req, res) => {
   try {
+    // first, get the main node with all the leafs and metadata
     const nodeMatch: NodeWithProps = await prisma.node.findFirstOrThrow({
       where: { id: parseInt(req.params.id) },
       include: {
@@ -284,24 +325,23 @@ routes.get('/node/:id', async (req, res) => {
       },
     })
 
+    // if it's a youtube node, get siblings also
     if (nodeMatch.uri.startsWith('https://www.youtube.com/watch')) {
-      const youtubeId = extractYoutubeId(nodeMatch.uri)
-
-      const siblings: NodeWithChildren = await prisma.node.findFirstOrThrow({
-        where: { uri: buildYoutubeUri(youtubeId) },
-        include: {
-          children: true,
-        },
-      })
-
-      return res.json({ ...nodeMatch, siblings })
+      const videoId = new URL(nodeMatch.uri).searchParams.get('v')!
+      const parentURI = `https://www.youtube.com/watch?v=${videoId}`
+      const nodeWithSiblings = await getNodeWithSiblings(nodeMatch, parentURI)
+      return res.json(nodeWithSiblings)
     }
 
-    // if (nodeMatch.uri.startsWith('pdf://')) {
+    // if it's a file node, get siblings also
+    if (nodeMatch.uri.startsWith('file://') && nodeMatch.uri.includes('.pdf')) {
+      const parentURI = nodeMatch.uri.split('?')[0]
+      const nodeWithSiblings = await getNodeWithSiblings(nodeMatch, parentURI)
+      return res.json(nodeWithSiblings)
+    }
 
-    // }
-
-    return res.json({ ...nodeMatch, siblings: [] })
+    // for all other nodes, send the node without siblings
+    return res.json(nodeMatch)
   } catch (err) {
     console.error(err)
     return res.json({ error: err instanceof Error ? err.message : 'unknown error' })
