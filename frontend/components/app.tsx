@@ -6,7 +6,13 @@ import create from 'zustand'
 import NodeList from 'components/node-list'
 import NodeView from 'components/node-view'
 
-const queryClient = new QueryClient()
+const queryClient = new QueryClient({
+  defaultOptions: {
+    queries: {
+      refetchOnWindowFocus: false
+    }
+  }
+})
 
 interface AppState {
   active: number
