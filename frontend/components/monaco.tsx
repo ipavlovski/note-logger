@@ -7,9 +7,8 @@ import { Observable, timer } from 'rxjs'
 import { debounce } from 'rxjs/operators'
 
 import type { LeafWithImages } from 'backend/routes'
-import { useAppStore } from 'components/app'
+import { SERVER_URL, useAppStore } from 'components/app'
 
-const SERVER_URL = `https://localhost:${import.meta.env.VITE_SERVER_PORT}`
 
 // blobTag - 'gallery', 'inline', ...
 export async function getClipboardImage(blobTag: string) {

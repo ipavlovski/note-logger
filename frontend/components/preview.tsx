@@ -2,11 +2,10 @@ import { AspectRatio, createStyles, Image, Skeleton } from '@mantine/core'
 import type { Preview as IPreview } from '@prisma/client'
 import { NodeWithSiblings } from 'backend/routes'
 
-import { useAppStore } from 'components/app'
+import { SERVER_URL, useAppStore } from 'components/app'
 import PDF from 'components/pdf'
 import YouTube from 'components/youtube'
 
-const SERVER_URL = `https://localhost:${import.meta.env.VITE_SERVER_PORT}`
 
 const useStyles = createStyles(theme => ({
   selected: {

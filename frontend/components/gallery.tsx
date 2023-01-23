@@ -1,9 +1,8 @@
 import { Carousel, Embla, useAnimationOffsetEffect } from '@mantine/carousel'
 import { Divider, Grid, Image, Modal } from '@mantine/core'
 import type { Image as PrismaImage } from '@prisma/client'
+import { SERVER_URL } from 'components/app'
 import { useState } from 'react'
-
-const SERVER_URL = `https://localhost:${import.meta.env.VITE_SERVER_PORT}`
 
 export default function Gallery({ input }: { input: PrismaImage[] }) {
   const [initSlide, setInitSlide] = useState(0)

@@ -2,13 +2,23 @@ import { createStyles, Group, Image, Text } from '@mantine/core'
 import { IconRefresh } from '@tabler/icons'
 import { useQuery } from '@tanstack/react-query'
 import { useRef } from 'react'
+import { StateCreator } from 'zustand'
 
-import { useAppStore } from 'components/app'
+import { AppState, SERVER_URL, useAppStore } from 'components/app'
 import Omnibar from 'components/omnibar'
-
 import type { TimelineNode, TreeBranch } from 'backend/query'
 
-const SERVER_URL = `https://localhost:${import.meta.env.VITE_SERVER_PORT}`
+export interface ActiveNodeSlice {
+  active: number
+  setActive: (id: number) => void
+}
+
+
+export const createActiveNodeSlice: StateCreator<AppState, [], [], ActiveNodeSlice> = set => ({
+  active: 2,
+  setActive: id => set({ active: id }),
+})
+
 
 
 const useStyles = createStyles(theme => ({

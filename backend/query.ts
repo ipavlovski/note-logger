@@ -23,11 +23,12 @@ export interface TreeBranch {
 function getDateRange(endDate: Date, range: TimeSplit, dayStartHour = 5) {
   const endDateTime = DateTime.fromJSDate(endDate)
 
+  // TODO: OVERRIDE DAYS, JUST FOR NOW ({ days: 7}) is the default
   const startDateTime =
     range == 'day'
       ? endDateTime.minus({ hours: 23 }).startOf('day').plus({ hours: dayStartHour })
       : range == 'week'
-      ? endDateTime.minus({ days: 7 }).startOf('week').plus({ hours: dayStartHour })
+      ? endDateTime.minus({ days: 21 }).startOf('week').plus({ hours: dayStartHour })
       : endDateTime.minus({ month: 1 }).startOf('month').plus({ hours: dayStartHour })
 
   return startDateTime.toJSDate()

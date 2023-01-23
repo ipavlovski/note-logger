@@ -2,15 +2,14 @@ import { createStyles, Text } from '@mantine/core'
 import { useHotkeys } from '@mantine/hooks'
 import { showNotification } from '@mantine/notifications'
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
-import { NodeWithChildren, NodeWithProps, NodeWithSiblings } from 'backend/routes'
-import { useAppStore } from 'components/app'
+import {  NodeWithSiblings } from 'backend/routes'
+import { SERVER_URL, useAppStore } from 'components/app'
 
 import Leafs from 'components/leafs'
 import Metadata from 'components/metadata'
 import { getClipboardImage } from 'components/monaco'
 import Preview from 'components/preview'
 
-const SERVER_URL = `https://localhost:${import.meta.env.VITE_SERVER_PORT}`
 
 const useStyles = createStyles(theme => ({
   scrollable: {

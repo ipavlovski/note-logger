@@ -21,6 +21,7 @@ import {
   IconNotes,
 } from '@tabler/icons'
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
+import { SERVER_URL } from 'components/app'
 import { useState } from 'react'
 
 type PathSuggestion = {
@@ -28,8 +29,6 @@ type PathSuggestion = {
   label: string
   group: string
 }
-
-const SERVER_URL = `https://localhost:${import.meta.env.VITE_SERVER_PORT}`
 
 const useStyles = createStyles(theme => ({
   rightSideIcon: {

@@ -8,7 +8,7 @@ import PlayerStates from 'youtube-player/dist/constants/PlayerStates'
 import type { YouTubePlayer } from 'youtube-player/dist/types'
 
 import type { NodeWithSiblings, ChildNode } from 'backend/routes'
-import { useAppStore } from 'components/app'
+import { ORIGIN_URL, SERVER_URL, useAppStore } from 'components/app'
 
 //  =============================
 //              STATE
@@ -86,8 +86,6 @@ const useShortcuts = () => {
 //              MAIN
 //  ============================
 
-const ORIGIN_URL = `https://localhost:${import.meta.env.VITE_PORT}`
-const SERVER_URL = `https://localhost:${import.meta.env.VITE_SERVER_PORT}`
 
 export default function YouTube({ node }: { node: NodeWithSiblings }) {
   var { searchParams } = new URL(node.siblings.uri)
