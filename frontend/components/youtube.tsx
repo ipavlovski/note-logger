@@ -8,22 +8,67 @@ import PlayerStates from 'youtube-player/dist/constants/PlayerStates'
 import type { YouTubePlayer } from 'youtube-player/dist/types'
 
 import type { NodeWithSiblings, ChildNode } from 'backend/routes'
-import { ORIGIN_URL, SERVER_URL, useAppStore } from 'components/app'
-
+import { AppState, ORIGIN_URL, SERVER_URL, useAppStore } from 'components/app'
+import { StateCreator } from 'zustand'
+import { PdfPreview } from 'components/pdf'
+import { shallow } from 'zustand/shallow'
 //  =============================
 //              STATE
 //  =============================
 
-const useStateDef = () => {
-  const [player, setPlayer] = useState<YouTubePlayer>()
-  const [duration, setDuration] = useState<number>()
-  const [points, setPoints] = useState<{ ms: number }[]>([])
-  const [siblingsId, setSiblingsId] = useState<number>()
 
-  return { player, setPlayer, duration, setDuration, points, setPoints, siblingsId, setSiblingsId }
+
+
+
+interface ThumbnailPreview {
+  type: 'thumbnail'
 }
 
-const YoutubeContext = createContext<ReturnType<typeof useStateDef> | undefined>(undefined)
+
+export interface PreviewSlice {
+  preview: YoutubePreview | PdfPreview | ThumbnailPreview
+}
+
+export const createPreviewSlice: StateCreator<AppState, [], [], PreviewSlice> = (set, get) => ({
+  preview: {
+    type: 'youtube',
+    player: null,
+    duration: null,
+    points: [],
+    siblingsId: null,
+    // setType: type => set(state => ({ preview: { ...state.preview, type }})),
+    setPlayer: player => set(state => ({ preview: { ...state.preview, player }})),
+    setDuration: duration => set(state => ({ preview: { ...state.preview, duration }})),
+    setSiblingsId: siblingsId => set(state => ({ preview: { ...state.preview, siblingsId }})),
+    setPoints: point => set(state => ({ preview: { ...state.preview, points: [point] }})),
+  }
+})
+
+export interface YoutubePreview {
+  type: 'youtube'
+  player: YouTubePlayer | null
+  duration: number | null
+  points: {ms: number}[]
+  siblingsId: number | null,
+  // setType: (type: 'youtube' | 'pdf') => void
+  setPlayer: (player: YouTubePlayer) => void
+  setDuration: (duration: number) => void
+  setPoints: (point: {ms: number}) => void
+  setSiblingsId: (siblingsId: number) => void
+}
+
+
+// const useStateDef = () => {
+//   const [player, setPlayer] = useState<YouTubePlayer>()
+//   const [duration, setDuration] = useState<number>()
+//   const [points, setPoints] = useState<{ ms: number }[]>([])
+//   const [siblingsId, setSiblingsId] = useState<number>()
+
+//   return { player, setPlayer, duration, setDuration, points, setPoints, siblingsId, setSiblingsId }
+// }
+
+// const YoutubeContext = createContext<ReturnType<typeof useStateDef> | undefined>(undefined)
+
 
 //  =============================
 //              HOOKS
@@ -62,8 +107,15 @@ const useStyles = createStyles(theme => ({
   },
 }))
 
+
+
+
 const useShortcuts = () => {
-  const { player } = useContext(YoutubeContext)!
+  // const { player } = useContext(YoutubeContext)!
+  const player = useAppStore(state => {
+    if (state.preview.type != 'youtube') throw new Error('Should not have happened...')
+    return state.preview.player
+  })
 
   useHotkeys([
     [
@@ -91,17 +143,39 @@ export default function YouTube({ node }: { node: NodeWithSiblings }) {
   var { searchParams } = new URL(node.siblings.uri)
   var videoId = searchParams.get('v')!
 
+
+  const { setDuration, setPlayer, setSiblingsId } = useAppStore(state => {
+    if (state.preview.type != 'youtube') throw new Error('Should not have happened...')
+    return {
+      setDuration: state.preview.setDuration,
+      setPlayer: state.preview.setPlayer,
+      setSiblingsId: state.preview.setSiblingsId,
+    }
+  }, shallow)
+
   return (
-    <YoutubeContext.Provider value={useStateDef()}>
+    // <YoutubeContext.Provider value={useStateDef()}>
+    <div>
       <Player videoId={videoId} siblingsId={node.siblings.id} />
       <ProgressBar nodes={node.siblings.children} />
-    </YoutubeContext.Provider>
+    </div>
+
+    // </YoutubeContext.Provider>
   )
 }
 
 function Player({ videoId, siblingsId }: { videoId: string, siblingsId: number }) {
   const { classes } = useStyles()
-  const { setDuration, setPlayer, setSiblingsId } = useContext(YoutubeContext)!
+  const { setDuration, setPlayer, setSiblingsId } = useAppStore(state => {
+    if (state.preview.type != 'youtube') throw new Error('Should not have happened...')
+    return {
+      setDuration: state.preview.setDuration,
+      setPlayer: state.preview.setPlayer,
+      setSiblingsId: state.preview.setSiblingsId,
+    }
+  }, shallow)
+
+  // const { setDuration, setPlayer, setSiblingsId } = useContext(YoutubeContext)!
   setSiblingsId(siblingsId)
   useShortcuts()
 
@@ -142,13 +216,23 @@ function Player({ videoId, siblingsId }: { videoId: string, siblingsId: number }
 
 function ProgressBar({ nodes }: { nodes: ChildNode[] }) {
   const { classes, cx } = useStyles()
-  const { player, points, setPoints } = useContext(YoutubeContext)!
+  // const { player, points, setPoints } = useContext(YoutubeContext)!
+
+  const { player, points, setPoints } = useAppStore(state => {
+    if (state.preview.type != 'youtube') throw new Error('Should not have happened...')
+    return {
+      player: state.preview.player,
+      points: state.preview.points,
+      setPoints: state.preview.setPoints,
+    }
+  }, shallow)
+
 
   const addNewPoint = () => {
     if (player) {
       player.getCurrentTime().then(currentTime => {
         const ms = Math.round(currentTime * 1000) / 1000
-        setPoints(prev => [...prev, { ms }])
+        setPoints({ ms })
         console.log(`Created point at: ${ms} ms`)
       })
     }
@@ -178,7 +262,16 @@ function NewPoint({ ms }: { ms: number }) {
   const [isPopoverOpened, setPopoverOpened] = useState(false)
   const [titleValue, setTitleValue] = useState('')
   const queryClient = useQueryClient()
-  const { duration, player, siblingsId } = useContext(YoutubeContext)!
+  // const { duration, player, siblingsId } = useContext(YoutubeContext)!
+
+  const { duration, player,siblingsId } = useAppStore(state => {
+    if (state.preview.type != 'youtube') throw new Error('Should not have happened...')
+    return {
+      duration: state.preview.duration,
+      player: state.preview.player,
+      siblingsId: state.preview.siblingsId,
+    }
+  }, shallow)
 
   const percent = Math.floor((ms / duration!) * 100)
 
@@ -240,7 +333,16 @@ function NewPoint({ ms }: { ms: number }) {
 
 function ExistingPoint({ node }: { node: ChildNode }) {
   const { classes, cx } = useStyles()
-  const { duration, player } = useContext(YoutubeContext)!
+  // const { duration, player } = useContext(YoutubeContext)!
+
+  const { duration, player } = useAppStore(state => {
+    if (state.preview.type != 'youtube') throw new Error('Should not have happened...')
+    return {
+      duration: state.preview.duration,
+      player: state.preview.player,
+    }
+  }, shallow)
+
   const setActiveNode = useAppStore(state => state.setActive)
   const activeNode = useAppStore(state => state.active)
 

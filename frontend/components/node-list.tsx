@@ -13,13 +13,10 @@ export interface ActiveNodeSlice {
   setActive: (id: number) => void
 }
 
-
 export const createActiveNodeSlice: StateCreator<AppState, [], [], ActiveNodeSlice> = set => ({
   active: 2,
   setActive: id => set({ active: id }),
 })
-
-
 
 const useStyles = createStyles(theme => ({
   outer: {

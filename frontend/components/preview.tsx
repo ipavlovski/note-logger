@@ -2,9 +2,10 @@ import { AspectRatio, createStyles, Image, Skeleton } from '@mantine/core'
 import type { Preview as IPreview } from '@prisma/client'
 import { NodeWithSiblings } from 'backend/routes'
 
-import { SERVER_URL, useAppStore } from 'components/app'
-import PDF from 'components/pdf'
-import YouTube from 'components/youtube'
+import { AppState, SERVER_URL, useAppStore } from 'components/app'
+import PDF, { PdfPreview } from 'components/pdf'
+import YouTube, { YoutubePreview } from 'components/youtube'
+import { StateCreator } from 'zustand'
 
 
 const useStyles = createStyles(theme => ({
@@ -30,6 +31,9 @@ const useStyles = createStyles(theme => ({
   },
 }))
 
+
+
+
 function Thumbnail({ preview }: { preview: IPreview | null }) {
   return preview ? (
     <Image radius={'md'} src={`${SERVER_URL}/${preview.path}`} />
@@ -37,6 +41,7 @@ function Thumbnail({ preview }: { preview: IPreview | null }) {
     <Skeleton animate={false} radius="lg" />
   )
 }
+
 
 // export default function Preview({ nodeId, preview, uri, siblings }: PreviewArgs) {
 export default function Preview({ node }: { node: NodeWithSiblings }) {

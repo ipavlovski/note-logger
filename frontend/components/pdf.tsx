@@ -17,6 +17,21 @@ const pdfjs = await import('pdfjs-dist/build/pdf')
 const pdfjsWorker = await import('pdfjs-dist/build/pdf.worker.entry')
 
 
+export interface PdfPreview {
+  type: 'pdf'
+  windowRef: React.MutableRefObject<VariableSizeList<any> | undefined>
+  setWindowRef: (ref: React.MutableRefObject<VariableSizeList<any>>) => void
+  pdfRef: React.MutableRefObject<PDFDocumentProxy | undefined>
+  setPdfRef: (ref: React.MutableRefObject<PDFDocumentProxy>) => void
+  itemCount: number,
+  setItemCount: (itemCount: number) => void
+  scaleCount: number,
+  setScaleCount: (scaleCount: number) => void
+  pageCount: number,
+  setPageCount: (pageCount: number) => void
+  pages: PDFPageProxy[]
+  setPages: (pages: PDFPageProxy[]) => void
+}
 
 const useStateDef = () => {
   const windowRef = useRef<VariableSizeList>() // <React.MutableRefObject<undefined>>

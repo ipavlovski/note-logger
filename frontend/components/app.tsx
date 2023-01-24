@@ -6,6 +6,7 @@ import create from 'zustand'
 import NodeList, { ActiveNodeSlice, createActiveNodeSlice } from 'components/node-list'
 import NodeView from 'components/node-view'
 import { LeafSlice, createLeafSlice } from 'components/leafs'
+import { createPreviewSlice, PreviewSlice } from 'components/youtube'
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -15,11 +16,12 @@ const queryClient = new QueryClient({
   },
 })
 
-export type AppState = ActiveNodeSlice & LeafSlice
+export type AppState = ActiveNodeSlice & LeafSlice & PreviewSlice
 
 export const useAppStore = create<AppState>()((...a) => ({
   ...createActiveNodeSlice(...a),
   ...createLeafSlice(...a),
+  ...createPreviewSlice(...a),
 }))
 
 export const SERVER_URL = `https://localhost:${import.meta.env.VITE_SERVER_PORT}`
