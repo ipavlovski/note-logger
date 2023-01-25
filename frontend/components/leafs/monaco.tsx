@@ -7,8 +7,9 @@ import { Observable, timer } from 'rxjs'
 import { debounce } from 'rxjs/operators'
 
 import type { LeafWithImages } from 'backend/routes'
-import { SERVER_URL, useAppStore } from 'components/app'
-
+import { SERVER_URL } from 'components/app'
+import { useLeafStore } from './leafs'
+import { fetchPostUploadGallery, fetchPutUpdateLeafContents } from 'frontend/api'
 
 // blobTag - 'gallery', 'inline', ...
 export async function getClipboardImage(blobTag: string) {
@@ -32,6 +33,31 @@ export async function getClipboardImage(blobTag: string) {
   throw new Error('Failed to get clipboard permissions')
 }
 
+export const useUploadGallery = () => {
+  const queryClient = useQueryClient()
+
+  return useMutation({
+    mutationFn: ([leafId, formData]: Parameters<typeof fetchPostUploadGallery>) =>
+      fetchPostUploadGallery(leafId, formData),
+    onSuccess: () => {
+      queryClient.invalidateQueries(['activeNode'])
+    },
+  })
+}
+
+const useUpdateLeafContents = () => {
+  const queryClient = useQueryClient()
+
+  return useMutation({
+    mutationFn: ({ leafId, content }: { leafId: number; content: string }) =>
+      fetchPutUpdateLeafContents(leafId, content),
+    onSuccess: () => {
+      queryClient.invalidateQueries(['activeNode'])
+    },
+  })
+}
+
+
 interface MonacoProps {
   leaf: LeafWithImages
   markdown: string
@@ -39,43 +65,16 @@ interface MonacoProps {
 export default function Monaco({ leaf, markdown }: MonacoProps) {
   const editorRef = useRef<null | editor.IStandaloneCodeEditor>(null)
 
-  const queryClient = useQueryClient()
+  const { stopLeafEditing } = useLeafStore(state => state.actions)
 
-  const stopLeafEditing = useAppStore(state => state.stopLeafEditing)
-
-  const uploadGallery = useMutation(
-    async ({ leafId, formData }: { leafId: number; formData: FormData }) => {
-      return fetch(`${SERVER_URL}/leaf/${leafId}/upload`, {
-        method: 'POST',
-        body: formData,
-      }).then(v => v.json())
-    },
-    {
-      onSuccess: () => {
-        queryClient.invalidateQueries(['activeNode'])
-      },
-    }
-  )
-
-  const updateContents = useMutation(
-    ({ leafId, content }: { leafId: number; content: string }) => {
-      return fetch(`${SERVER_URL}/leaf/${leafId}/update`, {
-        method: 'POST',
-        body: JSON.stringify({ content }),
-        headers: { 'Content-Type': 'application/json' },
-      })
-    },
-    {
-      onSuccess: () => {
-        queryClient.invalidateQueries(['activeNode'])
-      },
-    }
-  )
+  const uploadGallery = useUploadGallery()
+  const updateContents = useUpdateLeafContents()
 
   const handleMonacoPaste = async (e: ClipboardEvent<HTMLInputElement>) => {
     try {
       const formData = await getClipboardImage('inline')
-      const { path } = await uploadGallery.mutateAsync({ leafId: leaf.id, formData: formData })
+      // const { path } = await uploadGallery.mutateAsync({ leafId: leaf.id, formData: formData })
+      const { path } = await uploadGallery.mutateAsync([leaf.id, formData])
       path && editorRef.current!.trigger('keyboard', 'type', { text: `![](${SERVER_URL}/${path})` })
 
       e.stopPropagation()

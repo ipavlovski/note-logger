@@ -4,34 +4,47 @@ import { VariableSizeList, areEqual } from 'react-window'
 import { createStyles, Group } from '@mantine/core'
 import { useResizeObserver } from '@mantine/hooks'
 import { NodeWithSiblings, ChildNode } from 'backend/routes'
+import { create } from 'zustand'
 
 // https://codesandbox.io/s/github/vodkhang/react-pdf-viewer
 // import * as pdfjs from 'pdfjs-dist/build/pdf'
 // pdfjs.GlobalWorkerOptions.workerSrc =
 //   'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.2.146/pdf.worker.min.js'
 
-
 // @ts-ignore
 const pdfjs = await import('pdfjs-dist/build/pdf')
 // @ts-ignore
 const pdfjsWorker = await import('pdfjs-dist/build/pdf.worker.entry')
 
-
-export interface PdfPreview {
-  type: 'pdf'
-  windowRef: React.MutableRefObject<VariableSizeList<any> | undefined>
-  setWindowRef: (ref: React.MutableRefObject<VariableSizeList<any>>) => void
-  pdfRef: React.MutableRefObject<PDFDocumentProxy | undefined>
-  setPdfRef: (ref: React.MutableRefObject<PDFDocumentProxy>) => void
-  itemCount: number,
-  setItemCount: (itemCount: number) => void
-  scaleCount: number,
-  setScaleCount: (scaleCount: number) => void
-  pageCount: number,
-  setPageCount: (pageCount: number) => void
+interface PdfStore {
+  itemCount: number
+  scale: number
+  page: number
   pages: PDFPageProxy[]
-  setPages: (pages: PDFPageProxy[]) => void
+  actions: {
+    setItemCount: (itemCount: number) => void
+    setScale: (scale: number) => void
+    setPage: (page: number) => void
+    setPages: (page: PDFPageProxy) => void
+    clearPages: () => void
+  }
 }
+
+const usePdfStore = create<PdfStore>(set => ({
+  itemCount: 0,
+  scale: 1,
+  page: 1,
+  pages: [],
+  actions: {
+    setItemCount: itemCount => set(() => ({ itemCount })),
+    setScale: by => set((state) => ({ scale: state.scale + by })),
+    setPage: page => set(() => ({ page })),
+    setPages: page => set((state) => ({ pages: [...state.pages, page] })),
+    clearPages: () => set(state => ({pages: []}))
+  },
+}))
+
+
 
 const useStateDef = () => {
   const windowRef = useRef<VariableSizeList>() // <React.MutableRefObject<undefined>>
@@ -54,6 +67,27 @@ const useStateDef = () => {
     setPages,
   }
 }
+
+
+// const pdfContextInit = () => {
+//   const windowRef = useRef<VariableSizeList>() // <React.MutableRefObject<undefined>>
+//   const pdfRef = useRef<PDFDocumentProxy>()
+
+//   return { windowRef, pdfRef } 
+// }
+
+// const PdfContext = createContext<ReturnType<typeof pdfContextInit> | undefined>(undefined)
+
+// const usePdfContext = () => {
+//   const pdfContext = useContext(PdfContext)
+//   if (! pdfContext) throw new Error("issue with context...")
+
+//   return pdfContext
+// }
+
+
+
+
 
 const PdfContext = createContext<ReturnType<typeof useStateDef> | undefined>(undefined)
 
@@ -197,6 +231,7 @@ function PdfViewer() {
   // const listRef = useRef<any>(null)
   const [ref, { width: internalWidth = 400, height: internalHeight = 600 }] = useResizeObserver()
   const { windowRef, pdfRef, itemCount, scale, pages, setPages } = useContext(PdfContext)!
+
 
   const fetchPage = useCallback(
     (index: number) => {

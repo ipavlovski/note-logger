@@ -1,9 +1,23 @@
-import { Group, Text } from '@mantine/core'
+import { createStyles, Group, Text } from '@mantine/core'
+import { NodeWithSiblings } from 'backend/routes'
 
-export default function Metadata() {
+const useStyles = createStyles(theme => ({
+  header: {
+    fontSize: 20,
+    color: theme.white,
+    fontWeight: 700,
+    textAlign: 'center',
+    marginBottom: 8,
+  },
+}))
+export default function Metadata({ node }: { node: NodeWithSiblings }) {
+  const { classes } = useStyles()
+
+  console.log(`rendering metadata... ${node.title}`)
+
   return (
-    <Group align="center" my="sm">
-      <Text>metadata goes here ...</Text>
-    </Group>
+    <Text<'a'> href={node.uri} component="a" className={classes.header}>
+      {node.title}
+    </Text>
   )
 }

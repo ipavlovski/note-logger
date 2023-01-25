@@ -2,11 +2,11 @@ import { AspectRatio, createStyles, Image, Skeleton } from '@mantine/core'
 import type { Preview as IPreview } from '@prisma/client'
 import { NodeWithSiblings } from 'backend/routes'
 
-import { AppState, SERVER_URL, useAppStore } from 'components/app'
-import PDF, { PdfPreview } from 'components/pdf'
-import YouTube, { YoutubePreview } from 'components/youtube'
+import { SERVER_URL } from 'components/app'
+import { useLeafStore } from 'components/leafs/leafs'
+import PDF, { PdfPreview } from 'components/preview/pdf'
+import YouTube, { YoutubePreview } from 'components/preview/youtube'
 import { StateCreator } from 'zustand'
-
 
 const useStyles = createStyles(theme => ({
   selected: {
@@ -31,29 +31,12 @@ const useStyles = createStyles(theme => ({
   },
 }))
 
-
-
-
-function Thumbnail({ preview }: { preview: IPreview | null }) {
-  return preview ? (
-    <Image radius={'md'} src={`${SERVER_URL}/${preview.path}`} />
-  ) : (
-    <Skeleton animate={false} radius="lg" />
-  )
-}
-
-
-// export default function Preview({ nodeId, preview, uri, siblings }: PreviewArgs) {
-export default function Preview({ node }: { node: NodeWithSiblings }) {
+export default function Thumbnail({ preview }: { preview: IPreview | null }) {
   const { classes, cx } = useStyles()
-  const togglePreviewSelect = useAppStore(state => state.togglePreviewSelect)
-  const selectedPreview = useAppStore(state => state.selection.preview)
+  const togglePreviewSelect = useLeafStore(state => state.actions.togglePreviewSelect)
+  const selectedPreview = useLeafStore(state => state.selection.preview)
 
-  return node.uri.startsWith('https://www.youtube.com/watch') ? (
-    <YouTube node={node} />
-  ) : node.uri.startsWith('file://') && node.uri.includes('.pdf') ? (
-    <PDF node={node} />
-  ) : (
+  return (
     <AspectRatio
       ratio={16 / 9}
       mx="auto"
@@ -64,7 +47,11 @@ export default function Preview({ node }: { node: NodeWithSiblings }) {
         // this prevents residual selects when shift is pressed
         event.preventDefault()
       }}>
-      <Thumbnail preview={node.preview} />
+      {preview ? (
+        <Image radius={'md'} src={`${SERVER_URL}/${preview.path}`} />
+      ) : (
+        <Skeleton animate={false} radius="lg" />
+      )}
     </AspectRatio>
   )
 }

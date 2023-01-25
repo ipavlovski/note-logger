@@ -2,21 +2,22 @@ import { createStyles, Group, Image, Text } from '@mantine/core'
 import { IconRefresh } from '@tabler/icons'
 import { useQuery } from '@tanstack/react-query'
 import { useRef } from 'react'
-import { StateCreator } from 'zustand'
+import { create } from 'zustand'
 
-import { AppState, SERVER_URL, useAppStore } from 'components/app'
+import { SERVER_URL } from 'components/app'
 import Omnibar from 'components/omnibar'
 import type { TimelineNode, TreeBranch } from 'backend/query'
+import { fetchGetTimelineNodes } from 'frontend/api'
 
-export interface ActiveNodeSlice {
-  active: number
-  setActive: (id: number) => void
+export interface ActiveNodeStore {
+  activeNodeId: number
+  setActiveNodeId: (id: number) => void
 }
 
-export const createActiveNodeSlice: StateCreator<AppState, [], [], ActiveNodeSlice> = set => ({
-  active: 2,
-  setActive: id => set({ active: id }),
-})
+export const useActiveNodeStore = create<ActiveNodeStore>(set => ({
+  activeNodeId: 2,
+  setActiveNodeId: id => set({ activeNodeId: id }),
+}))
 
 const useStyles = createStyles(theme => ({
   outer: {
@@ -102,9 +103,8 @@ const useStyles = createStyles(theme => ({
 function TreeItem({ node }: { node: TimelineNode }) {
   const { classes, cx } = useStyles()
 
-  const active = useAppStore(state => state.active)
-  const setActive = useAppStore(state => state.setActive)
-  const clearEditSelect = useAppStore(state => state.clearEditSelect)
+  const { activeNodeId, setActiveNodeId } = useActiveNodeStore()
+  // const clearEditSelect = useAppStore(state => state.clearEditSelect)
 
   const processTreeBranch = (treeBranch: TreeBranch) => {
     const item =
@@ -115,11 +115,11 @@ function TreeItem({ node }: { node: TimelineNode }) {
           </div>
           <Text
             size={'sm'}
-            className={cx(classes.node, treeBranch.item.id == active && classes.selected)}
+            className={cx(classes.node, treeBranch.item.id == activeNodeId && classes.selected)}
             onClick={() => {
               if ('id' in treeBranch.item) {
-                setActive(treeBranch.item.id)
-                clearEditSelect()
+                setActiveNodeId(treeBranch.item.id)
+                // clearEditSelect()
               }
             }}>
             {treeBranch.item.title}
@@ -171,31 +171,22 @@ function TreeItem({ node }: { node: TimelineNode }) {
   )
 }
 
+
+const useGetTimelineNodes = () => {
+  // can put-in 'omnibar' query here:
+  // const activeNodeId = useActiveNodeStore(state => state.activeNodeId)
+
+  return useQuery({
+    queryKey: ['nodeList'],
+    queryFn: () => fetchGetTimelineNodes(),
+  })
+}
+
+
 export default function NodeList() {
   const { classes, cx } = useStyles()
 
-  // useEffect(() => {
-  //   isSuccess && dispatch(selectNode(historyItems[0].node_id))
-  // }, [isSuccess])
-
-  const { data: timelineNodes } = useQuery({
-    queryKey: ['nodeList'],
-    queryFn: async () => {
-      const props = {
-        endDate: new Date(),
-        range: 'week',
-        split: 'day',
-        virtualNodes: true,
-        includeArchived: false,
-      }
-
-      return fetch(`${SERVER_URL}/timeline`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(props),
-      }).then((res): Promise<TimelineNode[]> => res.json())
-    },
-  })
+  const { data: timelineNodes } = useGetTimelineNodes()
 
   const ref = useRef() as React.MutableRefObject<HTMLDivElement>
   const onScroll = () => {
@@ -203,9 +194,6 @@ export default function NodeList() {
       const { scrollTop, scrollHeight, clientHeight } = ref.current
       if (Math.floor(scrollTop + clientHeight) === scrollHeight) {
         console.log('FETCH MORE STUFF')
-        // if (treeRoots.length > 0) console.log('fetching...')
-        // const latest = treeRoots.map(v => v.visited_at).sort().at(0)!
-        // dispatch(fetchHistory({ isoDate: latest as unknown as string }))
       }
     }
   }

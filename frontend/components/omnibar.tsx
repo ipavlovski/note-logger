@@ -22,6 +22,7 @@ import {
 } from '@tabler/icons'
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { SERVER_URL } from 'components/app'
+import { fetchGetFilePaths, fetchPostCreateFilePath, fetchPostSendUri, fetchPostUploadFile } from 'frontend/api'
 import { useState } from 'react'
 
 type PathSuggestion = {
@@ -49,6 +50,42 @@ const useStyles = createStyles(theme => ({
   },
 }))
 
+const useSubmitUri = () => {
+  const queryClient = useQueryClient()
+
+  return useMutation({
+    mutationFn: (uri: string) => fetchPostSendUri(uri),
+    onSuccess: () => {
+      queryClient.invalidateQueries(['nodeList'])
+    },
+  })
+}
+
+const useUploadFile = () => {
+  const queryClient = useQueryClient()
+
+  return useMutation({
+    mutationFn: (formData: FormData) => fetchPostUploadFile(formData),
+    onSuccess: () => queryClient.invalidateQueries(['activeNode']),
+  })
+}
+
+const useCreateNewFileFolder = () => {
+  const queryClient = useQueryClient()
+
+  return useMutation({
+    mutationFn: (query: string) => fetchPostCreateFilePath(query),
+    onSuccess: () => queryClient.invalidateQueries(['fileSuggestions']),
+  })
+}
+
+const useQueryFilePaths = () => {
+  return useQuery({
+    queryKey: ['fileSuggestions'],
+    queryFn: async () => fetchGetFilePaths(),
+  })
+}
+
 export default function Omnibar() {
   const { classes, cx } = useStyles()
 
@@ -69,37 +106,13 @@ function QueryInput() {
   const [value, setValue] = useState<string[] | undefined>([])
   const [input, setInput] = useState<string>('')
   const { classes, cx } = useStyles()
-  const queryClient = useQueryClient()
 
-  const submitURI = useMutation(
-    (input: string) => {
-      return fetch(`${SERVER_URL}/uri`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ uri: input }),
-      })
-    },
-    {
-      onSuccess: () => {
-        queryClient.invalidateQueries(['nodeList'])
-      },
-    }
-  )
+  const submitURI = useSubmitUri()
 
   const handleSubmit = () => {
-    const isURI = input.startsWith('https://') || input.startsWith('https://')
-
-    if (isURI) {
-      // send the uri to the backend
-      // fetch(`${SERVER_URL}/uri`, {
-      //   method: 'POST',
-      //   headers: { 'Content-Type': 'application/json' },
-      //   body: JSON.stringify({ uri: input }),
-      // })
-      submitURI.mutate(input)
-    } else {
-      showNotification({ title: 'Your message', message: 'Not a uri...' })
-    }
+    input.startsWith('https://') || input.startsWith('https://')
+      ? submitURI.mutate(input)
+      : showNotification({ title: 'Your message', message: 'Not a uri...' })
   }
 
   return (
@@ -177,48 +190,16 @@ function PdfUpload() {
   const [filename, setFilename] = useState('')
   const [file, setFile] = useState<File | null>(null)
   const { classes, cx } = useStyles()
-  const queryClient = useQueryClient()
 
-  const { data: pathSuggestions } = useQuery({
-    queryKey: ['fileSuggestions'],
-    queryFn: async () => {
-      return fetch(`${SERVER_URL}/paths/file`)
-        .then((res): Promise<PathSuggestion[]> => res.json())
-        .then(res => res.map(v => ({ ...v, label: v.value })))
-    },
-  })
-
-  const createNewFileFolder = useMutation(
-    async (query: string) => {
-      await fetch(`${SERVER_URL}/paths/file`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ type: 'file', uri: query }),
-      })
-    },
-    {
-      onSuccess: () => {
-        queryClient.invalidateQueries(['fileSuggestions'])
-      },
-    }
-  )
-
-  const uploadFile = useMutation(
-    (formData: FormData) => {
-      return fetch(`${SERVER_URL}/file`, { method: 'POST', body: formData })
-    },
-    { onSuccess: () => queryClient.invalidateQueries(['activeNode']) }
-  )
+  const { data: pathSuggestions } = useQueryFilePaths()
+  const createNewFileFolder = useCreateNewFileFolder()
+  const uploadFile = useUploadFile()
 
   const submitHandler = async () => {
     try {
-      // validate title
+      // validations
       if (fileTitle == '') throw new Error('Must input node title.')
-
-      // validate uri path
       if (uriPath == '') throw new Error('Must specify filepath.')
-
-      // validate filename: end in '.pdf', 'only 1 dot', alpha-numerics only
       if (filename == '') throw new Error('Must input filename.')
 
       // ensure file exists

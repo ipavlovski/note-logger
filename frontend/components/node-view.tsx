@@ -2,14 +2,16 @@ import { createStyles, Text } from '@mantine/core'
 import { useHotkeys } from '@mantine/hooks'
 import { showNotification } from '@mantine/notifications'
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
-import {  NodeWithSiblings } from 'backend/routes'
-import { SERVER_URL, useAppStore } from 'components/app'
+import { NodeWithSiblings } from 'backend/routes'
+import { SERVER_URL } from 'components/app'
 
-import Leafs from 'components/leafs'
+import Leafs, { useLeafStore } from 'components/leafs/leafs'
 import Metadata from 'components/metadata'
-import { getClipboardImage } from 'components/monaco'
-import Preview from 'components/preview'
-
+import { getClipboardImage, useUploadGallery } from 'components/leafs/monaco'
+import { useActiveNodeStore } from 'components/node-list'
+import Preview from 'components/preview/preview'
+import { fetchDeleteLeafs, fetchGetNodeWithSiblings, fetchPostUploadPreview } from 'frontend/api'
+import { useEffect } from 'react'
 
 const useStyles = createStyles(theme => ({
   scrollable: {
@@ -51,64 +53,46 @@ const useStyles = createStyles(theme => ({
   },
 }))
 
-const useShortcutHandler = () => {
-  const selectedLeafs = useAppStore(state => state.selection.leafs)
-  const nodeId = useAppStore(state => state.active)
-  const selectedPreview = useAppStore(state => state.selection.preview)
-  const { clearEditSelect, toggleGallerySelect, togglePreviewSelect } = useAppStore(state => state)
-
+const useDeleteLeafs = () => {
   const queryClient = useQueryClient()
 
-  const deleteLeafs = useMutation(
-    (leafIds: number[]) => {
-      return fetch(`${SERVER_URL}/leafs`, {
-        method: 'DELETE',
-        body: JSON.stringify({ leafIds }),
-        headers: { 'Content-Type': 'application/json' },
-      })
+  return useMutation({
+    mutationFn: (leafIds: number[]) => fetchDeleteLeafs(leafIds),
+    onSuccess: () => {
+      queryClient.invalidateQueries(['activeNode'])
     },
-    {
-      onSuccess: () => {
-        queryClient.invalidateQueries(['activeNode'])
-      },
-    }
+  })
+}
+
+const useUploadPreview = () => {
+  const queryClient = useQueryClient()
+
+  return useMutation({
+    mutationFn: ([nodeId, formData]: Parameters<typeof fetchPostUploadPreview>) =>
+      fetchPostUploadPreview(nodeId, formData),
+    onSuccess: () => {
+      queryClient.invalidateQueries(['activeNode'])
+    },
+  })
+}
+
+const useShortcutHandler = () => {
+  const nodeId = useActiveNodeStore(state => state.activeNodeId)
+  const selectedLeafs = useLeafStore(state => state.selection.leafs)
+  const selectedPreview = useLeafStore(state => state.selection.preview)
+  const { clearEditSelect, toggleGallerySelect, togglePreviewSelect } = useLeafStore(
+    state => state.actions
   )
 
-  const uploadPreview = useMutation(
-    ({ nodeId, formData }: { nodeId: number; formData: FormData }) => {
-      return fetch(`${SERVER_URL}/node/${nodeId}/preview`, {
-        method: 'POST',
-        body: formData,
-      })
-    },
-    {
-      onSuccess: () => {
-        queryClient.invalidateQueries(['activeNode'])
-      },
-    }
-  )
-
-  const uploadGallery = useMutation(
-    ({ leafId, formData }: { leafId: number; formData: FormData }) => {
-      return fetch(`${SERVER_URL}/leaf/${leafId}/upload`, {
-        method: 'POST',
-        body: formData,
-      })
-    },
-    {
-      onSuccess: () => {
-        queryClient.invalidateQueries(['activeNode'])
-      },
-    }
-  )
-
-  //////////// HANDLERS
+  const deleteLeafs = useDeleteLeafs()
+  const uploadPreview = useUploadPreview()
+  const uploadGallery = useUploadGallery()
 
   const handleLeafPaste = async () => {
     if (selectedLeafs.length == 1) {
       try {
         const formData = await getClipboardImage('gallery')
-        await uploadGallery.mutateAsync({ leafId: selectedLeafs[0], formData: formData })
+        await uploadGallery.mutateAsync([selectedLeafs[0], formData])
         toggleGallerySelect(selectedLeafs[0])
       } catch (err) {
         const msg = err instanceof Error ? err.message : 'Unknown error'
@@ -123,7 +107,7 @@ const useShortcutHandler = () => {
     try {
       const formData = await getClipboardImage('gallery')
       if (nodeId) {
-        await uploadPreview.mutateAsync({ nodeId: nodeId, formData: formData })
+        await uploadPreview.mutateAsync([nodeId, formData])
         togglePreviewSelect()
       }
     } catch (err) {
@@ -165,31 +149,25 @@ const useShortcutHandler = () => {
   ])
 }
 
+const useNodeWithSiblings = () => {
+  const activeNodeId = useActiveNodeStore(state => state.activeNodeId)
+  return useQuery({
+    queryKey: ['activeNode', activeNodeId],
+    queryFn: () => fetchGetNodeWithSiblings(activeNodeId),
+  })
+}
+
 export default function NodeView() {
-  const { classes } = useStyles()
   useShortcutHandler()
 
-  const active = useAppStore(state => state.active)
-  const { data: node } = useQuery({
-    queryKey: ['activeNode', active],
-    queryFn: () =>
-      fetch(`${SERVER_URL}/node/${active}`).then((res): Promise<NodeWithSiblings> => res.json()),
-  })
-
-  if (!node) return <h3>no item selected</h3>
+  const nodeQuery = useNodeWithSiblings()
+  if (!nodeQuery.isSuccess) return <h3>Failed to fetch data</h3>
 
   return (
     <div>
-      <Text<'a'> href={node.uri} component="a" className={classes.header}>
-        {node.title}
-      </Text>
-
-      {/* <Preview nodeId={node.id} preview={node.preview} uri={node.uri} /> */}
-      <Preview node={node} />
-
-      {/* <Metadata /> */}
-
-      <Leafs nodeId={node.id} leafs={node.leafs} />
+      <Metadata node={nodeQuery.data} />
+      <Preview node={nodeQuery.data} />
+      <Leafs node={nodeQuery.data} />
     </div>
   )
 }

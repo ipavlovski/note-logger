@@ -2,86 +2,81 @@ import { Container, createStyles, Divider, Text } from '@mantine/core'
 import { IconCirclePlus } from '@tabler/icons'
 import { useMutation, useQueryClient } from '@tanstack/react-query'
 import { MouseEvent } from 'react'
-import { StateCreator } from 'zustand'
+import { create } from 'zustand'
 
-import type { LeafWithImages } from 'backend/routes'
-import { AppState, SERVER_URL, useAppStore } from 'components/app'
-import Gallery from 'components/gallery'
-import Monaco from 'components/monaco'
-import Remark from 'components/remark'
+import type { LeafWithImages, NodeWithSiblings } from 'backend/routes'
+import { SERVER_URL } from 'components/app'
+import Gallery from './gallery'
+import Monaco from './monaco'
+import Remark from './remark'
+import { fetchPostNewLeaf } from 'frontend/api'
 
-
-
-
-
-
-export interface LeafSlice {
+interface LeafStore {
   selection: {
     leafs: number[]
     gallery: number[]
     preview: boolean
     metadata: number[]
   }
-  toggleLeafSelect: (leafId: number) => void
   editing: number[]
-  startLeafEditing: (leafId: number) => void
-  stopLeafEditing: (leafId: number) => void
-  clearEditSelect: () => void
-  toggleGallerySelect: (leafId: number) => void
-  togglePreviewSelect: () => void
+  actions: {
+    toggleLeafSelect: (leafId: number) => void
+    startLeafEditing: (leafId: number) => void
+    stopLeafEditing: (leafId: number) => void
+    clearEditSelect: () => void
+    toggleGallerySelect: (leafId: number) => void
+    togglePreviewSelect: () => void
+  }
 }
 
-
-export const createLeafSlice: StateCreator<AppState, [], [], LeafSlice> = set => ({
+export const useLeafStore = create<LeafStore>(set => ({
   selection: {
     leafs: [],
     gallery: [],
     preview: false,
     metadata: [],
   },
-  toggleLeafSelect: leafId =>
-    set(state => ({
-      selection: {
-        ...state.selection,
-        leafs: state.selection.leafs.includes(leafId)
-          ? state.selection.leafs.filter(elt => elt != leafId)
-          : state.selection.leafs.concat(leafId),
-      },
-    })),
   editing: [],
-  startLeafEditing: leafId =>
-    set(state => ({
-      editing: state.editing.concat(leafId),
-    })),
-  stopLeafEditing: leafId =>
-    set(state => ({
-      editing: state.editing.filter(id => id != leafId),
-    })),
-  clearEditSelect: () =>
-    set(state => ({
-      editing: [],
-      selection: { leafs: [], gallery: [], preview: false, metadata: [] },
-    })),
-  toggleGallerySelect: imageId =>
-    set(state => ({
-      selection: {
-        leafs: [],
-        preview: false,
-        metadata: [],
-        gallery: state.selection.gallery.includes(imageId)
-          ? state.selection.gallery.filter(id => id != imageId)
-          : state.selection.gallery.concat(imageId),
-      },
-    })),
-  togglePreviewSelect: () =>
-    set(state => ({
-      selection: { leafs: [], gallery: [], preview: !state.selection.preview, metadata: [] },
-    })),
-})
-
-
-
-
+  actions: {
+    startLeafEditing: leafId =>
+      set(state => ({
+        editing: state.editing.concat(leafId),
+      })),
+    stopLeafEditing: leafId =>
+      set(state => ({
+        editing: state.editing.filter(id => id != leafId),
+      })),
+    clearEditSelect: () =>
+      set(state => ({
+        editing: [],
+        selection: { leafs: [], gallery: [], preview: false, metadata: [] },
+      })),
+    toggleGallerySelect: imageId =>
+      set(state => ({
+        selection: {
+          leafs: [],
+          preview: false,
+          metadata: [],
+          gallery: state.selection.gallery.includes(imageId)
+            ? state.selection.gallery.filter(id => id != imageId)
+            : state.selection.gallery.concat(imageId),
+        },
+      })),
+    togglePreviewSelect: () =>
+      set(state => ({
+        selection: { leafs: [], gallery: [], preview: !state.selection.preview, metadata: [] },
+      })),
+    toggleLeafSelect: leafId =>
+      set(state => ({
+        selection: {
+          ...state.selection,
+          leafs: state.selection.leafs.includes(leafId)
+            ? state.selection.leafs.filter(elt => elt != leafId)
+            : state.selection.leafs.concat(leafId),
+        },
+      })),
+  },
+}))
 
 const useStyles = createStyles(theme => ({
   outerLeaf: {
@@ -131,10 +126,11 @@ const useStyles = createStyles(theme => ({
 function Leaf({ leaf }: { leaf: LeafWithImages }) {
   const { classes, cx } = useStyles()
 
-  const selectedLeafs = useAppStore(state => state.selection.leafs)
-  const toggleLeafSelect = useAppStore(state => state.toggleLeafSelect)
-  const startLeafEditing = useAppStore(state => state.startLeafEditing)
-  const isEditing = useAppStore(state => state.editing.includes(leaf.id))
+  const { toggleLeafSelect, startLeafEditing } = useLeafStore(state => state.actions)
+
+  const selectedLeafs = useLeafStore(state => state.selection.leafs)
+  const editing = useLeafStore(state => state.editing)
+  const isEditing = editing.includes(leaf.id)
 
   return (
     <div
@@ -168,30 +164,31 @@ function Leaf({ leaf }: { leaf: LeafWithImages }) {
   )
 }
 
-export default function Leafs({ nodeId, leafs }: { nodeId: number; leafs: LeafWithImages[] }) {
-  const { classes, cx } = useStyles()
+
+const useCreateNewLeaf = () => {
   const queryClient = useQueryClient()
 
-  const createNewLeaf = useMutation(
-    (nodeId: number) => {
-      return fetch(`${SERVER_URL}/node/${nodeId}/leaf`, { method: 'PUT' })
+  return useMutation({
+    mutationFn: (nodeId: number) => fetchPostNewLeaf(nodeId),
+    onSuccess: () => {
+      queryClient.invalidateQueries(['activeNode'])
     },
-    {
-      onSuccess: () => {
-        queryClient.invalidateQueries(['activeNode'])
-      },
-    }
-  )
+  })
+}
+
+export default function Leafs({ node }: { node: NodeWithSiblings }) {
+  const { classes } = useStyles()
+  const createNewLeaf = useCreateNewLeaf()
 
   return (
     <div className={classes.scrollable}>
-      {leafs.map((leaf, ind) => (
+      {node.leafs.map((leaf, ind) => (
         <Leaf leaf={leaf} key={ind} />
       ))}
 
       <Divider
         onDoubleClick={() => {
-          createNewLeaf.mutate(nodeId)
+          createNewLeaf.mutate(node.id)
         }}
         m="md"
         variant="dashed"
