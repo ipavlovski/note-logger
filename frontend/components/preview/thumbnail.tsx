@@ -4,9 +4,6 @@ import { NodeWithSiblings } from 'backend/routes'
 
 import { SERVER_URL } from 'components/app'
 import { useLeafStore } from 'components/leafs/leafs'
-import PDF, { PdfPreview } from 'components/preview/pdf'
-import YouTube, { YoutubePreview } from 'components/preview/youtube'
-import { StateCreator } from 'zustand'
 
 const useStyles = createStyles(theme => ({
   selected: {

@@ -9,7 +9,7 @@ import { SERVER_URL } from 'components/app'
 import Gallery from './gallery'
 import Monaco from './monaco'
 import Remark from './remark'
-import { fetchPostNewLeaf } from 'frontend/api'
+import { useNewLeafMutation } from 'frontend/api'
 
 interface LeafStore {
   selection: {
@@ -164,21 +164,9 @@ function Leaf({ leaf }: { leaf: LeafWithImages }) {
   )
 }
 
-
-const useCreateNewLeaf = () => {
-  const queryClient = useQueryClient()
-
-  return useMutation({
-    mutationFn: (nodeId: number) => fetchPostNewLeaf(nodeId),
-    onSuccess: () => {
-      queryClient.invalidateQueries(['activeNode'])
-    },
-  })
-}
-
 export default function Leafs({ node }: { node: NodeWithSiblings }) {
   const { classes } = useStyles()
-  const createNewLeaf = useCreateNewLeaf()
+  const createNewLeaf = useNewLeafMutation()
 
   return (
     <div className={classes.scrollable}>

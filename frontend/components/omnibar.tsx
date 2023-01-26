@@ -10,26 +10,14 @@ import {
 } from '@mantine/core'
 import { getHotkeyHandler } from '@mantine/hooks'
 import { showNotification } from '@mantine/notifications'
+import { IconBook, IconCheck, IconCirclePlus, IconHash, IconLink, IconNotes } from '@tabler/icons'
 import {
-  IconBook,
-  IconBooks,
-  IconCheck,
-  IconCirclePlus,
-  IconCode,
-  IconHash,
-  IconLink,
-  IconNotes,
-} from '@tabler/icons'
-import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
-import { SERVER_URL } from 'components/app'
-import { fetchGetFilePaths, fetchPostCreateFilePath, fetchPostSendUri, fetchPostUploadFile } from 'frontend/api'
+  useNewFileFolderMutation,
+  useFilePathsQuery,
+  useSubmitUriMutation,
+  useUploadFileMutation,
+} from 'frontend/api'
 import { useState } from 'react'
-
-type PathSuggestion = {
-  value: string
-  label: string
-  group: string
-}
 
 const useStyles = createStyles(theme => ({
   rightSideIcon: {
@@ -49,42 +37,6 @@ const useStyles = createStyles(theme => ({
     display: 'flex',
   },
 }))
-
-const useSubmitUri = () => {
-  const queryClient = useQueryClient()
-
-  return useMutation({
-    mutationFn: (uri: string) => fetchPostSendUri(uri),
-    onSuccess: () => {
-      queryClient.invalidateQueries(['nodeList'])
-    },
-  })
-}
-
-const useUploadFile = () => {
-  const queryClient = useQueryClient()
-
-  return useMutation({
-    mutationFn: (formData: FormData) => fetchPostUploadFile(formData),
-    onSuccess: () => queryClient.invalidateQueries(['activeNode']),
-  })
-}
-
-const useCreateNewFileFolder = () => {
-  const queryClient = useQueryClient()
-
-  return useMutation({
-    mutationFn: (query: string) => fetchPostCreateFilePath(query),
-    onSuccess: () => queryClient.invalidateQueries(['fileSuggestions']),
-  })
-}
-
-const useQueryFilePaths = () => {
-  return useQuery({
-    queryKey: ['fileSuggestions'],
-    queryFn: async () => fetchGetFilePaths(),
-  })
-}
 
 export default function Omnibar() {
   const { classes, cx } = useStyles()
@@ -107,7 +59,7 @@ function QueryInput() {
   const [input, setInput] = useState<string>('')
   const { classes, cx } = useStyles()
 
-  const submitURI = useSubmitUri()
+  const submitURI = useSubmitUriMutation()
 
   const handleSubmit = () => {
     input.startsWith('https://') || input.startsWith('https://')
@@ -191,9 +143,9 @@ function PdfUpload() {
   const [file, setFile] = useState<File | null>(null)
   const { classes, cx } = useStyles()
 
-  const { data: pathSuggestions } = useQueryFilePaths()
-  const createNewFileFolder = useCreateNewFileFolder()
-  const uploadFile = useUploadFile()
+  const { data: pathSuggestions } = useFilePathsQuery()
+  const createNewFileFolder = useNewFileFolderMutation()
+  const uploadFile = useUploadFileMutation()
 
   const submitHandler = async () => {
     try {

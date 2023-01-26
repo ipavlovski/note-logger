@@ -7,7 +7,7 @@ import { create } from 'zustand'
 import { SERVER_URL } from 'components/app'
 import Omnibar from 'components/omnibar'
 import type { TimelineNode, TreeBranch } from 'backend/query'
-import { fetchGetTimelineNodes } from 'frontend/api'
+import { useTimelineNodesQuery } from 'frontend/api'
 
 export interface ActiveNodeStore {
   activeNodeId: number
@@ -172,21 +172,12 @@ function TreeItem({ node }: { node: TimelineNode }) {
 }
 
 
-const useGetTimelineNodes = () => {
-  // can put-in 'omnibar' query here:
-  // const activeNodeId = useActiveNodeStore(state => state.activeNodeId)
-
-  return useQuery({
-    queryKey: ['nodeList'],
-    queryFn: () => fetchGetTimelineNodes(),
-  })
-}
 
 
 export default function NodeList() {
   const { classes, cx } = useStyles()
 
-  const { data: timelineNodes } = useGetTimelineNodes()
+  const { data: timelineNodes } = useTimelineNodesQuery()
 
   const ref = useRef() as React.MutableRefObject<HTMLDivElement>
   const onScroll = () => {

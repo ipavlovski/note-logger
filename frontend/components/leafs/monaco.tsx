@@ -9,7 +9,7 @@ import { debounce } from 'rxjs/operators'
 import type { LeafWithImages } from 'backend/routes'
 import { SERVER_URL } from 'components/app'
 import { useLeafStore } from './leafs'
-import { fetchPostUploadGallery, fetchPutUpdateLeafContents } from 'frontend/api'
+import { useUpdateLeafContentsMutation, useUploadGalleryMutation } from 'frontend/api'
 
 // blobTag - 'gallery', 'inline', ...
 export async function getClipboardImage(blobTag: string) {
@@ -33,31 +33,6 @@ export async function getClipboardImage(blobTag: string) {
   throw new Error('Failed to get clipboard permissions')
 }
 
-export const useUploadGallery = () => {
-  const queryClient = useQueryClient()
-
-  return useMutation({
-    mutationFn: ([leafId, formData]: Parameters<typeof fetchPostUploadGallery>) =>
-      fetchPostUploadGallery(leafId, formData),
-    onSuccess: () => {
-      queryClient.invalidateQueries(['activeNode'])
-    },
-  })
-}
-
-const useUpdateLeafContents = () => {
-  const queryClient = useQueryClient()
-
-  return useMutation({
-    mutationFn: ({ leafId, content }: { leafId: number; content: string }) =>
-      fetchPutUpdateLeafContents(leafId, content),
-    onSuccess: () => {
-      queryClient.invalidateQueries(['activeNode'])
-    },
-  })
-}
-
-
 interface MonacoProps {
   leaf: LeafWithImages
   markdown: string
@@ -67,8 +42,8 @@ export default function Monaco({ leaf, markdown }: MonacoProps) {
 
   const { stopLeafEditing } = useLeafStore(state => state.actions)
 
-  const uploadGallery = useUploadGallery()
-  const updateContents = useUpdateLeafContents()
+  const uploadGallery = useUploadGalleryMutation()
+  const updateContents = useUpdateLeafContentsMutation()
 
   const handleMonacoPaste = async (e: ClipboardEvent<HTMLInputElement>) => {
     try {
