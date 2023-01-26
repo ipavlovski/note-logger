@@ -1,12 +1,10 @@
 import { createStyles, Group, Image, Text } from '@mantine/core'
-import { IconRefresh } from '@tabler/icons'
-import { useQuery } from '@tanstack/react-query'
 import { useRef } from 'react'
 import { create } from 'zustand'
 
-import { SERVER_URL } from 'components/app'
-import Omnibar from 'components/omnibar'
 import type { TimelineNode, TreeBranch } from 'backend/query'
+import { SERVER_URL } from 'components/app'
+import Omnibar from 'components/omnibar/omnibar'
 import { useTimelineNodesQuery } from 'frontend/api'
 
 export interface ActiveNodeStore {
@@ -171,12 +169,8 @@ function TreeItem({ node }: { node: TimelineNode }) {
   )
 }
 
-
-
-
 export default function NodeList() {
   const { classes, cx } = useStyles()
-
   const { data: timelineNodes } = useTimelineNodesQuery()
 
   const ref = useRef() as React.MutableRefObject<HTMLDivElement>
