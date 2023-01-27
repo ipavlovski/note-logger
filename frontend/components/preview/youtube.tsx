@@ -1,5 +1,5 @@
 import { AspectRatio, createStyles, Popover, Portal, TextInput, Tooltip } from '@mantine/core'
-import { getHotkeyHandler, useDisclosure, useHotkeys } from '@mantine/hooks'
+import { getHotkeyHandler, useDisclosure, useHotkeys, useResizeObserver } from '@mantine/hooks'
 import { showNotification } from '@mantine/notifications'
 import { useMutation, useQueryClient } from '@tanstack/react-query'
 import {
@@ -23,22 +23,24 @@ import { ORIGIN_URL, SERVER_URL } from 'components/app'
 import { create, StateCreator } from 'zustand'
 import { shallow } from 'zustand/shallow'
 import { useActiveNodeStore } from 'components/node-list'
+// import Thumbnail from 'components/preview/thumbnail'
+
+import useMeasure, { RectReadOnly } from 'react-use-measure'
 
 interface YoutubeStore {
   player: YTPlayer | null
   duration: number | null
   points: { ms: number }[]
   video: { nodeId: number; videoId: string } | null
-  // siblingsId: number | null
-  // videoId: string | null
   opened: boolean
+  // bounds: { top: number; left: number; width: number; height: number }
   actions: {
     setPlayer: (player: YTPlayer) => void
     setDuration: (duration: number) => void
     setPoints: (point: { ms: number }) => void
     setVideo: (video: { nodeId: number; videoId: string }) => void
-    // setSiblingsId: (siblingsId: number) => void
     setOpened: () => void
+    // setBounds: (bounds: { top: number; left: number; width: number; height: number }) => void
   }
 }
 
@@ -46,16 +48,16 @@ export const useYoutubeStore = create<YoutubeStore>(set => ({
   player: null,
   duration: null,
   points: [],
-  // siblingsId: null,
   video: null,
   opened: true,
+  // bounds: { top: 0, left: 0, width: 0, height: 0 },
   actions: {
     setPlayer: player => set(() => ({ player })),
     setDuration: duration => set(() => ({ duration })),
     setVideo: video => set(() => ({ video })),
-    // setSiblingsId: siblingsId => set(() => ({ siblingsId })),
     setPoints: point => set(state => ({ points: [...state.points, point] })),
     setOpened: () => set(state => ({ opened: !state.opened })),
+    // setBounds: bounds => set(() => ({ bounds })),
   },
 }))
 
@@ -112,7 +114,6 @@ const useShortcuts = () => {
   ])
 }
 
-
 function Player() {
   const { setDuration, setPlayer } = useYoutubeStore(state => state.actions)
   const youtubeRef = useRef<HTMLDivElement>(null)
@@ -144,13 +145,11 @@ function Player() {
   }, [])
 
   return (
-    <AspectRatio ratio={16 / 9} mx="auto" >
-      <div ref={youtubeRef} />
-    </AspectRatio>
+    // <AspectRatio ratio={16 / 9} mx="auto" >
+    <div ref={youtubeRef} />
+    // </AspectRatio>
   )
 }
-
-
 
 function ProgressBar({ nodes }: { nodes: ChildNode[] }) {
   const { classes, cx } = useStyles()
@@ -295,7 +294,7 @@ export default function YouTube({ node }: { node: NodeWithSiblings }) {
   const stuffHandler = () => {
     const el = document.querySelector<HTMLDivElement>('#youtube-portal')
     console.log(`display: ${el!.style.display}`)
-    if (! el?.style.display ||  el!.style.display == 'block') {
+    if (!el?.style.display || el!.style.display == 'block') {
       el!.style.display = 'none'
     } else {
       el!.style.display = 'block'
@@ -303,43 +302,45 @@ export default function YouTube({ node }: { node: NodeWithSiblings }) {
   }
 
   const changeVid = () => {
-      // console.log(player)
-      player!.seekTo(120, true)
+    // console.log(player)
+    player!.seekTo(120, true)
+  }
+
+  const resizeVid = () => {
+    const el = document.querySelector<HTMLDivElement>('#youtube-portal')
+    el!.style.setProperty('top', '800px')
+    el!.style.setProperty('left', '400px')
+    // el!.style.top = '10px'
+    // el!.style.left = '10px'
   }
 
   return (
     <div>
       {/* <Player videoId={videoId} siblingsId={node.siblings.id} /> */}
-      {/* <ProgressBar nodes={node.siblings.children} /> */}
+      <Thumbnail preview={node.preview} />
+      <ProgressBar nodes={node.siblings.children} />
       <button style={{ margin: 8 }} onClick={stuffHandler}>
         STUFF
       </button>
       <button style={{ margin: 8 }} onClick={changeVid}>
         CHANGE VID
       </button>
+      <button style={{ margin: 8 }} onClick={resizeVid}>
+        RESIZE VID
+      </button>
     </div>
   )
 }
 
-
-
 export function YoutubePortal() {
   const opened = useYoutubeStore(state => state.opened)
-
-  const css: CSSProperties = useMemo(() => ({
-    position: 'absolute',
-    width: 500,
-    height: 500,
-    top: 500,
-    left: 50,
-  }), [])
 
   return (
     <main style={{ position: 'relative', zIndex: 1 }}>
       {opened && (
-        <Portal target="#youtube-portal" >
-          <AspectRatio ratio={16 / 9} mx="auto" style={css}>
-            <Player   />
+        <Portal target="#youtube-portal">
+          <AspectRatio ratio={16 / 9} mx="auto">
+            <Player />
           </AspectRatio>
         </Portal>
       )}
@@ -347,3 +348,34 @@ export function YoutubePortal() {
   )
 }
 
+import { Image, Skeleton } from '@mantine/core'
+import type { Preview as IPreview } from '@prisma/client'
+
+const resizePreview = (bounds: RectReadOnly) => {
+  const el = document.querySelector<HTMLDivElement>('#youtube-portal')
+  const { top, left, width, height} = bounds
+  el!.style.setProperty('top', `${top}px`)
+  el!.style.setProperty('left', `${left}px`)
+  el!.style.setProperty('width', `${width}px`)
+  el!.style.setProperty('height', `${height}px`)
+}
+
+function Thumbnail({ preview }: { preview: IPreview | null }) {
+  // const { setBounds } = useYoutubeStore(state => state.actions)
+  // const [ref, bounds] = useMeasure({ debounce: 400 })
+  const [ref, bounds] = useMeasure()
+  // setBounds({ top: bounds.top, left: bounds.left, width: bounds.width, height: bounds.height })
+  resizePreview(bounds)
+  // console.log(JSON.stringify(bounds))
+
+  return (
+    <AspectRatio ref={ref} ratio={16 / 9} mx="auto">
+      <div></div>
+      {preview ? (
+        <Image radius={'md'} src={`${SERVER_URL}/${preview.path}`} />
+      ) : (
+        <Skeleton animate={false} radius="lg" />
+      )}
+    </AspectRatio>
+  )
+}

@@ -128,11 +128,6 @@ const useShortcutHandler = () => {
   ])
 }
 
-const MemoedPreview = memo(Preview, (prev, next) => {
-  console.log('WHY IS THIS NOT RUNNING...')
-  return prev.node.siblings.id == next.node.siblings.id
-})
-
 export default function NodeView() {
   // useShortcutHandler()
 
@@ -144,7 +139,7 @@ export default function NodeView() {
   return (
     <div>
       <Metadata node={nodeQuery.data} />
-      <MemoedPreview node={nodeQuery.data} />
+      <Preview node={nodeQuery.data} />
       <Leafs node={nodeQuery.data} />
     </div>
   )
