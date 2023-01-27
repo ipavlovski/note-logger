@@ -1,9 +1,12 @@
-import { Box, CSSObject, Grid, MantineProvider } from '@mantine/core'
+import { Box, CSSObject, Grid, MantineProvider, Portal } from '@mantine/core'
 import { NotificationsProvider } from '@mantine/notifications'
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
+import { ReactQueryDevtools } from '@tanstack/react-query-devtools'
 
 import NodeList from 'components/node-list'
 import NodeView from 'components/node-view'
+import { YoutubePortal, useYoutubeStore } from 'components/preview/youtube'
+import { CSSProperties } from 'react'
 
 export const SERVER_URL = `https://localhost:${import.meta.env.VITE_SERVER_PORT}`
 export const ORIGIN_URL = `https://localhost:${import.meta.env.VITE_PORT}`
@@ -57,8 +60,10 @@ export default function App() {
               <Grid.Col xs={7}>{<NodeView />}</Grid.Col>
             </Grid>
           </Box>
+          <YoutubePortal />
         </NotificationsProvider>
       </MantineProvider>
+      {/* <ReactQueryDevtools initialIsOpen={false} /> */}
     </QueryClientProvider>
   )
 }

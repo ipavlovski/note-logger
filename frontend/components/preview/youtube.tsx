@@ -1,11 +1,22 @@
-import { AspectRatio, createStyles, Popover, TextInput, Tooltip } from '@mantine/core'
+import { AspectRatio, createStyles, Popover, Portal, TextInput, Tooltip } from '@mantine/core'
 import { getHotkeyHandler, useDisclosure, useHotkeys } from '@mantine/hooks'
 import { showNotification } from '@mantine/notifications'
 import { useMutation, useQueryClient } from '@tanstack/react-query'
-import { createContext, useContext, useEffect, useReducer, useRef, useState } from 'react'
-import youTubePlayer from 'youtube-player'
+import {
+  createContext,
+  CSSProperties,
+  memo,
+  useContext,
+  useEffect,
+  useLayoutEffect,
+  useMemo,
+  useReducer,
+  useRef,
+  useState,
+} from 'react'
+import YouTubePlayer from 'youtube-player'
 import PlayerStates from 'youtube-player/dist/constants/PlayerStates'
-import type { YouTubePlayer } from 'youtube-player/dist/types'
+import type { YouTubePlayer as YTPlayer } from 'youtube-player/dist/types'
 
 import type { NodeWithSiblings, ChildNode } from 'backend/routes'
 import { ORIGIN_URL, SERVER_URL } from 'components/app'
@@ -14,28 +25,37 @@ import { shallow } from 'zustand/shallow'
 import { useActiveNodeStore } from 'components/node-list'
 
 interface YoutubeStore {
-  player: YouTubePlayer | null
+  player: YTPlayer | null
   duration: number | null
   points: { ms: number }[]
-  siblingsId: number | null
+  video: { nodeId: number; videoId: string } | null
+  // siblingsId: number | null
+  // videoId: string | null
+  opened: boolean
   actions: {
-    setPlayer: (player: YouTubePlayer) => void
+    setPlayer: (player: YTPlayer) => void
     setDuration: (duration: number) => void
     setPoints: (point: { ms: number }) => void
-    setSiblingsId: (siblingsId: number) => void
+    setVideo: (video: { nodeId: number; videoId: string }) => void
+    // setSiblingsId: (siblingsId: number) => void
+    setOpened: () => void
   }
 }
 
-const useYoutubeStore = create<YoutubeStore>(set => ({
+export const useYoutubeStore = create<YoutubeStore>(set => ({
   player: null,
   duration: null,
   points: [],
-  siblingsId: null,
+  // siblingsId: null,
+  video: null,
+  opened: true,
   actions: {
     setPlayer: player => set(() => ({ player })),
     setDuration: duration => set(() => ({ duration })),
-    setSiblingsId: siblingsId => set(() => ({ siblingsId })),
+    setVideo: video => set(() => ({ video })),
+    // setSiblingsId: siblingsId => set(() => ({ siblingsId })),
     setPoints: point => set(state => ({ points: [...state.points, point] })),
+    setOpened: () => set(state => ({ opened: !state.opened })),
   },
 }))
 
@@ -92,30 +112,14 @@ const useShortcuts = () => {
   ])
 }
 
-export default function YouTube({ node }: { node: NodeWithSiblings }) {
-  var { searchParams } = new URL(node.siblings.uri)
-  var videoId = searchParams.get('v')!
 
-  return (
-    <div>
-      <Player videoId={videoId} siblingsId={node.siblings.id} />
-      <ProgressBar nodes={node.siblings.children} />
-    </div>
-  )
-}
-
-function Player({ videoId, siblingsId }: { videoId: string; siblingsId: number }) {
-  const { classes } = useStyles()
-  const { setDuration, setPlayer, setSiblingsId } = useYoutubeStore(state => state.actions)
-
-  setSiblingsId(siblingsId)
-  useShortcuts()
-
+function Player() {
+  const { setDuration, setPlayer } = useYoutubeStore(state => state.actions)
   const youtubeRef = useRef<HTMLDivElement>(null)
 
   useEffect(() => {
-    const player = youTubePlayer(youtubeRef.current!, {
-      videoId: videoId,
+    const ytPlayer = YouTubePlayer(youtubeRef.current!, {
+      videoId: 'iOTAFRFgm8I',
       playerVars: {
         enablejsapi: 1,
         origin: ORIGIN_URL,
@@ -123,28 +127,30 @@ function Player({ videoId, siblingsId }: { videoId: string; siblingsId: number }
       },
     })
 
-    player.on('ready', () => {
-      setPlayer(player)
-      player.on('stateChange', async e => {
-        const playerState: PlayerStates = await player?.getPlayerState()
+    ytPlayer.on('ready', () => {
+      setPlayer(ytPlayer)
+      ytPlayer.on('stateChange', async e => {
+        const playerState: PlayerStates = await ytPlayer?.getPlayerState()
         const stateVal = Object.entries(PlayerStates).find(v => v[1] == playerState)
         console.log('STATE', playerState, stateVal![0])
       })
-      player.getDuration().then(d => setDuration(d))
+      ytPlayer.getDuration().then(d => setDuration(d))
     })
 
-    return () => {
-      console.log('Destroying player...')
-      player.destroy()
-    }
-  }, [videoId])
+    // return () => {
+    //   console.log('Destroying player...')
+    //   player.destroy()
+    // }
+  }, [])
 
   return (
-    <AspectRatio ratio={16 / 9} mx="auto" className={classes.player}>
-      <div ref={youtubeRef} className={classes.player} />
+    <AspectRatio ratio={16 / 9} mx="auto" >
+      <div ref={youtubeRef} />
     </AspectRatio>
   )
 }
+
+
 
 function ProgressBar({ nodes }: { nodes: ChildNode[] }) {
   const { classes, cx } = useStyles()
@@ -176,10 +182,6 @@ function ProgressBar({ nodes }: { nodes: ChildNode[] }) {
   )
 }
 
-//  ==============================
-//              POINTS
-//  ==============================
-
 function NewPoint({ ms }: { ms: number }) {
   const { classes, cx } = useStyles()
   const [isPopoverOpened, setPopoverOpened] = useState(false)
@@ -188,7 +190,7 @@ function NewPoint({ ms }: { ms: number }) {
 
   const player = useYoutubeStore(state => state.player)
   const duration = useYoutubeStore(state => state.duration)
-  const siblingsId = useYoutubeStore(state => state.siblingsId)
+  const siblingsId = useYoutubeStore(state => state.video?.nodeId)
 
   const percent = Math.floor((ms / duration!) * 100)
 
@@ -282,3 +284,66 @@ function ExistingPoint({ node }: { node: ChildNode }) {
     </Tooltip>
   )
 }
+
+export default function YouTube({ node }: { node: NodeWithSiblings }) {
+  var { searchParams } = new URL(node.siblings.uri)
+  var videoId = searchParams.get('v')!
+
+  const player = useYoutubeStore(state => state.player)
+  const setOpened = useYoutubeStore(state => state.actions.setOpened)
+
+  const stuffHandler = () => {
+    const el = document.querySelector<HTMLDivElement>('#youtube-portal')
+    console.log(`display: ${el!.style.display}`)
+    if (! el?.style.display ||  el!.style.display == 'block') {
+      el!.style.display = 'none'
+    } else {
+      el!.style.display = 'block'
+    }
+  }
+
+  const changeVid = () => {
+      // console.log(player)
+      player!.seekTo(120, true)
+  }
+
+  return (
+    <div>
+      {/* <Player videoId={videoId} siblingsId={node.siblings.id} /> */}
+      {/* <ProgressBar nodes={node.siblings.children} /> */}
+      <button style={{ margin: 8 }} onClick={stuffHandler}>
+        STUFF
+      </button>
+      <button style={{ margin: 8 }} onClick={changeVid}>
+        CHANGE VID
+      </button>
+    </div>
+  )
+}
+
+
+
+export function YoutubePortal() {
+  const opened = useYoutubeStore(state => state.opened)
+
+  const css: CSSProperties = useMemo(() => ({
+    position: 'absolute',
+    width: 500,
+    height: 500,
+    top: 500,
+    left: 50,
+  }), [])
+
+  return (
+    <main style={{ position: 'relative', zIndex: 1 }}>
+      {opened && (
+        <Portal target="#youtube-portal" >
+          <AspectRatio ratio={16 / 9} mx="auto" style={css}>
+            <Player   />
+          </AspectRatio>
+        </Portal>
+      )}
+    </main>
+  )
+}
+

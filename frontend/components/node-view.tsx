@@ -13,6 +13,7 @@ import {
   useUploadGalleryMutation,
   useNodeWithSiblingsQuery,
 } from 'frontend/api'
+import { memo } from 'react'
 
 const useStyles = createStyles(theme => ({
   scrollable: {
@@ -127,16 +128,23 @@ const useShortcutHandler = () => {
   ])
 }
 
+const MemoedPreview = memo(Preview, (prev, next) => {
+  console.log('WHY IS THIS NOT RUNNING...')
+  return prev.node.siblings.id == next.node.siblings.id
+})
+
 export default function NodeView() {
-  useShortcutHandler()
+  // useShortcutHandler()
 
   const nodeQuery = useNodeWithSiblingsQuery()
   if (!nodeQuery.isSuccess) return <h3>Failed to fetch data</h3>
 
+  console.log('NODE-VIEW RENDER')
+
   return (
     <div>
       <Metadata node={nodeQuery.data} />
-      <Preview node={nodeQuery.data} />
+      <MemoedPreview node={nodeQuery.data} />
       <Leafs node={nodeQuery.data} />
     </div>
   )
