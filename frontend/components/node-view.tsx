@@ -134,8 +134,6 @@ export default function NodeView() {
   const nodeQuery = useNodeWithSiblingsQuery()
   if (!nodeQuery.isSuccess) return <h3>Failed to fetch data</h3>
 
-  console.log('NODE-VIEW RENDER')
-
   return (
     <div>
       <Metadata node={nodeQuery.data} />

@@ -36,7 +36,6 @@ export const useNewLeafMutation = () => {
   })
 }
 
-
 ////////////// POST /leaf/:id/update
 
 const fetchPutUpdateLeafContents = async (leafId: number, content: string) => {
@@ -58,7 +57,6 @@ export const useUpdateLeafContentsMutation = () => {
     },
   })
 }
-
 
 ////////////// DELETE /leafs
 
@@ -89,7 +87,6 @@ const fetchPostUploadGallery = async (leafId: number, formData: FormData) => {
     body: formData,
   }).then(v => v.json())
 }
-
 
 export const useUploadGalleryMutation = () => {
   const queryClient = useQueryClient()
@@ -173,11 +170,31 @@ export const useSubmitUriMutation = () => {
   })
 }
 
+////////////// POST /uri/:nodeId
+
+const fetchPostUriWithChild = async (nodeId: number, timestamp: number, title: string) => {
+  return fetch(`${SERVER_URL}/uri/${nodeId}`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ timestamp, title }),
+  })
+}
+
+export const usePostUriWithChildMutation = () => {
+  const queryClient = useQueryClient()
+
+  return useMutation({
+    mutationFn: ([nodeId, timestamp, title]: Parameters<typeof fetchPostUriWithChild>) =>
+      fetchPostUriWithChild(nodeId, timestamp, title),
+    onSuccess: () => {
+      queryClient.invalidateQueries(['activeNode', 'nodeList'])
+    },
+  })
+}
+
 ////////////// GET /paths/file
 
-const fetchGetFilePaths = async (): Promise<
-  { value: string; label: string; group: string }[]
-> => {
+const fetchGetFilePaths = async (): Promise<{ value: string; label: string; group: string }[]> => {
   return fetch(`${SERVER_URL}/paths/file`)
     .then(res => res.json())
     .then(res => res.map((v: any) => ({ ...v, label: v.value })))
@@ -190,7 +207,6 @@ export const useFilePathsQuery = () => {
   })
 }
 
-
 ////////////// POST /paths/file
 
 const fetchPostCreateFilePath = async (query: string) => {
@@ -201,7 +217,6 @@ const fetchPostCreateFilePath = async (query: string) => {
   })
 }
 
-
 export const useNewFileFolderMutation = () => {
   const queryClient = useQueryClient()
 
@@ -210,7 +225,6 @@ export const useNewFileFolderMutation = () => {
     onSuccess: () => queryClient.invalidateQueries(['fileSuggestions']),
   })
 }
-
 
 ////////////// POST /file
 

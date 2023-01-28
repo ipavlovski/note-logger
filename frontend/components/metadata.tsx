@@ -13,8 +13,6 @@ const useStyles = createStyles(theme => ({
 export default function Metadata({ node }: { node: NodeWithSiblings }) {
   const { classes } = useStyles()
 
-  console.log(`rendering metadata... ${node.title}`)
-
   return (
     <Text<'a'> href={node.uri} component="a" className={classes.header}>
       {node.title}

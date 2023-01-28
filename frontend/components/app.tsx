@@ -5,8 +5,7 @@ import { ReactQueryDevtools } from '@tanstack/react-query-devtools'
 
 import NodeList from 'components/node-list'
 import NodeView from 'components/node-view'
-import { YoutubePortal, useYoutubeStore } from 'components/preview/youtube'
-import { CSSProperties } from 'react'
+import YoutubePortal from 'components/preview/youtube-portal'
 
 export const SERVER_URL = `https://localhost:${import.meta.env.VITE_SERVER_PORT}`
 export const ORIGIN_URL = `https://localhost:${import.meta.env.VITE_PORT}`

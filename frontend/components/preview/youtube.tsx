@@ -1,31 +1,29 @@
-import { AspectRatio, createStyles, Popover, Portal, TextInput, Tooltip } from '@mantine/core'
-import { getHotkeyHandler, useDisclosure, useHotkeys, useResizeObserver } from '@mantine/hooks'
-import { showNotification } from '@mantine/notifications'
-import { useMutation, useQueryClient } from '@tanstack/react-query'
 import {
-  createContext,
-  CSSProperties,
-  memo,
-  useContext,
-  useEffect,
-  useLayoutEffect,
-  useMemo,
-  useReducer,
-  useRef,
-  useState,
-} from 'react'
-import YouTubePlayer from 'youtube-player'
-import PlayerStates from 'youtube-player/dist/constants/PlayerStates'
+  AspectRatio,
+  createStyles,
+  Image,
+  Popover,
+  Skeleton,
+  TextInput,
+  Tooltip,
+} from '@mantine/core'
+import { getHotkeyHandler, usePrevious } from '@mantine/hooks'
+import { showNotification } from '@mantine/notifications'
+import type { Preview as IPreview } from '@prisma/client'
+import { useEffect, useLayoutEffect, useState } from 'react'
 import type { YouTubePlayer as YTPlayer } from 'youtube-player/dist/types'
+import { create } from 'zustand'
 
-import type { NodeWithSiblings, ChildNode } from 'backend/routes'
-import { ORIGIN_URL, SERVER_URL } from 'components/app'
-import { create, StateCreator } from 'zustand'
-import { shallow } from 'zustand/shallow'
+import type { ChildNode, NodeWithSiblings } from 'backend/routes'
+import { SERVER_URL } from 'components/app'
 import { useActiveNodeStore } from 'components/node-list'
-// import Thumbnail from 'components/preview/thumbnail'
-
-import useMeasure, { RectReadOnly } from 'react-use-measure'
+import {
+  useResizeYoutube,
+  useYoutubeControls,
+  useYoutubeShortcuts,
+  useYoutubeVisible,
+} from 'components/preview/youtube-portal'
+import { usePostUriWithChildMutation } from 'frontend/api'
 
 interface YoutubeStore {
   player: YTPlayer | null
@@ -33,14 +31,12 @@ interface YoutubeStore {
   points: { ms: number }[]
   video: { nodeId: number; videoId: string } | null
   opened: boolean
-  // bounds: { top: number; left: number; width: number; height: number }
   actions: {
     setPlayer: (player: YTPlayer) => void
     setDuration: (duration: number) => void
     setPoints: (point: { ms: number }) => void
     setVideo: (video: { nodeId: number; videoId: string }) => void
     setOpened: () => void
-    // setBounds: (bounds: { top: number; left: number; width: number; height: number }) => void
   }
 }
 
@@ -50,14 +46,12 @@ export const useYoutubeStore = create<YoutubeStore>(set => ({
   points: [],
   video: null,
   opened: true,
-  // bounds: { top: 0, left: 0, width: 0, height: 0 },
   actions: {
     setPlayer: player => set(() => ({ player })),
     setDuration: duration => set(() => ({ duration })),
     setVideo: video => set(() => ({ video })),
     setPoints: point => set(state => ({ points: [...state.points, point] })),
     setOpened: () => set(state => ({ opened: !state.opened })),
-    // setBounds: bounds => set(() => ({ bounds })),
   },
 }))
 
@@ -94,85 +88,23 @@ const useStyles = createStyles(theme => ({
   },
 }))
 
-const useShortcuts = () => {
-  const player = useYoutubeStore(store => store.player)
-
-  useHotkeys([
-    [
-      'space',
-      async () => {
-        const stateCode = await player?.getPlayerState()
-        if (stateCode) {
-          const status = Object.entries(PlayerStates).find(v => v[1] == stateCode)![0]
-
-          if (status == 'PLAYING') player?.pauseVideo()
-          if (status == 'PAUSED') player?.playVideo()
-          if (status == 'VIDEO_CUED') showNotification({ color: 'teal', message: `QUEUED` })
-        }
-      },
-    ],
-  ])
-}
-
-function Player() {
-  const { setDuration, setPlayer } = useYoutubeStore(state => state.actions)
-  const youtubeRef = useRef<HTMLDivElement>(null)
-
-  useEffect(() => {
-    const ytPlayer = YouTubePlayer(youtubeRef.current!, {
-      videoId: 'iOTAFRFgm8I',
-      playerVars: {
-        enablejsapi: 1,
-        origin: ORIGIN_URL,
-        modestbranding: 1,
-      },
-    })
-
-    ytPlayer.on('ready', () => {
-      setPlayer(ytPlayer)
-      ytPlayer.on('stateChange', async e => {
-        const playerState: PlayerStates = await ytPlayer?.getPlayerState()
-        const stateVal = Object.entries(PlayerStates).find(v => v[1] == playerState)
-        console.log('STATE', playerState, stateVal![0])
-      })
-      ytPlayer.getDuration().then(d => setDuration(d))
-    })
-
-    // return () => {
-    //   console.log('Destroying player...')
-    //   player.destroy()
-    // }
-  }, [])
-
-  return (
-    // <AspectRatio ratio={16 / 9} mx="auto" >
-    <div ref={youtubeRef} />
-    // </AspectRatio>
-  )
-}
-
 function ProgressBar({ nodes }: { nodes: ChildNode[] }) {
   const { classes, cx } = useStyles()
-  // const { player, points, setPoints } = useContext(YoutubeContext)!
 
-  const player = useYoutubeStore(state => state.player)
   const points = useYoutubeStore(state => state.points)
   const setPoints = useYoutubeStore(state => state.actions.setPoints)
 
+  const controls = useYoutubeControls()
+  if (controls == null) return <div className={classes.bar} />
+
   const addNewPoint = () => {
-    if (player) {
-      player.getCurrentTime().then(currentTime => {
-        const ms = Math.round(currentTime * 1000) / 1000
-        setPoints({ ms })
-        console.log(`Created point at: ${ms} ms`)
-      })
-    }
+    controls.getPosition().then(currentTime => setPoints({ ms: currentTime }))
   }
 
   return (
     <div className={classes.bar} onDoubleClick={addNewPoint}>
       {nodes.map(node => (
-        <ExistingPoint node={node} key={node.id} />
+        <ExistingPoint childNode={node} key={node.id} />
       ))}
       {points.map(point => (
         <NewPoint ms={point.ms} key={point.ms} />
@@ -185,45 +117,26 @@ function NewPoint({ ms }: { ms: number }) {
   const { classes, cx } = useStyles()
   const [isPopoverOpened, setPopoverOpened] = useState(false)
   const [titleValue, setTitleValue] = useState('')
-  const queryClient = useQueryClient()
 
-  const player = useYoutubeStore(state => state.player)
+  const controls = useYoutubeControls()
+  if (controls == null) return null
+
   const duration = useYoutubeStore(state => state.duration)
-  const siblingsId = useYoutubeStore(state => state.video?.nodeId)
+  const siblingsId = useYoutubeStore(state => state.video!.nodeId!)
+  const addYoutubeChapter = usePostUriWithChildMutation()
 
   const percent = Math.floor((ms / duration!) * 100)
 
-  const addYoutubeChapter = useMutation(
-    ({ nodeId, timestamp, title }: { nodeId: number; timestamp: number; title: string }) => {
-      return fetch(`${SERVER_URL}/uri/${nodeId}`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ timestamp, title }),
-      })
-    },
-    {
-      onSuccess: () => queryClient.invalidateQueries(['activeNode', 'nodeList']),
-    }
-  )
-
   const handleSave = () => {
-    addYoutubeChapter.mutate({ nodeId: siblingsId!, timestamp: ms, title: titleValue })
-
-    // IF success, or IF failure
-    // IMPORTANT: remove the item from the list
-    showNotification({
-      title: `Status: ${addYoutubeChapter.status}`,
-      color: 'teal',
-      message: titleValue,
-    })
+    addYoutubeChapter.mutate([siblingsId, ms, titleValue])
+    showNotification({ color: 'teal', message: titleValue })
     setPopoverOpened(false)
     setTitleValue('')
   }
 
   const clickOnNew = () => {
     setPopoverOpened(o => !o)
-    player!.seekTo(ms, true)
-    console.log(`clicked on ${ms}`)
+    controls.seekTo(ms)
   }
 
   return (
@@ -253,129 +166,75 @@ function NewPoint({ ms }: { ms: number }) {
   )
 }
 
-function ExistingPoint({ node }: { node: ChildNode }) {
+function ExistingPoint({ childNode }: { childNode: ChildNode }) {
   const { classes, cx } = useStyles()
-  // const { duration, player } = useContext(YoutubeContext)!
-
-  const player = useYoutubeStore(state => state.player)
-  const duration = useYoutubeStore(state => state.duration)
 
   const { setActiveNodeId, activeNodeId } = useActiveNodeStore()
 
-  const ms = parseFloat(new URL(node.uri).searchParams.get('ms')!)
+  const controls = useYoutubeControls()
+  if (controls == null) return null
+
+  const duration = useYoutubeStore(state => state.duration)
+
+  const ms = parseFloat(new URL(childNode.uri).searchParams.get('ms')!)
   const percent = Math.floor((ms / duration!) * 100)
 
   const classList = cx(
     classes.point,
     classes.savedPoint,
-    node.id == activeNodeId && classes.activePoint
+    childNode.id == activeNodeId && classes.activePoint
   )
 
   const clickOnExisting = () => {
-    console.log(`clicked on uri: ${node.uri} @ ${ms}`)
-    player!.seekTo(ms, true)
-    setActiveNodeId(node.id)
+    controls.seekTo(ms)
+    setActiveNodeId(childNode.id)
   }
 
   return (
-    <Tooltip label={node.title}>
+    <Tooltip label={childNode.title}>
       <div className={classList} style={{ left: `${percent}%` }} onClick={clickOnExisting}></div>
     </Tooltip>
   )
 }
 
-export default function YouTube({ node }: { node: NodeWithSiblings }) {
-  var { searchParams } = new URL(node.siblings.uri)
-  var videoId = searchParams.get('v')!
-
-  const player = useYoutubeStore(state => state.player)
-  const setOpened = useYoutubeStore(state => state.actions.setOpened)
-
-  const stuffHandler = () => {
-    const el = document.querySelector<HTMLDivElement>('#youtube-portal')
-    console.log(`display: ${el!.style.display}`)
-    if (!el?.style.display || el!.style.display == 'block') {
-      el!.style.display = 'none'
-    } else {
-      el!.style.display = 'block'
-    }
-  }
-
-  const changeVid = () => {
-    // console.log(player)
-    player!.seekTo(120, true)
-  }
-
-  const resizeVid = () => {
-    const el = document.querySelector<HTMLDivElement>('#youtube-portal')
-    el!.style.setProperty('top', '800px')
-    el!.style.setProperty('left', '400px')
-    // el!.style.top = '10px'
-    // el!.style.left = '10px'
-  }
-
-  return (
-    <div>
-      {/* <Player videoId={videoId} siblingsId={node.siblings.id} /> */}
-      <Thumbnail preview={node.preview} />
-      <ProgressBar nodes={node.siblings.children} />
-      <button style={{ margin: 8 }} onClick={stuffHandler}>
-        STUFF
-      </button>
-      <button style={{ margin: 8 }} onClick={changeVid}>
-        CHANGE VID
-      </button>
-      <button style={{ margin: 8 }} onClick={resizeVid}>
-        RESIZE VID
-      </button>
-    </div>
-  )
-}
-
-export function YoutubePortal() {
-  const opened = useYoutubeStore(state => state.opened)
-
-  return (
-    <main style={{ position: 'relative', zIndex: 1 }}>
-      {opened && (
-        <Portal target="#youtube-portal">
-          <AspectRatio ratio={16 / 9} mx="auto">
-            <Player />
-          </AspectRatio>
-        </Portal>
-      )}
-    </main>
-  )
-}
-
-import { Image, Skeleton } from '@mantine/core'
-import type { Preview as IPreview } from '@prisma/client'
-
-const resizePreview = (bounds: RectReadOnly) => {
-  const el = document.querySelector<HTMLDivElement>('#youtube-portal')
-  const { top, left, width, height} = bounds
-  el!.style.setProperty('top', `${top}px`)
-  el!.style.setProperty('left', `${left}px`)
-  el!.style.setProperty('width', `${width}px`)
-  el!.style.setProperty('height', `${height}px`)
-}
-
 function Thumbnail({ preview }: { preview: IPreview | null }) {
-  // const { setBounds } = useYoutubeStore(state => state.actions)
-  // const [ref, bounds] = useMeasure({ debounce: 400 })
-  const [ref, bounds] = useMeasure()
-  // setBounds({ top: bounds.top, left: bounds.left, width: bounds.width, height: bounds.height })
-  resizePreview(bounds)
-  // console.log(JSON.stringify(bounds))
+  const ref = useResizeYoutube()
 
   return (
     <AspectRatio ref={ref} ratio={16 / 9} mx="auto">
-      <div></div>
       {preview ? (
         <Image radius={'md'} src={`${SERVER_URL}/${preview.path}`} />
       ) : (
         <Skeleton animate={false} radius="lg" />
       )}
     </AspectRatio>
+  )
+}
+
+export default function YouTube({ node }: { node: NodeWithSiblings }) {
+  const { openYoutube, closeYoutube } = useYoutubeVisible()
+
+  useYoutubeShortcuts()
+  const controls = useYoutubeControls()
+  if (controls == null) return null
+
+  useEffect(() => {
+    const { searchParams } = new URL(node.siblings.uri)
+    const videoId = searchParams.get('v')!
+    controls.cueVideo(videoId)
+  }, [node.siblings.uri])
+
+  useEffect(() => {
+    openYoutube()
+    return () => {
+      closeYoutube()
+    }
+  }, [])
+
+  return (
+    <div>
+      <Thumbnail preview={node.preview} />
+      <ProgressBar nodes={node.siblings.children} />
+    </div>
   )
 }
