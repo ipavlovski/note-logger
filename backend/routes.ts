@@ -5,7 +5,7 @@ import {
   createSuggestedPath,
   getOrCreateImageIcon,
   getSuggestionTree,
-  timelineQuery
+  timelineQuery,
 } from 'backend/query'
 import { Router } from 'express'
 import { writeFile } from 'fs/promises'
@@ -115,7 +115,6 @@ routes.post('/file', upload.single('file'), async (req, res) => {
   }
 })
 
-
 routes.post('/uri', async (req, res) => {
   //   const dateFrom = new Date(req.params.date)
 
@@ -183,11 +182,11 @@ routes.post('/uri/:id', async (req, res) => {
     if ('page' in props) {
       uri = `${parent.uri}?pg=${props.page}`
     }
-    
+
     // if failed to set URI, throw an error
     if (uri == '') throw new Error('Failed to set URI')
 
-    // 
+    //
     const results = await prisma.node.create({
       data: {
         parent: { connect: { id: parent.id } },
@@ -350,21 +349,39 @@ routes.get('/node/:id', async (req, res) => {
   }
 })
 
-
-
-routes.put('/node/:id/metadata', async (req, res) => {
-  const nodeId = parseInt(req.params.id)
-  
-  await prisma.node.update({
-    where: { id: nodeId },
-    data: {
-      metadata: JSON.stringify(req.body)
-    }
-  })
-
-  return res.sendStatus(201)
+const DurationMetadataDef = z.object({
+  duration: z.number(),
 })
 
+routes.put('/node/:id/metadata', async (req, res) => {
+  try {
+    const nodeId = parseInt(req.params.id)
+    const { duration } = DurationMetadataDef.parse(req.body)
+
+    // get the metadata
+    const { metadata: rawMetadata } = await prisma.node.findFirstOrThrow({
+      where: { id: nodeId },
+      select: { metadata: true },
+    })
+    const parsedMetadata = JSON.parse(rawMetadata)
+
+    // assign duration
+    parsedMetadata.duration = duration
+
+    // write metadata
+    await prisma.node.update({
+      where: { id: nodeId },
+      data: {
+        metadata: JSON.stringify(parsedMetadata),
+      },
+    })
+
+    return res.sendStatus(201)
+  } catch (err) {
+    console.error(err)
+    return res.status(400).json({ error: err instanceof Error ? err.message : 'unknown error' })
+  }
+})
 
 export type LeafWithImages = Prisma.LeafGetPayload<typeof leafWithImages>
 

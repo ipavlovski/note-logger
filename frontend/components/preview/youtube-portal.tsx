@@ -102,7 +102,7 @@ export const useYoutubeControls = () => {
 
 const useDurationSetter = () => {
   const { setDuration } = useYoutubeStore(state => state.actions)
-  // const updateMetadata = useUpdateNodeMetadataMutation()
+  const updateMetadata = useUpdateNodeMetadataMutation()
 
   const durationSetter = ([videoUrl, videoDuration]: [videoUrl: string, videoDuration: number]) => {
     const videoId = new URL(videoUrl).searchParams.get('v')!
@@ -128,7 +128,7 @@ const useDurationSetter = () => {
     setDuration(videoDuration)
 
     // save duration for later usage
-    // updateMetadata.mutate([video.nodeId, videoDuration])
+    updateMetadata.mutate([video.nodeId, videoDuration])
   }
 
   return { durationSetter }

@@ -38,11 +38,11 @@ export const useNewLeafMutation = () => {
 
 ////////////// PUT /node/:id/metadata
 
-const fetchUpdateMetadata = async (nodeId: number, metadata: Object) => {
+const fetchUpdateMetadata = async (nodeId: number, duration: number) => {
   return fetch(`${SERVER_URL}/node/${nodeId}/metadata`, {
     method: 'PUT',
     headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ metadata }),
+    body: JSON.stringify({ duration }),
   })
 }
 
@@ -50,8 +50,8 @@ export const useUpdateNodeMetadataMutation = () => {
   const queryClient = useQueryClient()
 
   return useMutation({
-    mutationFn: ([nodeId, metadata]: Parameters<typeof fetchUpdateMetadata>) =>
-      fetchUpdateMetadata(nodeId, metadata),
+    mutationFn: ([nodeId, duration]: Parameters<typeof fetchUpdateMetadata>) =>
+      fetchUpdateMetadata(nodeId, duration),
     onSuccess: () => {
       queryClient.invalidateQueries(['activeNode'])
     },
