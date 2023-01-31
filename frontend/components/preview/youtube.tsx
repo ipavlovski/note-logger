@@ -23,7 +23,7 @@ import {
   useYoutubeShortcuts,
   useYoutubeVisible,
 } from 'components/preview/youtube-portal'
-import { usePostUriWithChildMutation } from 'frontend/api'
+import { usePostUriWithChildMutation, useUpdateNodeMetadataMutation } from 'frontend/api'
 
 interface YoutubeStore {
   player: YTPlayer | null
@@ -33,7 +33,7 @@ interface YoutubeStore {
   opened: boolean
   actions: {
     setPlayer: (player: YTPlayer) => void
-    setDuration: (duration: number) => void
+    setDuration: (duration: number | null) => void
     setPoints: (point: { ms: number }) => void
     setVideo: (video: { nodeId: number; videoId: string }) => void
     setOpened: () => void
@@ -91,17 +91,16 @@ const useStyles = createStyles(theme => ({
 function ProgressBar({ nodes }: { nodes: ChildNode[] }) {
   const { classes, cx } = useStyles()
 
-  const points = useYoutubeStore(state => state.points)
   const setPoints = useYoutubeStore(state => state.actions.setPoints)
-
+  const points = useYoutubeStore(state => state.points)
+  const duration = useYoutubeStore(state => state.duration)
   const controls = useYoutubeControls()
-  if (controls == null) return <div className={classes.bar} />
 
   const addNewPoint = () => {
-    controls.getPosition().then(currentTime => setPoints({ ms: currentTime }))
+    controls!.getPosition().then(currentTime => setPoints({ ms: currentTime }))
   }
 
-  return (
+  return duration == null ? null : (
     <div className={classes.bar} onDoubleClick={addNewPoint}>
       {nodes.map(node => (
         <ExistingPoint childNode={node} key={node.id} />
@@ -119,7 +118,6 @@ function NewPoint({ ms }: { ms: number }) {
   const [titleValue, setTitleValue] = useState('')
 
   const controls = useYoutubeControls()
-  if (controls == null) return null
 
   const duration = useYoutubeStore(state => state.duration)
   const siblingsId = useYoutubeStore(state => state.video!.nodeId!)
@@ -136,7 +134,7 @@ function NewPoint({ ms }: { ms: number }) {
 
   const clickOnNew = () => {
     setPopoverOpened(o => !o)
-    controls.seekTo(ms)
+    controls!.seekTo(ms)
   }
 
   return (
@@ -172,7 +170,6 @@ function ExistingPoint({ childNode }: { childNode: ChildNode }) {
   const { setActiveNodeId, activeNodeId } = useActiveNodeStore()
 
   const controls = useYoutubeControls()
-  if (controls == null) return null
 
   const duration = useYoutubeStore(state => state.duration)
 
@@ -186,7 +183,7 @@ function ExistingPoint({ childNode }: { childNode: ChildNode }) {
   )
 
   const clickOnExisting = () => {
-    controls.seekTo(ms)
+    controls!.seekTo(ms)
     setActiveNodeId(childNode.id)
   }
 
@@ -211,17 +208,38 @@ function Thumbnail({ preview }: { preview: IPreview | null }) {
   )
 }
 
+const parseDurationFromMetadata = (rawMetadata: string) => {
+  try {
+    const metadata = JSON.parse(rawMetadata) as unknown
+    const duration =
+      metadata instanceof Object &&
+      'duration' in metadata &&
+      typeof metadata.duration == 'number' &&
+      metadata.duration > 0 &&
+      metadata.duration
+
+    return duration || null
+  } catch {
+    return null
+  }
+}
+
 export default function YouTube({ node }: { node: NodeWithSiblings }) {
   const { openYoutube, closeYoutube } = useYoutubeVisible()
+  const { setVideo, setDuration } = useYoutubeStore(state => state.actions)
 
   useYoutubeShortcuts()
+
   const controls = useYoutubeControls()
-  if (controls == null) return null
 
   useEffect(() => {
     const { searchParams } = new URL(node.siblings.uri)
     const videoId = searchParams.get('v')!
-    controls.cueVideo(videoId)
+    const parsedDuration = parseDurationFromMetadata(node.siblings.metadata)
+
+    setVideo({ nodeId: node.siblings.id, videoId })
+    setDuration(parsedDuration)
+    controls!.cueVideo(videoId)
   }, [node.siblings.uri])
 
   useEffect(() => {

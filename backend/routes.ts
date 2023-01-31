@@ -269,6 +269,7 @@ const siblingNodes = Prisma.validator<Prisma.NodeArgs>()({
     uri: true,
     title: true,
     preview: true,
+    metadata: true,
     children: {
       select: {
         id: true,
@@ -296,6 +297,7 @@ async function getNodeWithSiblings(
       uri: true,
       title: true,
       preview: true,
+      metadata: true,
       children: {
         select: {
           id: true,
@@ -347,6 +349,22 @@ routes.get('/node/:id', async (req, res) => {
     return res.json({ error: err instanceof Error ? err.message : 'unknown error' })
   }
 })
+
+
+
+routes.put('/node/:id/metadata', async (req, res) => {
+  const nodeId = parseInt(req.params.id)
+  
+  await prisma.node.update({
+    where: { id: nodeId },
+    data: {
+      metadata: JSON.stringify(req.body)
+    }
+  })
+
+  return res.sendStatus(201)
+})
+
 
 export type LeafWithImages = Prisma.LeafGetPayload<typeof leafWithImages>
 

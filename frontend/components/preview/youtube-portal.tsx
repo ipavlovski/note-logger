@@ -7,6 +7,7 @@ import PlayerStates from 'youtube-player/dist/constants/PlayerStates'
 
 import { ORIGIN_URL } from 'components/app'
 import { useYoutubeStore } from 'components/preview/youtube'
+import { useUpdateNodeMetadataMutation } from 'frontend/api'
 
 export const useYoutubeShortcuts = () => {
   const controls = useYoutubeControls()
@@ -83,6 +84,10 @@ export const useYoutubeControls = () => {
     return Object.entries(PlayerStates).find(v => v[1] == stateCode)![0]
   }, [])
 
+  const getDuration = useCallback(async () => {
+    return player.getDuration()
+  }, [])
+
   return {
     seekTo,
     cueVideo,
@@ -91,25 +96,54 @@ export const useYoutubeControls = () => {
     rewind,
     getPosition,
     getStatus,
+    getDuration,
   }
 }
 
-export const useSetYoutubeVideo = () => {}
+const useDurationSetter = () => {
+  const { setDuration } = useYoutubeStore(state => state.actions)
+  // const updateMetadata = useUpdateNodeMetadataMutation()
 
-// get the duration of the video from metadata
-// if metadata doesnt have duration, acquire it from player
-// can then 'save' it somehow
-// for now return either NULL or NUMBER
-export const useYoutubeDuration = () => {}
+  const durationSetter = ([videoUrl, videoDuration]: [videoUrl: string, videoDuration: number]) => {
+    const videoId = new URL(videoUrl).searchParams.get('v')!
+    const video = useYoutubeStore.getState().video
+    const duration = useYoutubeStore.getState().duration
 
+    if (duration != null) {
+      console.log('Duration exists.')
+      return
+    }
+
+    if (video == null) {
+      console.log('Video is not set')
+      return
+    }
+
+    if (videoId != video.videoId) {
+      console.log('Video IDs do not match')
+      return
+    }
+
+    // set the duration now
+    setDuration(videoDuration)
+
+    // save duration for later usage
+    // updateMetadata.mutate([video.nodeId, videoDuration])
+  }
+
+  return { durationSetter }
+}
 
 function Player() {
-  const { setDuration, setPlayer } = useYoutubeStore(state => state.actions)
+  const { durationSetter } = useDurationSetter()
+  const { setPlayer } = useYoutubeStore(state => state.actions)
   const youtubeRef = useRef<HTMLDivElement>(null)
 
+  const defaultVideoId = 'iOTAFRFgm8I'
+
   useEffect(() => {
-    const ytPlayer = YouTubePlayer(youtubeRef.current!, {
-      videoId: 'iOTAFRFgm8I',
+    const player = YouTubePlayer(youtubeRef.current!, {
+      videoId: defaultVideoId,
       playerVars: {
         enablejsapi: 1,
         origin: ORIGIN_URL,
@@ -117,20 +151,21 @@ function Player() {
       },
     })
 
-    ytPlayer.on('ready', () => {
-      setPlayer(ytPlayer)
-      ytPlayer.on('stateChange', async e => {
-        const playerState: PlayerStates = await ytPlayer?.getPlayerState()
-        const stateVal = Object.entries(PlayerStates).find(v => v[1] == playerState)
-        console.log('STATE', playerState, stateVal![0])
-      })
-      ytPlayer.getDuration().then(d => setDuration(d))
+    player.on('ready', () => {
+      setPlayer(player)
     })
 
-    // return () => {
-    //   console.log('Destroying player...')
-    //   player.destroy()
-    // }
+    player.on('stateChange', async e => {
+      const stateCode = await player.getPlayerState()
+      const status = Object.entries(PlayerStates).find(v => v[1] == stateCode)![0]
+      console.log(`youtube status: ${status}`)
+      if (status == 'VIDEO_CUED') {
+        const url = await player.getVideoUrl()
+        const duration = await player.getDuration()
+        const videoId = new URL(url).searchParams.get('v')!
+        videoId != defaultVideoId && durationSetter([url, duration])
+      }
+    })
   }, [])
 
   return <div ref={youtubeRef} />
