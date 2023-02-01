@@ -2,7 +2,7 @@ import { PDFDocumentLoadingTask, PDFDocumentProxy, PDFPageProxy } from 'pdfjs-di
 import React, { createContext, useCallback, useContext, useEffect, useRef, useState } from 'react'
 import { VariableSizeList, areEqual } from 'react-window'
 import { createStyles, Group } from '@mantine/core'
-import { useResizeObserver } from '@mantine/hooks'
+import { useHotkeys, useResizeObserver } from '@mantine/hooks'
 import { NodeWithSiblings, ChildNode } from 'backend/routes'
 import { create } from 'zustand'
 
@@ -67,6 +67,33 @@ const usePdfContext = () => {
   return pdfContext
 }
 
+const usePdfShortcuts = () => {
+  const setScale = usePdfStore(store => store.actions.setScale)
+
+  useHotkeys([
+    [
+      'shift+digit0',
+      () => {
+        console.log('shift-zero')
+      },
+    ],
+    [
+      'shift+minus',
+      () => {
+        setScale(-0.1)
+        console.log('shift-minus')
+      },
+    ],
+    [
+      'shift+equal',
+      () => {
+        setScale(0.1)
+        console.log('shift-plus')
+      },
+    ],
+  ])
+}
+
 export default function PDF({ node }: { node: NodeWithSiblings }) {
   // var { pathname } = new URL(node.siblings.uri)
   // const url = `files/${pathname.split('/')[1]}`
@@ -74,12 +101,13 @@ export default function PDF({ node }: { node: NodeWithSiblings }) {
   const filename = node.uri.split('/').pop()
   const url = `files/${filename}`
   console.log(`url is: ${url}`)
+  usePdfShortcuts()
 
   return (
     <div className="App">
       <PdfContext.Provider value={pdfContextInit()}>
-        <ProgressBar nodes={node.siblings.children} />
         <PDFWindow url={url} />
+        <ProgressBar nodes={node.siblings.children} />
       </PdfContext.Provider>
     </div>
   )
@@ -90,15 +118,6 @@ function PDFWindow({ url }: { url: string }) {
 
   return (
     <div className="App">
-      <Group>
-        <button type="button" onClick={() => setScale(0.1)}>
-          +
-        </button>
-        <button type="button" onClick={() => setScale(-0.1)}>
-          -
-        </button>
-
-      </Group>
       <PdfUrlViewer url={url} />
     </div>
   )
