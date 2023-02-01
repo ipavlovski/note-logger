@@ -78,7 +78,7 @@ const useShortcutHandler = () => {
         showNotification({ title: 'ctrl+v', message: msg, color: 'red' })
       }
     } else {
-      showNotification({ title: 'ctrl+v', message: `Select ONE leaf only`, color: 'yellow' })
+      showNotification({ title: 'ctrl+v', message: 'Select ONE leaf only', color: 'yellow' })
     }
   }
 
@@ -96,7 +96,7 @@ const useShortcutHandler = () => {
   }
 
   const handleDefaultPaste = () => {
-    showNotification({ title: 'ctrl+v', message: `Nothing selected`, color: 'yellow' })
+    showNotification({ title: 'ctrl+v', message: 'Nothing selected', color: 'yellow' })
   }
 
   const handleLeafsDelete = () => {
@@ -105,7 +105,7 @@ const useShortcutHandler = () => {
   }
 
   const handleDefaultDelete = () => {
-    showNotification({ title: 'delete', message: `Nothing selected`, color: 'yellow' })
+    showNotification({ title: 'delete', message: 'Nothing selected', color: 'yellow' })
   }
 
   useHotkeys([
@@ -121,8 +121,8 @@ const useShortcutHandler = () => {
         selectedLeafs.length >= 1
           ? handleLeafPaste()
           : selectedPreview != null
-          ? handlePreviewPaste()
-          : handleDefaultPaste()
+            ? handlePreviewPaste()
+            : handleDefaultPaste()
       },
     ],
   ])

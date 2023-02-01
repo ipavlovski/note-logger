@@ -3,13 +3,20 @@ import { getHotkeyHandler } from '@mantine/hooks'
 import { showNotification } from '@mantine/notifications'
 import { IconLink } from '@tabler/icons'
 import { OmnibarButtonStylesNames } from 'components/omnibar/omnibar'
+import { useSubmitUriMutation } from 'frontend/api'
 import { useState } from 'react'
 
 export default function UrlUploadButton({ classNames }: { classNames: OmnibarButtonStylesNames }) {
   const [uriInput, setUriInput] = useState('')
+
+  const submitURI = useSubmitUriMutation()
+
   const handleEnter = () => {
-    showNotification({ message: `Uploading file to uri: ${uriInput}`, color: 'teal' })
+    uriInput.startsWith('https://') || uriInput.startsWith('https://')
+      ? submitURI.mutate(uriInput)
+      : showNotification({ title: 'Your message', message: 'Not a uri...' })
   }
+  
 
   return (
     <Popover width={350} position="bottom-start" withArrow shadow="md" radius="sm">

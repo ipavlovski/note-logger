@@ -5,7 +5,6 @@ import { IconHash } from '@tabler/icons'
 import NoteUploadButton from 'components/omnibar/note-button'
 import PdfUploadButton from 'components/omnibar/pdf-button'
 import UrlUploadButton from 'components/omnibar/url-button'
-import { useSubmitUriMutation } from 'frontend/api'
 import { useState } from 'react'
 
 const useStyles = createStyles(theme => ({
@@ -37,12 +36,8 @@ function QueryInput() {
   const [input, setInput] = useState<string>('')
   const { classes } = useStyles()
 
-  const submitURI = useSubmitUriMutation()
-
   const handleSubmit = () => {
-    input.startsWith('https://') || input.startsWith('https://')
-      ? submitURI.mutate(input)
-      : showNotification({ title: 'Your message', message: 'Not a uri...' })
+    showNotification({ message: `Uploading file to uri: ${input}`, color: 'teal' })
   }
 
   const handleCreate = (query: string) => {
@@ -62,7 +57,7 @@ function QueryInput() {
       radius={'xl'}
       size={'sm'}
       className={classes.query}
-      styles={theme => ({ input: { padding: 2 } })}
+      styles={() => ({ input: { padding: 2 } })}
       icon={<IconHash size={18} stroke={2} />}
       onSearchChange={input => setInput(input)}
       onCreate={handleCreate}

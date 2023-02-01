@@ -183,7 +183,7 @@ function PdfUrlViewer({ url }: { url: string }) {
   const { setItemCount, clearPages } = usePdfStore(store => store.actions)
 
   useEffect(() => {
-    var loadingTask: PDFDocumentLoadingTask = pdfjs.getDocument(url)
+    const loadingTask: PDFDocumentLoadingTask = pdfjs.getDocument(url)
     loadingTask.promise.then(
       pdf => {
         console.log(`Reloading PDF with ${pdf._pdfInfo.numPages}`)
@@ -191,7 +191,7 @@ function PdfUrlViewer({ url }: { url: string }) {
         setItemCount(pdf._pdfInfo.numPages)
 
         // Fetch the first page
-        var pageNumber = 1
+        const pageNumber = 1
         // setPages([])
         clearPages()
         pdf.getPage(pageNumber).then((page: PDFPageProxy) => {
@@ -311,7 +311,7 @@ const useStyles = createStyles((theme, _params, getRef) => ({
 }))
 
 function ProgressBar({ nodes }: { nodes: ChildNode[] }) {
-  const { classes, cx } = useStyles()
+  const { classes } = useStyles()
 
   return (
     <div className={classes.bar}>
@@ -323,12 +323,12 @@ function ProgressBar({ nodes }: { nodes: ChildNode[] }) {
 }
 
 function Point({ node }: { node: ChildNode }) {
-  const { classes, cx } = useStyles()
+  const { classes } = useStyles()
   const { windowRef } = usePdfContext()
   const itemCount = usePdfStore(store => store.itemCount)
 
-  var { searchParams } = new URL(node.uri)
-  var page = parseInt(searchParams.get('p')!)
+  const { searchParams } = new URL(node.uri)
+  const page = parseInt(searchParams.get('p')!)
 
   const clickHandler = () => {
     console.log(`clicked on uri: ${node.uri} @ ${page} / ${itemCount}`)
@@ -338,5 +338,8 @@ function Point({ node }: { node: ChildNode }) {
 
   const percent = Math.floor((page / itemCount) * 100)
 
-  return <div className={classes.point} style={{ left: `${percent}%` }} onClick={clickHandler}></div>
+  return (
+    <div className={classes.point} style={{ left: `${percent}%` }} onClick={clickHandler}>  
+    </div>
+  )
 }

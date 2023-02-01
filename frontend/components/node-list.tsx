@@ -21,7 +21,7 @@ const useStyles = createStyles(theme => ({
   outer: {
     overflowY: 'scroll',
     maxHeight: '90vh',
-    transform: `scaleX(-1)`,
+    transform: 'scaleX(-1)',
     '&::-webkit-scrollbar': {
       width: 4,
     },
@@ -35,7 +35,7 @@ const useStyles = createStyles(theme => ({
     },
   },
   inner: {
-    transform: `scaleX(-1)`,
+    transform: 'scaleX(-1)',
     paddingLeft: 8,
   },
   node: {
@@ -136,16 +136,16 @@ function TreeItem({ node }: { node: TimelineNode }) {
             depth == 0
               ? classes.depth0
               : depth == 1
-              ? classes.depth1
-              : depth == 2
-              ? classes.depth2
-              : depth == 3
-              ? classes.depth3
-              : depth == 4
-              ? classes.depth4
-              : depth == 5
-              ? classes.depth5
-              : classes.depth6
+                ? classes.depth1
+                : depth == 2
+                  ? classes.depth2
+                  : depth == 3
+                    ? classes.depth3
+                    : depth == 4
+                      ? classes.depth4
+                      : depth == 5
+                        ? classes.depth5
+                        : classes.depth6
           )}>
           {treeBranch.children.map(processTreeBranch)}
         </ul>

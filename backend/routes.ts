@@ -52,6 +52,8 @@ routes.post('/paths/:type', async (req, res) => {
 
 routes.post('/note', async (req, res) => {
   try {
+    console.log('todo: handle this route!')
+    return res.sendStatus(200)
   } catch (err) {
     console.error(err)
     return res.status(400).json({ error: err instanceof Error ? err.message : 'unknown error' })
@@ -171,7 +173,7 @@ routes.post('/uri/:id', async (req, res) => {
 
     // declare URI and ICON -> feel free to override icon in if-handlers
     let uri = ''
-    let iconId = parent.iconId!
+    const iconId = parent.iconId!
 
     // handle youtube
     if ('timestamp' in props) {
@@ -406,8 +408,8 @@ routes.put('/node/:id/leaf', async (req, res) => {
 })
 
 routes.post('/leaf/:id/update', async (req, res) => {
-  var leafId = parseInt(req.params.id)
-  var content = req.body.content
+  const leafId = parseInt(req.params.id)
+  const content = req.body.content
 
   console.log(content)
 

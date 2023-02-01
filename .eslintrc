@@ -1,0 +1,22 @@
+{
+  "root": true,
+  "parser": "@typescript-eslint/parser",
+  "plugins": [
+    "@typescript-eslint"
+  ],
+  "extends": [
+    "eslint:recommended",
+    "plugin:@typescript-eslint/eslint-recommended",
+    "plugin:@typescript-eslint/recommended"
+  ],
+  "rules": {
+    "@typescript-eslint/no-explicit-any": "warn",
+    "quotes": [ 1, "single" ],
+    "max-len": [1, {"code": 100}],
+    "object-curly-spacing": [1, "always"],
+    "array-bracket-spacing": [1, "never"],
+    "indent": [1, 2],
+    "no-multi-spaces": [1, { "exceptions": { "Property": false } }],
+    "@typescript-eslint/ban-ts-comment": "warn"
+  }
+}
