@@ -34,7 +34,8 @@ interface YoutubeStore {
   actions: {
     setPlayer: (player: YTPlayer) => void
     setDuration: (duration: number | null) => void
-    setPoints: (point: { ms: number }) => void
+    addPoint: (point: { ms: number }) => void
+    removePoint: (point: { ms: number }) => void
     setVideo: (video: { nodeId: number; videoId: string }) => void
     setOpened: () => void
   }
@@ -50,7 +51,9 @@ export const useYoutubeStore = create<YoutubeStore>(set => ({
     setPlayer: player => set(() => ({ player })),
     setDuration: duration => set(() => ({ duration })),
     setVideo: video => set(() => ({ video })),
-    setPoints: point => set(state => ({ points: [...state.points, point] })),
+    addPoint: point => set(state => ({ points: [...state.points, point] })),
+    removePoint: point =>
+      set(state => ({ points: [...state.points.filter(p => p.ms != point.ms)] })),
     setOpened: () => set(state => ({ opened: !state.opened })),
   },
 }))
@@ -91,7 +94,7 @@ const useStyles = createStyles(theme => ({
 function ProgressBar({ nodes }: { nodes: ChildNode[] }) {
   const { classes, cx } = useStyles()
 
-  const setPoints = useYoutubeStore(state => state.actions.setPoints)
+  const setPoints = useYoutubeStore(state => state.actions.addPoint)
   const points = useYoutubeStore(state => state.points)
   const duration = useYoutubeStore(state => state.duration)
   const controls = useYoutubeControls()
@@ -119,6 +122,7 @@ function NewPoint({ ms }: { ms: number }) {
 
   const controls = useYoutubeControls()
 
+  const { removePoint } = useYoutubeStore(state => state.actions)
   const duration = useYoutubeStore(state => state.duration)
   const siblingsId = useYoutubeStore(state => state.video!.nodeId!)
   const addYoutubeChapter = usePostUriWithChildMutation()
@@ -126,8 +130,9 @@ function NewPoint({ ms }: { ms: number }) {
   const percent = Math.floor((ms / duration!) * 100)
 
   const handleSave = () => {
-    addYoutubeChapter.mutate([siblingsId, ms, titleValue])
-    showNotification({ color: 'teal', message: titleValue })
+    const results = addYoutubeChapter.mutate([siblingsId, ms, titleValue])
+    removePoint({ ms })
+    showNotification({ color: 'teal', message: `Added point: ${titleValue}` })
     setPopoverOpened(false)
     setTitleValue('')
   }

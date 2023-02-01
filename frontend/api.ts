@@ -167,7 +167,10 @@ export const useTimelineNodesQuery = () => {
 
   return useQuery({
     queryKey: ['nodeList'],
-    queryFn: () => fetchGetTimelineNodes(),
+    queryFn: () => {
+      console.log('REFETCHING TIMELINE')
+      return fetchGetTimelineNodes()
+    },
   })
 }
 
@@ -209,7 +212,8 @@ export const usePostUriWithChildMutation = () => {
     mutationFn: ([nodeId, timestamp, title]: Parameters<typeof fetchPostUriWithChild>) =>
       fetchPostUriWithChild(nodeId, timestamp, title),
     onSuccess: () => {
-      queryClient.invalidateQueries(['activeNode', 'nodeList'])
+      queryClient.invalidateQueries(['activeNode'])
+      queryClient.invalidateQueries(['nodeList'])
     },
   })
 }

@@ -62,7 +62,7 @@ export default function App() {
           <YoutubePortal />
         </NotificationsProvider>
       </MantineProvider>
-      {/* <ReactQueryDevtools initialIsOpen={false} /> */}
+      <ReactQueryDevtools initialIsOpen={false} />
     </QueryClientProvider>
   )
 }
