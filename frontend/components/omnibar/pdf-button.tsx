@@ -2,7 +2,7 @@ import { FileButton, Group, Popover, Select, TextInput, UnstyledButton } from '@
 import { showNotification } from '@mantine/notifications'
 import { IconBook, IconCheck, IconCirclePlus } from '@tabler/icons'
 import { OmnibarButtonStylesNames } from 'components/omnibar/omnibar'
-import { useFilePathsQuery, useNewFileFolderMutation, useUploadFileMutation } from 'frontend/api'
+import { useFolderPathsQuery, useNewFolderPathsMutation, useUploadFileMutation } from 'frontend/api'
 import { useState } from 'react'
 
 export default function PdfUploadButton({ classNames }: { classNames: OmnibarButtonStylesNames }) {
@@ -11,8 +11,8 @@ export default function PdfUploadButton({ classNames }: { classNames: OmnibarBut
   const [filename, setFilename] = useState('')
   const [file, setFile] = useState<File | null>(null)
 
-  const { data: pathSuggestions } = useFilePathsQuery()
-  const createNewFileFolder = useNewFileFolderMutation()
+  const { data: pathSuggestions } = useFolderPathsQuery('file')
+  const createNewFileFolder = useNewFolderPathsMutation('file')
   const uploadFile = useUploadFileMutation()
 
   const submitHandler = async () => {

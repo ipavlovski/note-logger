@@ -2,9 +2,10 @@ import { Prisma, PrismaClient } from '@prisma/client'
 import { STORAGE_DIRECTORY } from 'backend/config'
 import { handleURI } from 'backend/handlers'
 import {
+  createNewNote,
   createSuggestedPath,
   getOrCreateImageIcon,
-  getSuggestionTree,
+  getSuggestionPaths,
   timelineQuery,
 } from 'backend/query'
 import { Router } from 'express'
@@ -24,7 +25,7 @@ const SuggestionPathType = z.enum(['file', 'note'])
 routes.get('/paths/:type', async (req, res) => {
   try {
     const type = SuggestionPathType.parse(req.params.type)
-    const suggestions = await getSuggestionTree(type)
+    const suggestions = await getSuggestionPaths(type)
 
     return res.json(suggestions)
   } catch (err) {
@@ -50,9 +51,18 @@ routes.post('/paths/:type', async (req, res) => {
   }
 })
 
+
+const NewNoteDef = z.object({
+  title: z.string().trim().min(3),
+  path: z.string()
+})
+
+
 routes.post('/note', async (req, res) => {
   try {
-    console.log('todo: handle this route!')
+    const {path, title} = NewNoteDef.parse(req.body)
+    await createNewNote(path, title)
+
     return res.sendStatus(200)
   } catch (err) {
     console.error(err)

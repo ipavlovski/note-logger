@@ -218,37 +218,38 @@ export const usePostUriWithChildMutation = () => {
   })
 }
 
-////////////// GET /paths/file
-
-const fetchGetFilePaths = async (): Promise<{ value: string; label: string; group: string }[]> => {
-  return fetch(`${SERVER_URL}/paths/file`)
+////////////// GET /paths/:type
+type FileOrNote = 'file' | 'note'
+const fetchGetFolderPaths = async (type: FileOrNote): 
+  Promise<{ value: string; label: string; group: string }[]> => {
+  return fetch(`${SERVER_URL}/paths/${type}`)
     .then(res => res.json())
     .then(res => res.map((v: any) => ({ ...v, label: v.value })))
 }
 
-export const useFilePathsQuery = () => {
+export const useFolderPathsQuery = (type: FileOrNote) => {
   return useQuery({
-    queryKey: ['fileSuggestions'],
-    queryFn: async () => fetchGetFilePaths(),
+    queryKey: ['suggestions', type],
+    queryFn: async () => fetchGetFolderPaths(type),
   })
 }
 
-////////////// POST /paths/file
+////////////// POST /paths/:type
 
-const fetchPostCreateFilePath = async (query: string) => {
-  return fetch(`${SERVER_URL}/paths/file`, {
+const fetchPostCreateFolderPath = async (type: FileOrNote, query: string) => {
+  return fetch(`${SERVER_URL}/paths/${type}`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ type: 'file', uri: query }),
+    body: JSON.stringify({ type , uri: query }),
   })
 }
 
-export const useNewFileFolderMutation = () => {
+export const useNewFolderPathsMutation = (type: FileOrNote) => {
   const queryClient = useQueryClient()
 
   return useMutation({
-    mutationFn: (query: string) => fetchPostCreateFilePath(query),
-    onSuccess: () => queryClient.invalidateQueries(['fileSuggestions']),
+    mutationFn: (query: string) => fetchPostCreateFolderPath(type, query),
+    onSuccess: () => queryClient.invalidateQueries(['suggestions', type]),
   })
 }
 
@@ -263,6 +264,27 @@ export const useUploadFileMutation = () => {
 
   return useMutation({
     mutationFn: (formData: FormData) => fetchPostUploadFile(formData),
+    onSuccess: () => queryClient.invalidateQueries(['activeNode']),
+  })
+}
+
+
+////////////// POST /file
+
+const fetchPostCreateNote = async (title: string, path: string) => {
+  return fetch(`${SERVER_URL}/note`, { 
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ title, path }),
+  })
+}
+
+export const useCreateNoteMutation = () => {
+  const queryClient = useQueryClient()
+
+  return useMutation({
+    mutationFn: ([title, path]: Parameters<typeof fetchPostCreateNote>) =>
+      fetchPostCreateNote(title, path),
     onSuccess: () => queryClient.invalidateQueries(['activeNode']),
   })
 }

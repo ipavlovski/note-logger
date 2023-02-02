@@ -10,6 +10,8 @@
     "plugin:@typescript-eslint/recommended"
   ],
   "rules": {
+    "no-unused-vars": "off",
+    "@typescript-eslint/no-unused-vars": "off",
     "@typescript-eslint/no-explicit-any": "warn",
     "quotes": [ 1, "single" ],
     "max-len": [1, {"code": 100}],

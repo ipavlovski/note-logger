@@ -191,11 +191,11 @@ export async function getOrCreateImageIcon(iconName: string) {
   return newIcon
 }
 
-export async function getSuggestionTree(type: 'file' | 'note') {
+
+export async function getSuggestionPaths(type: 'file' | 'note') {
   if (type != 'file' && type != 'note') throw new Error('Wrong type input for suggestion tree.')
 
-  // IMPORTANT: 'folders' need to carry metadata of { type: "folder" }
-  // this is true for both note:// and file:// URIs
+  // what makes a folder a folder: starts with file:// or note://, ends NOT with .pdf or .note
   const results = await prisma.node.findMany({
     where: {
       uri: { startsWith: `${type}://`, not: { endsWith: `${type == 'file' ? '.pdf' : '.note'}` } },
@@ -204,7 +204,7 @@ export async function getSuggestionTree(type: 'file' | 'note') {
   })
 
   const suggestionTree = results.map(({ uri }) => {
-    var uriPath = uri.split(`${type}://`)[1]
+    const uriPath = uri.split(`${type}://`)[1]
 
     return {
       value: uriPath,
@@ -257,4 +257,25 @@ export async function createSuggestedPath({ type, uri }: { type: 'file' | 'note'
   }
 
   return lastId!
+}
+
+
+export async function createNewNote(path: string, title: string) {
+
+  // get the filename
+  const filename = title.replace(/\s+/gi, '-').replace(/[^0-9a-z_-]/gi, '')
+
+  // prep the icon
+  const icon = await getOrCreateImageIcon('book')
+
+  // create the entry
+  await prisma.node.create({
+    data: {
+      title: title,
+      uri: `note://${path}/${filename}.note`,
+      icon: { connect: { id: icon.id } },
+      parent: { connect: { uri: `note://${path}` } },
+      metadata: JSON.stringify({}),
+    },
+  })
 }
