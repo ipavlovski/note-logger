@@ -1,11 +1,16 @@
 import { trpc } from 'components/app'
+import Remark from 'components/remark'
 
 export default function TreeView() {
-  const results = trpc.getUser.useQuery('test-1')
-  if (!results.data) return <div>Loading...</div>
+  const defaultQuery = 'all'
+  // const results = trpc.getUser.useQuery('all')
+  const entries = trpc.getEntries.useQuery(defaultQuery)
+
+  if (!entries.data) return <div>Loading...</div>
+
   return (
-    <div>
-      <p>{results.data.id} :: {results.data.name}</p>
-    </div>
+    <>
+      {entries.data.map((entry) => <Remark markdown={entry.markdown} />)}
+    </>
   )
 }

@@ -22,3 +22,25 @@ export async function addUser(name: string) {
   users.push(newUser)
   return newUser
 }
+
+export async function getEntries(query: string) {
+  console.log(`Need to handle ${query} properly`)
+  return await prisma.entry.findMany()
+}
+
+
+export async function getAllTags() {
+  return await prisma.tag.findMany({ select: { name: true } })
+}
+
+export async function createNewTag(name: string) {
+  await prisma.tag.create({ data: { name } })
+}
+
+export async function updateTagName({ newName, oldName }: { oldName: string; newName: string }) {
+  await prisma.tag.update({ where: { name: oldName }, data: { name: newName } })
+}
+
+export async function deleteTag(name: string) {
+  await prisma.tag.delete({ where: { name } })
+}

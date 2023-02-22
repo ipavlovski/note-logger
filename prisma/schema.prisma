@@ -7,19 +7,19 @@ datasource db {
     url      = "file:./dev.db"
 }
 
-model Entry { 
-    id         Int       @id @default(autoincrement())
-    content    String
-    
-    createdAt  DateTime  @default(now())
-    updatedAt  DateTime?
-    title      String?
-    metadata   String    @default("{}")
-    order      Int       @default(0)
-    archived   Boolean   @default(false)
+model Entry {
+    id       Int    @id @default(autoincrement())
+    markdown String
+
+    createdAt DateTime  @default(now())
+    updatedAt DateTime?
+    title     String?
+    metadata  String    @default("{}")
+    order     Int       @default(0)
+    archived  Boolean   @default(false)
 
     category   Category? @relation(fields: [categoryId], references: [id])
-    categoryId Int
+    categoryId Int?
     tags       Tag[]
     files      File[]
 }
@@ -32,12 +32,12 @@ model Category {
 
     entry Entry[]
 
-    pid      Int?
+    pid      Int        @default(0)
     parent   Category?  @relation("CategoryChain", fields: [pid], references: [id])
     children Category[] @relation("CategoryChain")
 
-    icon   File @relation(fields: [iconId], references: [id])
-    iconId Int
+    icon   File? @relation(fields: [iconId], references: [id])
+    iconId Int?
 
     @@unique([pid, name], name: "unique_name_per_siblings")
 }

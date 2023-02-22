@@ -8,6 +8,8 @@ import { createTRPCReact } from '@trpc/react-query'
 import type { AppRouter } from 'frontend/../trpc'
 import Omnibar from 'components/omnibar'
 import TreeView from 'components/tree-view'
+import { create } from 'zustand'
+import Monaco from 'components/monaco'
 
 export const SERVER_URL = `https://localhost:${import.meta.env.VITE_SERVER_PORT}`
 export const ORIGIN_URL = `https://localhost:${import.meta.env.VITE_PORT}`
@@ -65,8 +67,27 @@ const globalTheme: MantineThemeOverride = {
   })
 }
 
+////////////// ZUSTAND
 
-////////////// TRPC
+interface FilterStore {
+  tags: string[]
+  actions: {
+    addTag: (tag: string) => void
+    removeTag: (tag: string) => void
+    setTags: (tags: string[]) => void
+  }
+}
+
+export const useFilterStore = create<FilterStore>((set) => ({
+  tags: [],
+  actions: {
+    setTags: (tags) => set(() => ({ tags })),
+    addTag: (tag) => set((state) => ({ tags: [...state.tags, tag] })),
+    removeTag: (tag) => set((state) => ({ tags: state.tags.filter((t) => t != tag) })),
+  },
+}))
+
+////////////// TRPC / RQ
 
 export const trpc = createTRPCReact<AppRouter>()
 
@@ -106,6 +127,7 @@ function Root() {
   return (
     <Container size='md' pt={30} sizes={{ xs: 540, sm: 720, md: 800, lg: 1140, xl: 2000 }}>
       <Omnibar />
+      <Monaco />
       <Outlet />
     </Container>
   )
@@ -117,7 +139,6 @@ function Root() {
 export default function App() {
   return (
     <trpc.Provider client={trpcClient} queryClient={queryClient}>
-
       <QueryClientProvider client={queryClient}>
         <MantineProvider withGlobalStyles withNormalizeCSS theme={globalTheme}>
           <NotificationsProvider position="top-right" autoClose={1600}>
