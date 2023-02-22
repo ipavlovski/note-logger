@@ -3,12 +3,12 @@ import express, { json } from 'express'
 import { readFileSync } from 'fs'
 import { createServer as createSecureServer, ServerOptions } from 'https'
 import morgan from 'morgan'
+import * as trpcExpress from '@trpc/server/adapters/express'
 
+import { appRouter, createContext } from 'backend/routes'
 import { STORAGE_DIRECTORY } from 'backend/config'
-import routes from 'backend/routes'
 
-////////////// APP
-
+// main server object
 const app = express()
 
 // middlware
@@ -19,18 +19,16 @@ app.use(cors())
 app.use(morgan(':method :url :response-time'))
 
 // serve the static files
-app.use(express.static(`${__dirname}/../dist`))
+// app.use(express.static(`${__dirname}/../dist`))
 app.use(express.static(STORAGE_DIRECTORY))
 
-////////////// ROUTES
+// use the routes
+app.use( '/trpc', trpcExpress.createExpressMiddleware({ router: appRouter, createContext, }), )
+// app.use(routes)
 
-app.use(routes)
-
-////////////// HTTPS
-
-var privateKey = readFileSync('secrets/homelab.key', 'utf8')
-var certificate = readFileSync('secrets/homelab.crt', 'utf8')
-var credentials: ServerOptions = { key: privateKey, cert: certificate }
-const server = createSecureServer(credentials, app)
-
-export { server }
+// create HTTPS server
+const credentials: ServerOptions = {
+  key: readFileSync(`${process.env.HOME}/.config/ssl/homelab/homelab.key`, 'utf8'),
+  cert: readFileSync(`${process.env.HOME}/.config/ssl/homelab/homelab.crt`, 'utf8')
+}
+export default createSecureServer(credentials, app)

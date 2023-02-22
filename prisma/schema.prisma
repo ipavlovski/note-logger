@@ -7,100 +7,51 @@ datasource db {
     url      = "file:./dev.db"
 }
 
-model Node {
-    id Int @id @default(autoincrement())
+model Entry { 
+    id         Int       @id @default(autoincrement())
+    content    String
+    
+    createdAt  DateTime  @default(now())
+    updatedAt  DateTime?
+    title      String?
+    metadata   String    @default("{}")
+    order      Int       @default(0)
+    archived   Boolean   @default(false)
 
-    pid      Int?
-    parent   Node?  @relation("NodeChain", fields: [pid], references: [id], onDelete: Cascade)
-    children Node[] @relation("NodeChain")
-
-    uri   String @unique
-    title String
-
-    iconId Int?
-    icon   Icon? @relation(fields: [iconId], references: [id])
-
-    previewId Int?
-    preview   Preview? @relation(fields: [previewId], references: [id])
-
-    leafs Leaf[]
-
+    category   Category? @relation(fields: [categoryId], references: [id])
+    categoryId Int
     tags       Tag[]
-    properties Properties[]
-    categoryId Int?
-    category   Category?    @relation(fields: [categoryId], references: [id])
-
-    createdAt DateTime @default(now())
-    metadata  String   @default("{}")
-}
-
-model Tag {
-    id     Int     @id @default(autoincrement())
-    name   String  @unique
-    params String?
-    node   Node[]
-    order  Int     @default(0)
+    files      File[]
 }
 
 model Category {
-    id     Int     @id @default(autoincrement())
-    name   String  @unique
-    params String?
-    node   Node[]
-    order  Int     @default(0)
+    id    Int     @id @default(autoincrement())
+    name  String
+    url   String?
+    order Int     @default(0)
+
+    entry Entry[]
+
+    pid      Int?
+    parent   Category?  @relation("CategoryChain", fields: [pid], references: [id])
+    children Category[] @relation("CategoryChain")
+
+    icon   File @relation(fields: [iconId], references: [id])
+    iconId Int
+
+    @@unique([pid, name], name: "unique_name_per_siblings")
 }
 
-// key, value, type - type is Number/String/Boolean of the 'value'
-model Properties {
-    id      Int    @id @default(autoincrement())
-    node_id Int
-    key     String
-    value   String
-    type    String
-    node    Node[]
-
-    @@unique([node_id, key, value], name: "property_unique_key")
+model Tag {
+    id   Int     @id @default(autoincrement())
+    name String  @unique
+    post Entry[]
 }
 
-model Icon {
-    id   Int    @id @default(autoincrement())
-    node Node[]
-
-    path   String  @unique
-    source String? @unique
-}
-
-model Preview {
-    id   Int    @id @default(autoincrement())
-    node Node[]
-
-    path   String  @unique
-    source String? @unique
-}
-
-model Leaf {
-    id        Int      @id @default(autoincrement())
-    node_id   Int
-    node      Node     @relation(fields: [node_id], references: [id])
-    images    Image[]
-    content   String
-    createdAt DateTime @default(now())
-    order     Int      @default(0)
-    archived  Boolean  @default(false)
-}
-
-model Image {
-    id      Int   @id @default(autoincrement())
-    leaf_id Int
-    leaf    Leaf? @relation(fields: [leaf_id], references: [id])
-
-    path      String
-    source    String?
-    createdAt DateTime @default(now())
-    order     Int      @default(0)
-    type      String // enum: inline vs. gallery
-    width     Int
-    height    Int
-
-    @@unique([leaf_id, path], name: "image_path")
+model File {
+    id         Int        @id @default(autoincrement())
+    path       String     @unique
+    metadata   String     @default("{}")
+    entries    Entry[]
+    categories Category[]
 }

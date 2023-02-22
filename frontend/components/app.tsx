@@ -1,14 +1,82 @@
-import { Box, CSSObject, Grid, MantineProvider, Portal } from '@mantine/core'
+import { Container, MantineProvider, MantineThemeOverride } from '@mantine/core'
 import { NotificationsProvider } from '@mantine/notifications'
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
-import { ReactQueryDevtools } from '@tanstack/react-query-devtools'
+import { createBrowserRouter, Outlet, RouterProvider } from 'react-router-dom'
+import { httpBatchLink } from '@trpc/client'
+import { createTRPCReact } from '@trpc/react-query'
 
-import NodeList from 'components/node-list'
-import NodeView from 'components/node-view'
-import YoutubePortal from 'components/preview/youtube-portal'
+import type { AppRouter } from 'frontend/../trpc'
+import Omnibar from 'components/omnibar'
+import TreeView from 'components/tree-view'
 
 export const SERVER_URL = `https://localhost:${import.meta.env.VITE_SERVER_PORT}`
 export const ORIGIN_URL = `https://localhost:${import.meta.env.VITE_PORT}`
+
+
+////////////// STYLES
+
+const globalTheme: MantineThemeOverride = {
+  fontFamily: 'Hack',
+  colorScheme: 'dark',
+  colors: {
+    'ocean-blue': ['#7AD1DD', '#5FCCDB', '#44CADC', '#2AC9DE', '#1AC2D9',
+      '#11B7CD', '#09ADC3', '#0E99AC', '#128797', '#147885'],
+    'cactus': ['#2BBC8A', '#405d53']
+  },
+  globalStyles: (theme) => ({
+    '[data="cli-prompt"] > .linenumber': {
+      display: 'none !important'
+    },
+    '[data="cli-output"] > .linenumber': {
+      display: 'none !important'
+    },
+    '[data="hl-red"]': {
+      backgroundColor: '#b0151528',
+      display: 'block'
+    },
+    '[data="hl-green"]': {
+      backgroundColor: '#0ddc4118',
+      display: 'block'
+    },
+
+    '[data="cli-prompt"]': {
+      borderLeft: '2px solid hsl(220, 3%, 60%)',
+      padding: '2px 12px',
+      marginLeft: 160,
+      position: 'relative',
+      '&::before': {
+        position: 'absolute',
+        content: 'attr(data-side-content)',
+        opacity: 0.7,
+        left: -172,
+        width: 160,
+        textAlign: 'right',
+      }
+    },
+    '[data="cli-output"]': {
+      borderLeft: '2px solid hsl(220, 3%, 60%)',
+      padding: '2px 12px',
+      marginLeft: 160,
+      color: '#f2eaeac9',
+      '& > *': {
+        opacity: 0.9
+      },
+    },
+  })
+}
+
+
+////////////// TRPC
+
+export const trpc = createTRPCReact<AppRouter>()
+
+const trpcClient = trpc.createClient({
+  links: [
+    httpBatchLink({
+      url: `${SERVER_URL}/trpc`,
+    }),
+  ],
+})
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -18,51 +86,46 @@ const queryClient = new QueryClient({
   },
 })
 
-const globalStyles: CSSObject = {
-  '.PdfPage': {
-    position: 'relative',
-  },
+////////////// ROUTER
 
-  '.PdfPage__textLayer': {
-    position: 'absolute',
-    left: 0,
-    top: 0,
-    right: 0,
-    bottom: 0,
-    overflow: 'hidden',
-    opacity: 0.2,
-    lineHeight: 1,
+const router = createBrowserRouter([
+  {
+    path: '/',
+    element: <Root />,
+    children: [
+      {
+        index: true,
+        element: <TreeView />,
+      },
+    ],
   },
-  '.PdfPage__textLayer > span': {
-    color: 'transparent',
-    position: 'absolute',
-    whiteSpace: 'pre',
-    cursor: 'text',
-    transformOrigin: '0% 0%',
-  },
+])
+
+
+function Root() {
+  return (
+    <Container size='md' pt={30} sizes={{ xs: 540, sm: 720, md: 800, lg: 1140, xl: 2000 }}>
+      <Omnibar />
+      <Outlet />
+    </Container>
+  )
 }
+
+
+////////////// APP
 
 export default function App() {
   return (
-    <QueryClientProvider client={queryClient}>
-      <MantineProvider
-        withGlobalStyles
-        withNormalizeCSS
-        theme={{
-          colorScheme: 'dark',
-          globalStyles: () => globalStyles,
-        }}>
-        <NotificationsProvider position="top-right" autoClose={1600}>
-          <Box mx={16} my={32}>
-            <Grid gutter={'xl'}>
-              <Grid.Col xs={5}>{<NodeList />}</Grid.Col>
-              <Grid.Col xs={7}>{<NodeView />}</Grid.Col>
-            </Grid>
-          </Box>
-          <YoutubePortal />
-        </NotificationsProvider>
-      </MantineProvider>
-      <ReactQueryDevtools initialIsOpen={false} />
-    </QueryClientProvider>
+    <trpc.Provider client={trpcClient} queryClient={queryClient}>
+
+      <QueryClientProvider client={queryClient}>
+        <MantineProvider withGlobalStyles withNormalizeCSS theme={globalTheme}>
+          <NotificationsProvider position="top-right" autoClose={1600}>
+            <RouterProvider router={router}/>
+          </NotificationsProvider>
+        </MantineProvider>
+      </QueryClientProvider>
+    </trpc.Provider>
+
   )
 }

@@ -36,7 +36,7 @@
     },
     "ignoreDiagnostics": [2393, 2300],
     "require": ["dotenv/config", "tsconfig-paths/register"],
-    "exclude": ["node_modules", "scratch.ts", "debug.ts"]
+    "exclude": ["node_modules", "scratch.ts"]
 
   }
 }
