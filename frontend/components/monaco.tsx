@@ -5,7 +5,7 @@ import { ClipboardEvent, useRef } from 'react'
 import { Observable, timer } from 'rxjs'
 import { debounce } from 'rxjs/operators'
 
-import { SERVER_URL } from 'components/app'
+import { SERVER_URL, trpc, useActiveEntryStore } from 'components/app'
 // import { useUpdateContentText, useUploadImage } from 'frontend/api'
 
 
@@ -22,13 +22,10 @@ async function getClipboardItem() {
 
 
 export default function Monaco() {
-  // const contentId = ''
-  const markdown = ''
   const editorRef = useRef<null | editor.IStandaloneCodeEditor>(null)
-
-
-  // const uploadImage = useUploadImage(contentId)
-  // const updateContents = useUpdateContentText(contentId)
+  const markdown = useActiveEntryStore.getState().markdown
+  const { setMarkdown, clearEntry } = useActiveEntryStore((state) => state.actions)
+  const createEntry = trpc.createEntry.useMutation()
 
   const handleMonacoPaste = async (e: ClipboardEvent<HTMLInputElement>) => {
     try {
@@ -72,8 +69,7 @@ export default function Monaco() {
       .pipe(debounce(() => timer(300)))
       .subscribe(() => {
         const content = editor.getValue()
-        if (content) console.log(`Should save to localStorage with: ${content}`)
-        // if (content) updateContents.mutate({ markdown: content })
+        setMarkdown(content)
       })
 
     editor.addCommand(monaco.KeyMod.CtrlCmd | monaco.KeyCode.KeyM, () => {
@@ -88,10 +84,11 @@ export default function Monaco() {
       console.log('escape')
 
       const content = editor.getValue()
-      console.log('supposed to stop the edit!')
-      console.log(`should save with these contents: ${content}`)
-      // if (content) updateContents.mutate({ markdown: content })
-      // stopEdit(contentId)
+      createEntry.mutate({ markdown: content, id: useActiveEntryStore.getState().entryId })
+      clearEntry()
+      editor.setValue('')
+
+
     })
   }
 

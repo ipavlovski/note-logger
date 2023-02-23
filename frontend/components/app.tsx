@@ -4,16 +4,15 @@ import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
 import { createBrowserRouter, Outlet, RouterProvider } from 'react-router-dom'
 import { httpBatchLink } from '@trpc/client'
 import { createTRPCReact } from '@trpc/react-query'
+import { create } from 'zustand'
 
 import type { AppRouter } from 'frontend/../trpc'
 import Omnibar from 'components/omnibar'
 import TreeView from 'components/tree-view'
-import { create } from 'zustand'
 import Monaco from 'components/monaco'
 
 export const SERVER_URL = `https://localhost:${import.meta.env.VITE_SERVER_PORT}`
 export const ORIGIN_URL = `https://localhost:${import.meta.env.VITE_PORT}`
-
 
 ////////////// STYLES
 
@@ -67,7 +66,7 @@ const globalTheme: MantineThemeOverride = {
   })
 }
 
-////////////// ZUSTAND
+////////////// STORES
 
 interface FilterStore {
   tags: string[]
@@ -86,6 +85,41 @@ export const useFilterStore = create<FilterStore>((set) => ({
     removeTag: (tag) => set((state) => ({ tags: state.tags.filter((t) => t != tag) })),
   },
 }))
+
+
+interface ActiveEntryStore {
+  entryId: number | null
+  markdown: string
+  actions: {
+    setMarkdown: (markdown: string) => void
+    setEntry: (entryId: number | null, markdown: string) => void
+    clearEntry: () => void
+  }
+}
+
+const getLocalEntry = () => {
+  const entry = localStorage.getItem('entry')
+  return entry ?
+    JSON.parse(entry) as { entryId: number | null, markdown: string} :
+    { entryId: null, markdown: '' }
+}
+
+const setLocalEntry = (entryId: number | null, markdown: string) => {
+  localStorage.setItem('entry', JSON.stringify({ entryId, markdown }))
+  return { entryId, markdown }
+}
+
+
+export const useActiveEntryStore = create<ActiveEntryStore>((set) => ({
+  entryId: getLocalEntry().entryId,
+  markdown: getLocalEntry().markdown,
+  actions: {
+    setMarkdown: (markdown) => set((state) => setLocalEntry(state.entryId, markdown)),
+    clearEntry: () => set(() => setLocalEntry(null, '')),
+    setEntry: (entryId, markdown) => set(() => setLocalEntry(entryId, markdown))
+  },
+}))
+
 
 ////////////// TRPC / RQ
 
