@@ -5,10 +5,10 @@ import Remark from 'components/remark'
 const useStyles = createStyles((theme) => ({
   scrollable: {
     marginTop: 24,
-    overflowX: 'hidden',
+    // overflowX: 'hidden',
     overflowY: 'scroll',
     maxHeight: '75vh',
-    userSelect: 'none',
+    // userSelect: 'none',
     '&::-webkit-scrollbar': {
       width: 6,
     },

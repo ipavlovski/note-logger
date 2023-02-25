@@ -38,23 +38,14 @@ export const appRouter = t.router({
       return await h.createNewTag(req.input)
     }),
 
-  createEntry: t.procedure
+  createOrUpdateEntry: t.procedure
     .input(
       z.object({ id: z.number().nullable(), markdown: z.string().min(3) })
     )
     .mutation(async (req) => {
       console.log(`createEntry mutation: ${req.input}`)
-      return await h.createNewEntry(req.input)
+      return await h.createOrUpdateEntry(req.input)
     }),
-
-  // updateEntry: t.procedure
-  //   .input(
-  //     z.string().min(3)
-  //   )
-  //   .mutation(async (req) => {
-  //     console.log(`updateEntry mutation: ${req.input}`)
-  //     return await h.createNewTag(req.input)
-  //   }),
 
 
 })

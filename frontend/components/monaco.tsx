@@ -25,7 +25,7 @@ export default function Monaco() {
   const editorRef = useRef<null | editor.IStandaloneCodeEditor>(null)
   const markdown = useActiveEntryStore.getState().markdown
   const { setMarkdown, clearEntry } = useActiveEntryStore((state) => state.actions)
-  const createEntry = trpc.createEntry.useMutation()
+  const createOrUpdateEntry = trpc.createOrUpdateEntry.useMutation()
 
   const handleMonacoPaste = async (e: ClipboardEvent<HTMLInputElement>) => {
     try {
@@ -84,7 +84,7 @@ export default function Monaco() {
       console.log('escape')
 
       const content = editor.getValue()
-      createEntry.mutate({ markdown: content, id: useActiveEntryStore.getState().entryId })
+      createOrUpdateEntry.mutate({ markdown: content, id: useActiveEntryStore.getState().entryId })
       clearEntry()
       editor.setValue('')
 

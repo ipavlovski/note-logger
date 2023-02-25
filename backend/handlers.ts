@@ -6,7 +6,6 @@ import { setTimeout, } from 'timers/promises'
 const prisma = new PrismaClient()
 
 export async function getEntries(query: string) {
-  console.log(`Need to handle ${query} properly`)
   return await prisma.entry.findMany()
 }
 
@@ -26,8 +25,13 @@ export async function deleteTag(name: string) {
   await prisma.tag.delete({ where: { name } })
 }
 
-export function createNewEntry(input: {id: number | null, markdown: string}): any {
-  console.log(`input string:`)
-  console.log(input)
-  return true
+export async function createOrUpdateEntry({ id, markdown }: {id: number | null, markdown: string}) {
+  return id == null ?
+    await prisma.entry.create({
+      data: { markdown }
+    }) :
+    await prisma.entry.update({
+      where: { id }, data: { markdown }
+    })
+
 }
