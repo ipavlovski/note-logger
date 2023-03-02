@@ -128,32 +128,34 @@ function getDateCategory(date: Date, spec: DisplayFlags['dates']): Category[] {
   // hour offset
   const hours = 5
 
-  if (spec == 'none') {
-    return []
+  let dateTime: DateTime, id: number, name: string
+  switch(spec) {
+    case 'day':
+      dateTime = DateTime.fromJSDate(date).startOf('day').plus({ hours }).startOf('day')
+      id = dateTime.toMillis()
+      name = `${dateTime.toISODate()} ${dateTime.weekdayLong}`
+      return [{ id, name, order: 0, icon: null, url: null }]
+
+    case 'week':
+      dateTime = DateTime.fromJSDate(date).startOf('week').plus({ hours }).startOf('day')
+      id = dateTime.toMillis()
+      name = `${dateTime.toISODate()} W${dateTime.weekNumber}`
+      return [{ id, name, order: 0, icon: null, url: null }]
+
+    case 'month':
+      dateTime = DateTime.fromJSDate(date).startOf('month').plus({ hours }).startOf('day')
+      id = dateTime.toMillis()
+      name = `${dateTime.year}-${dateTime.month} ${dateTime.monthLong}`
+      return [{ id, name, order: 0, icon: null, url: null }]
+
+    case 'none':
+      return []
+
+    default:
+      spec satisfies never
+      return []
   }
 
-  if (spec == 'day') {
-    const dateTime = DateTime.fromJSDate(date).startOf('day').plus({ hours }).startOf('day')
-    const id = dateTime.toMillis()
-    const name = `${dateTime.toISODate()} ${dateTime.weekdayLong}`
-    return [{ id, name, order: 0, icon: null, url: null }]
-  }
-
-  if (spec == 'week') {
-    const dateTime = DateTime.fromJSDate(date).startOf('week').plus({ hours }).startOf('day')
-    const id = dateTime.toMillis()
-    const name = `${dateTime.toISODate()} W${dateTime.weekNumber}`
-    return [{ id, name, order: 0, icon: null, url: null }]
-  }
-
-  if (spec == 'month') {
-    const dateTime = DateTime.fromJSDate(date).startOf('month').plus({ hours }).startOf('day')
-    const id = dateTime.toMillis()
-    const name = `${dateTime.year}-${dateTime.month} ${dateTime.monthLong}`
-    return [{ id, name, order: 0, icon: null, url: null }]
-  }
-
-  return []
 }
 
 function getTreePath(entry: LinearEntry, flags: DisplayFlags): TreeEntry {
@@ -181,33 +183,52 @@ function getTreePath(entry: LinearEntry, flags: DisplayFlags): TreeEntry {
 function treeSort(treeRoots: TreeNode[], flags: DisplayFlags) {
   const { sort: { categories: categorySort, entries: entrySort }, useUpdated } = flags
 
+
   // sort categories
-  categorySort == 'name' ?
-    treeRoots.sort(({ category: { name: a } }, { category: { name: b } }) => {
-      return a == b ? 0 : a > b ? 1 : -1
-    }) :
-    categorySort == 'order' ?
-      treeRoots.sort(({ category: { order: a } }, { category: { order: b } }) => {
+  switch(categorySort) {
+    case 'name':
+      treeRoots.sort(({ category: { name: a } }, { category: { name: b } }) => {
         return a == b ? 0 : a > b ? 1 : -1
-      }) : undefined // noop
+      })
+      break
+    case 'order':
+      treeRoots.sort(({ category: { order: a } }, { category: { order: b } }) => a - b)
+      break
+    default:
+      categorySort satisfies never
+
+  }
+
 
   // sort entries
   treeRoots.forEach((roots) => {
     const { entries, children } = roots
-    entrySort == 'name' ? entries.sort(({ title: t1 }, { title: t2 }) => {
-      const a = t1 == null ? '' : t1
-      const b = t2 == null ? '' : t2
-      return a == b ? 0 : a > b ? 1 : -1
-    }) :
-      entrySort == 'date' ? entries.sort((entry1, entry2) => {
-        const a = (useUpdated && entry1.updatedAt) ? entry1.updatedAt : entry1.createdAt
-        const b = (useUpdated && entry2.updatedAt) ? entry2.updatedAt : entry2.createdAt
-        return a == b ? 0 : a > b ? 1 : -1
 
-      }) :
-        entrySort == 'order' ? entries.sort(({ order: a }, { order: b }) => {
+    switch(entrySort) {
+      case 'name':
+        entries.sort(({ title: t1 }, { title: t2 }) => {
+          const a = t1 ?? '', b = t2 ?? ''
           return a == b ? 0 : a > b ? 1 : -1
-        }) : undefined //noop
+        })
+        break
+
+      case 'date':
+        entries.sort(({ createdAt: c1, updatedAt: u1 }, { createdAt: c2, updatedAt: u2 }) => {
+          const a = useUpdated && u1 || c1, b = useUpdated && u2 || c2
+          return a.getTime() - b.getTime()
+        })
+        break
+
+      case 'order':
+        entries.sort(({ order: a }, { order: b }) => a - b)
+        break
+
+      case 'none':
+        break
+
+      default:
+        entrySort satisfies never
+    }
 
     // recurse
     if (children.length > 1) treeSort(children, flags)
@@ -221,7 +242,7 @@ async function queryEntries(query: QueryArgs, flags: DisplayFlags) {
   const nested = await getNestedEntries(query)
   const linear = await getLinearizedEntries(nested)
 
-  // can add: .map((v, ind) => ({ ...v, markdown: `Title ${ind+1}` })) to simplify for debugging
+  // can add .map((v, ind) => ({ ...v, markdown: `Title ${ind+1}` })) to simplify for debugging
   const treePaths = linear.map((v) => getTreePath(v, flags))
   treePaths.forEach((entry) => treeformEntries(entry, outputRoots))
   treeSort(outputRoots, flags)
