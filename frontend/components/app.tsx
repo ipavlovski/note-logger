@@ -1,15 +1,19 @@
-import { Container, MantineProvider, MantineThemeOverride } from '@mantine/core'
+import { Container, createStyles, Flex, MantineProvider, MantineThemeOverride } from '@mantine/core'
 import { NotificationsProvider } from '@mantine/notifications'
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
 import { createBrowserRouter, Outlet, RouterProvider } from 'react-router-dom'
 import { httpBatchLink } from '@trpc/client'
 import { createTRPCReact } from '@trpc/react-query'
 import { create } from 'zustand'
+import superjson from 'superjson'
+
 
 import type { AppRouter } from 'frontend/../trpc'
 import Omnibar from 'components/omnibar'
 import TreeView from 'components/tree-view'
+import TOC from 'components/toc'
 import Monaco from 'components/monaco'
+import Remark from 'components/remark'
 
 export const SERVER_URL = `https://localhost:${import.meta.env.VITE_SERVER_PORT}`
 export const ORIGIN_URL = `https://localhost:${import.meta.env.VITE_PORT}`
@@ -121,11 +125,25 @@ export const useActiveEntryStore = create<ActiveEntryStore>((set) => ({
 }))
 
 
+interface ActiveStore {
+  selectedChain: number[]
+  selectedChild: number,
+  setActive: (chain: number[], child: number) => void
+}
+
+export const useActiveStore = create<ActiveStore>((set) => ({
+  selectedChain: [1, 2, 3],
+  selectedChild: 1,
+  setActive: (selectedChain, selectedChild) => set(() => ({ selectedChain, selectedChild }))
+}))
+
+
 ////////////// TRPC / RQ
 
 export const trpc = createTRPCReact<AppRouter>()
 
 const trpcClient = trpc.createClient({
+  transformer: superjson,
   links: [
     httpBatchLink({
       url: `${SERVER_URL}/trpc`,
@@ -150,19 +168,71 @@ const router = createBrowserRouter([
     children: [
       {
         index: true,
-        element: <TreeView />,
+        element:
+
+        <Flex>
+          <TOC />
+          <TreeView />
+        </Flex>
+
+        // <TreeView />,
       },
     ],
   },
 ])
 
+const useStyles = createStyles(() => ({
+  toc: {
+    maxHeight: '90vh',
+
+  },
+  main: {
+    maxHeight: '75vh',
+  },
+  scrollable: {
+    marginTop: 12,
+    overflowX: 'hidden',
+    overflowY: 'scroll',
+    '&::-webkit-scrollbar': {
+      width: 6,
+    },
+    '&::-webkit-scrollbar-track': {
+      backgroundColor: '#b8adad',
+      borderRadius: 12,
+    },
+    '&::-webkit-scrollbar-thumb': {
+      backgroundColor: '#7a2a73',
+      borderRadius: 12,
+    },
+  },
+}))
+
+
+function LiveRender() {
+  const markdown = useActiveEntryStore((state) => state.markdown)
+
+  return <Remark markdown={markdown} />
+}
 
 function Root() {
+  const { classes, cx } = useStyles()
+
   return (
-    <Container size='md' pt={30} sizes={{ xs: 540, sm: 720, md: 800, lg: 1140, xl: 2000 }}>
+    <Container size={'lg'} pt={30}>
       <Omnibar />
-      <Monaco />
-      <Outlet />
+
+      <Flex>
+        <div className={cx(classes.scrollable, classes.toc)}>
+          <TOC />
+        </div>
+        <Container size={750}>
+          <Monaco />
+          <div className={cx(classes.scrollable, classes.main)}>
+            <TreeView />
+          </div>
+          {/* <LiveRender /> */}
+        </Container>
+      </Flex>
     </Container>
   )
 }
@@ -176,7 +246,8 @@ export default function App() {
       <QueryClientProvider client={queryClient}>
         <MantineProvider withGlobalStyles withNormalizeCSS theme={globalTheme}>
           <NotificationsProvider position="top-right" autoClose={1600}>
-            <RouterProvider router={router}/>
+            {/* <RouterProvider router={router}/> */}
+            <Root />
           </NotificationsProvider>
         </MantineProvider>
       </QueryClientProvider>

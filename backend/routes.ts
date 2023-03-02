@@ -1,13 +1,17 @@
 import { inferAsyncReturnType, initTRPC } from '@trpc/server'
 import * as trpcExpress from '@trpc/server/adapters/express'
 import { z } from 'zod'
+import superjson from 'superjson'
 
 import * as h from 'backend/handlers'
 
 // created for each request, return empty context
 export const createContext = ({ req, res, }: trpcExpress.CreateExpressContextOptions) => ({})
 type Context = inferAsyncReturnType<typeof createContext>;
-const t = initTRPC.context<Context>().create()
+const t = initTRPC.context<Context>().create({
+  transformer: superjson,
+})
+
 
 export const appRouter = t.router({
   getEntries: t.procedure

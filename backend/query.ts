@@ -22,7 +22,7 @@ interface Category {
 
 interface TreeNode {
   category: Category
-  entries: LinearEntry[]
+  entries: TreeEntry[]
   children: TreeNode[]
   depth: number
 }
@@ -38,6 +38,10 @@ interface DisplayFlags {
 interface QueryArgs {
   includeArchived: false
 }
+
+type NestedEntries = Prisma.PromiseReturnType<typeof getNestedEntries>
+type LinearEntry = Omit<NestedEntries[0], 'category' | 'categoryId'> & {categories: Category[]}
+type TreeEntry = LinearEntry & { treePath: Category[] }
 
 
 async function getNestedEntries(query: QueryArgs) {
@@ -57,10 +61,6 @@ async function getNestedEntries(query: QueryArgs) {
   })
 }
 
-
-type NestedEntries = Prisma.PromiseReturnType<typeof getNestedEntries>
-type LinearEntry = Omit<NestedEntries[0], 'category' | 'categoryId'> & {categories: Category[]}
-type TreeEntry = LinearEntry & { treePath: Category[] }
 
 async function getLinearizedEntries(nestedEntries: NestedEntries): Promise<LinearEntry[]> {
 
@@ -250,26 +250,4 @@ async function queryEntries(query: QueryArgs, flags: DisplayFlags) {
   return outputRoots
 }
 
-export { queryEntries, DisplayFlags, QueryArgs }
-
-/**
- * USAGE:
-const displayFlags: DisplayFlags = {
-  dates: 'day',
-  shift: { end: 0, start: 0 },
-  sort: { categories: 'name', entries: 'date' },
-  useUpdated: false,
-  virtual: { type: 'none' }
-}
-
-const queryArgs: QueryArgs = {
-  includeArchived: false
-}
-
-const output = await queryEntries(queryArgs, displayFlags)
-
-console.dir(
-  output.map((v) => v.category.name),
-  { depth: null }
-)
- */
+export { queryEntries, DisplayFlags, QueryArgs, Category, TreeEntry, TreeNode }

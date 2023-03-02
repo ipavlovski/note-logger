@@ -19,7 +19,7 @@ model Entry {
     archived  Boolean   @default(false)
 
     category   Category? @relation(fields: [categoryId], references: [id])
-    categoryId Int?
+    categoryId Int       @default(0)
     tags       Tag[]
     files      File[]
 }
@@ -32,7 +32,7 @@ model Category {
 
     entry Entry[]
 
-    pid      Int        @default(0)
+    pid      Int?
     parent   Category?  @relation("CategoryChain", fields: [pid], references: [id])
     children Category[] @relation("CategoryChain")
 
