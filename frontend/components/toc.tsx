@@ -47,7 +47,7 @@ const useStyles = createStyles((_, { depth }: {depth: number}, getRef) => ({
 
     // vertical line
     '&::after': {
-      display: 'block',
+      display: depth == 1 ? 'none' : 'block',
       position: 'absolute',
       height: '100%',
       borderLeft: `2px solid ${colNode}`,
@@ -283,7 +283,7 @@ export default function TOC() {
   if (!entries.data) return <div>Loading...</div>
 
   return (
-    <Container size={300}>
+    <Container size={400}>
       {entries.data.map((treeNode, ind) => <TreeView key={ind} treeRoot={treeNode} />)}
     </Container>
 

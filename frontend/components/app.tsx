@@ -67,6 +67,13 @@ const globalTheme: MantineThemeOverride = {
         opacity: 0.9
       },
     },
+
+    // remark markdown-render creates issues without this
+    '*, *::before, *::after': {
+      padding: 0,
+      margin: 0
+    },
+
   })
 }
 
@@ -189,6 +196,10 @@ const useStyles = createStyles(() => ({
   main: {
     maxHeight: '75vh',
   },
+  inner: {
+    transform: 'scaleX(-1)',
+    paddingLeft: 8,
+  },
   scrollable: {
     marginTop: 12,
     overflowX: 'hidden',
@@ -218,14 +229,16 @@ function Root() {
   const { classes, cx } = useStyles()
 
   return (
-    <Container size={'lg'} pt={30}>
+    <Container fluid pt={30}>
       <Omnibar />
 
       <Flex>
-        <div className={cx(classes.scrollable, classes.toc)}>
-          <TOC />
+        <div className={classes.scrollable} style={{transform: 'scaleX(-1)',}}>
+          <div className={cx(classes.toc)} style={{transform: 'scaleX(-1)',}}>
+            <TOC />
+          </div>
         </div>
-        <Container size={750}>
+        <Container size={800}>
           <Monaco />
           <div className={cx(classes.scrollable, classes.main)}>
             <TreeView />

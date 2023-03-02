@@ -49,7 +49,8 @@ const useStyles = createStyles((_, { depth }: {depth: number}, getRef) => ({
 
     // vertical line
     '&::after': {
-      display: 'block',
+      // display: 'block',
+      display: depth == 1 ? 'none' : 'block',
       position: 'absolute',
       height: '100%',
       borderLeft: `2px solid ${colNode}`,
@@ -70,7 +71,9 @@ const useStyles = createStyles((_, { depth }: {depth: number}, getRef) => ({
     display: 'flex',
     gap: 8,
     fontSize: 18,
-    padding: 10,
+    padding: 0,
+    // lineHeight: '100%',
+    // padding: '2px 5px',
     height: headerHeight,
     margin: 0,
 
@@ -169,13 +172,13 @@ function Entry({ entry, depth, ind }: {entry: TreeEntry, depth: number, ind: num
 
   const { hovered, ref } = useHover()
   const setActive = useActiveStore((state) => state.setActive)
-  if (hovered) setActive(entry.categories.map((v) => v.id), entry.id)
+  if (hovered) setActive(entry.treePath.map((v) => v.id), entry.id)
 
   return (
     <Box ref={ref} key={ind} className={classes.entry} >
-      <Text className={classes.entryHeader}
-      >{entry.title ?? ''}</Text>
-      <Skeleton width={skelWidth} height={40} animate={false} />
+      <Text truncate className={classes.entryHeader}>{entry.title ?? ''}</Text>
+      {/* <Skeleton width={skelWidth} height={40} animate={false} /> */}
+      <Remark markdown={entry.markdown} />
     </Box>
   )
 }
@@ -190,7 +193,7 @@ function TreeView({ treeRoot: { depth, category, entries, children } }: {treeRoo
       {/* category header */}
       <Box className={classes.header}>
         <Skeleton height={30} circle animate={false}/>
-        <Text >{category.name}</Text>
+        <Text truncate>{category.name}</Text>
       </Box>
 
       {/* entries */}
