@@ -1,4 +1,4 @@
-import { Container, createStyles, Flex, MantineProvider, MantineThemeOverride } from '@mantine/core'
+import { Box, Container, createStyles, Flex, MantineProvider, MantineThemeOverride } from '@mantine/core'
 import { NotificationsProvider } from '@mantine/notifications'
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
 import { createBrowserRouter, Outlet, RouterProvider } from 'react-router-dom'
@@ -14,6 +14,7 @@ import TreeView from 'components/tree-view'
 import TOC from 'components/toc'
 import Monaco from 'components/monaco'
 import Remark from 'components/remark'
+import Preview from 'components/preview'
 
 export const SERVER_URL = `https://localhost:${import.meta.env.VITE_SERVER_PORT}`
 export const ORIGIN_URL = `https://localhost:${import.meta.env.VITE_PORT}`
@@ -190,11 +191,12 @@ const router = createBrowserRouter([
 
 const useStyles = createStyles(() => ({
   toc: {
-    maxHeight: '90vh',
+    maxHeight: '96vh',
 
   },
   main: {
-    maxHeight: '75vh',
+    maxHeight: '74vh',
+    // maxWidth: 800,
   },
   inner: {
     transform: 'scaleX(-1)',
@@ -229,24 +231,38 @@ function Root() {
   const { classes, cx } = useStyles()
 
   return (
-    <Container fluid pt={30}>
-      <Omnibar />
-
-      <Flex>
-        <div className={classes.scrollable} style={{transform: 'scaleX(-1)',}}>
-          <div className={cx(classes.toc)} style={{transform: 'scaleX(-1)',}}>
-            <TOC />
-          </div>
+    <Flex m={16} gap={0}>
+      <Box className={classes.scrollable} style={{ transform: 'scaleX(-1)', minWidth: 300 }}>
+        <div className={cx(classes.toc)} style={{ transform: 'scaleX(-1)', }}>
+          <TOC />
         </div>
-        <Container size={800}>
-          <Monaco />
-          <div className={cx(classes.scrollable, classes.main)}>
-            <TreeView />
-          </div>
-          {/* <LiveRender /> */}
-        </Container>
-      </Flex>
-    </Container>
+      </Box>
+
+      <Container size={1200} ml={24} style={{ minWidth: 600 }} fluid >
+        <div style={{ padding: '0 80px' }}>
+          <Omnibar />
+        </div>
+        <Flex>
+          <Container size={650} >
+            <Preview height={400} width={650} />
+            <div className={cx(classes.scrollable, classes.main)}>
+              <TreeView />
+            </div>
+          </Container>
+
+          <Container size={600} ml={24} style={{ minWidth: 600 }}>
+            <Monaco />
+            <LiveRender />
+          </Container>
+
+
+        </Flex>
+
+
+      </Container>
+
+
+    </Flex>
   )
 }
 
