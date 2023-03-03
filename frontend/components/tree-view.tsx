@@ -2,12 +2,13 @@ import { createStyles } from '@mantine/core'
 import { trpc, useActiveEntryStore } from 'components/app'
 import Remark from 'components/remark'
 import { Box, Flex, Skeleton, Text } from '@mantine/core'
-import { useHover } from '@mantine/hooks'
+import { useHover, useIntersection } from '@mantine/hooks'
 import { useActiveStore } from 'components/app'
 // import { originalRoot } from 'components/data'
 // import type { TreeNode, Category, Entry } from 'components/data'
 
 import { TreeNode, Category, TreeEntry } from 'backend/query'
+import { createContext, useContext, useRef } from 'react'
 
 //  ==============================
 //              STYLES
@@ -159,23 +160,51 @@ const useStyles = createStyles((_, { depth }: {depth: number}, getRef) => ({
       border: '2px white solid',
       content: '""',
     },
-
-
+  },
+  scrollable: {
+    // marginTop: 12,
+    // overflowX: 'hidden',
+    maxHeight: '74vh',
+    overflowY: 'scroll',
+    '&::-webkit-scrollbar': {
+      width: 6,
+    },
+    '&::-webkit-scrollbar-track': {
+      backgroundColor: '#b8adad',
+      borderRadius: 12,
+    },
+    '&::-webkit-scrollbar-thumb': {
+      backgroundColor: '#7a2a73',
+      borderRadius: 12,
+    },
   },
 
+  ix: {
+    color: 'green'
+  }
 
 }))
 
 
 function Entry({ entry, depth, ind }: {entry: TreeEntry, depth: number, ind: number}) {
-  const { classes } = useStyles({ depth })
 
-  const { hovered, ref } = useHover()
+  const { classes, cx } = useStyles({ depth })
+
+  // const { hovered, ref } = useHover()
   const setActive = useActiveStore((state) => state.setActive)
-  if (hovered) setActive(entry.treePath.map((v) => v.id), entry.id)
+  // if (hovered) setActive(entry.treePath.map((v) => v.id), entry.id)
+
+  const parentRef = useContext(LevelContext)
+  const { ref, entry: ix } = useIntersection({ root: parentRef?.current })
+
+  if (ix?.isIntersecting) {
+    setActive(entry.treePath.map((v)=>v.id), entry.id)
+    console.log(`${entry.treePath.map((v)=>v.id).join()} id: ${entry.id} is intersecting!`)
+  }
 
   return (
-    <Box ref={ref} key={ind} className={classes.entry} >
+    // <Box ref={ref} key={ind} className={classes.entry} >
+    <Box key={ind} className={cx(classes.entry)} ref={ref} >
       <Text truncate className={classes.entryHeader}>{entry.title ?? ''}</Text>
       {/* <Skeleton width={skelWidth} height={40} animate={false} /> */}
       <Remark markdown={entry.markdown} />
@@ -185,10 +214,10 @@ function Entry({ entry, depth, ind }: {entry: TreeEntry, depth: number, ind: num
 
 function TreeView({ treeRoot: { depth, category, entries, children } }: {treeRoot: TreeNode}) {
 
-  const { classes } = useStyles({ depth })
+  const { classes, cx } = useStyles({ depth })
 
   return (
-    <Box className={classes.treeNode} >
+    <Box className={cx(classes.treeNode)} >
 
       {/* category header */}
       <Box className={classes.header}>
@@ -198,7 +227,7 @@ function TreeView({ treeRoot: { depth, category, entries, children } }: {treeRoo
 
       {/* entries */}
       {entries.length > 0 && entries.map((entry, ind) => (
-        <Entry key={ind} depth={depth} entry={entry} ind={ind}/>
+        <Entry key={ind} depth={depth} entry={entry} ind={ind} />
       ))}
 
       {/* child categories */}
@@ -212,17 +241,21 @@ function TreeView({ treeRoot: { depth, category, entries, children } }: {treeRoo
   )
 }
 
+export const LevelContext = createContext<React.MutableRefObject<HTMLDivElement | null> | null>(null)
 
 export default function TreeMain() {
 
   const defaultQuery = 'all'
   const entries = trpc.getEntries.useQuery(defaultQuery)
+  const parentRef = useRef<null | HTMLDivElement>(null)
 
   if (!entries.data) return <div>Loading...</div>
 
   return (
-    <div style={{ margin: 16 }} >
-      {entries.data.map((treeNode, ind) => <TreeView key={ind} treeRoot={treeNode} />)}
+    <div style={{ margin: 16, overflowY: 'scroll', maxHeight: '74vh', }} ref={parentRef}>
+      <LevelContext.Provider value={parentRef}>
+        {entries.data.map((treeNode, ind) => <TreeView key={ind} treeRoot={treeNode} />)}
+      </LevelContext.Provider>
     </div>
   )
 }

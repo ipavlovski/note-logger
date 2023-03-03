@@ -140,8 +140,8 @@ interface ActiveStore {
 }
 
 export const useActiveStore = create<ActiveStore>((set) => ({
-  selectedChain: [1, 2, 3],
-  selectedChild: 1,
+  selectedChain: [0],
+  selectedChild: 0,
   setActive: (selectedChain, selectedChild) => set(() => ({ selectedChain, selectedChild }))
 }))
 
@@ -245,7 +245,7 @@ function Root() {
         <Flex>
           <Container size={650} >
             <Preview height={400} width={650} />
-            <div className={cx(classes.scrollable, classes.main)}>
+            <div className={cx(classes.main)}>
               <TreeView />
             </div>
           </Container>
