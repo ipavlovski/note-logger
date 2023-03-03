@@ -21,7 +21,7 @@ interface Category {
 }
 
 interface TreeNode {
-  category: Category
+  category: TreeCategory
   entries: TreeEntry[]
   children: TreeNode[]
   depth: number
@@ -42,7 +42,7 @@ interface QueryArgs {
 type NestedEntries = Prisma.PromiseReturnType<typeof getNestedEntries>
 type LinearEntry = Omit<NestedEntries[0], 'category' | 'categoryId'> & {categories: Category[]}
 type TreeEntry = LinearEntry & { treePath: Category[] }
-
+type TreeCategory = Category & { treePath: Category[] }
 
 async function getNestedEntries(query: QueryArgs) {
   return prisma.entry.findMany({
@@ -95,7 +95,7 @@ function treeformEntries(entry: TreeEntry, treeRoots: TreeNode[]) {
 
     if (! match) {
       const newNode: TreeNode = {
-        category,
+        category: { ...category, treePath: entry.treePath.slice(0, i + 1) },
         entries: [],
         children: [],
         depth: i + 1,

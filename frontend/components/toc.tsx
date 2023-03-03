@@ -248,7 +248,8 @@ function TreeView({ treeRoot: { depth, category, entries, children } }: {treeRoo
   const { classes, cx } = useStyles({ depth })
 
   const selectedChain = useActiveStore.getState().selectedChain
-  const isSelected = selectedChain[depth - 1] == category.id
+  const isSelected = selectedChain.slice(0, depth).join() ==
+    category.treePath.map((v) => v.id).slice(0, depth).join()
 
   return (
     <Box className={cx(classes.treeNode, isSelected && classes.hl)} >
