@@ -1,4 +1,4 @@
-import { Box, Container, createStyles, Flex, MantineProvider, MantineThemeOverride } from '@mantine/core'
+import { Box, Container, createStyles, Flex, Grid, MantineProvider, MantineThemeOverride } from '@mantine/core'
 import { NotificationsProvider } from '@mantine/notifications'
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
 import { createBrowserRouter, Outlet, RouterProvider } from 'react-router-dom'
@@ -189,32 +189,43 @@ const router = createBrowserRouter([
   },
 ])
 
-const useStyles = createStyles(() => ({
-  toc: {
-    maxHeight: '96vh',
+const useStyles = createStyles((theme) => ({
+  // toc: {
+  //   maxHeight: '92vh',
 
-  },
+  // },
   main: {
-    maxHeight: '74vh',
-    // maxWidth: 800,
-  },
-  inner: {
-    transform: 'scaleX(-1)',
-    paddingLeft: 8,
-  },
-  scrollable: {
-    marginTop: 12,
+    height: '92vh',
     overflowX: 'hidden',
     overflowY: 'scroll',
     '&::-webkit-scrollbar': {
-      width: 6,
+      width: 8,
     },
     '&::-webkit-scrollbar-track': {
-      backgroundColor: '#b8adad',
+      backgroundColor: theme.colors.dark[7],
       borderRadius: 12,
     },
     '&::-webkit-scrollbar-thumb': {
-      backgroundColor: '#7a2a73',
+      backgroundColor: '#405d53',
+      borderRadius: 12,
+    },
+  },
+  toc: {
+    maxHeight: '92vh',
+    marginTop: 12,
+    transform: 'scaleX(-1)',
+    minWidth: 300 ,
+    overflowX: 'hidden',
+    overflowY: 'scroll',
+    '&::-webkit-scrollbar': {
+      width: 8,
+    },
+    '&::-webkit-scrollbar-track': {
+      backgroundColor: theme.colors.dark[7],
+      borderRadius: 12,
+    },
+    '&::-webkit-scrollbar-thumb': {
+      backgroundColor: '#405d53',
       borderRadius: 12,
     },
   },
@@ -227,42 +238,28 @@ function LiveRender() {
   return <Remark markdown={markdown} />
 }
 
+
 function Root() {
   const { classes, cx } = useStyles()
 
   return (
-    <Flex m={16} gap={0}>
-      <Box className={classes.scrollable} style={{ transform: 'scaleX(-1)', minWidth: 300 }}>
-        <div className={cx(classes.toc)} style={{ transform: 'scaleX(-1)', }}>
-          <TOC />
-        </div>
-      </Box>
-
-      <Container size={1200} ml={24} style={{ minWidth: 600 }} fluid >
-        <div style={{ padding: '0 80px' }}>
-          <Omnibar />
-        </div>
-        <Flex>
-          <Container size={650} >
-            <Preview height={400} width={650} />
-            <div className={cx(classes.main)}>
-              <TreeView />
+    <div>
+      <Omnibar />
+      <Grid>
+        <Grid.Col span={4}>
+          <Box className={classes.toc} >
+            <div style={{ transform: 'scaleX(-1)', }}>
+              <TOC />
             </div>
-          </Container>
-
-          <Container size={600} ml={24} style={{ minWidth: 600 }}>
-            <Monaco />
-            <LiveRender />
-          </Container>
-
-
-        </Flex>
-
-
-      </Container>
-
-
-    </Flex>
+          </Box>
+        </Grid.Col>
+        <Grid.Col span={8}>
+          <div style={{ height: '20vh' }}>
+            <TreeView />
+          </div>
+        </Grid.Col>
+      </Grid>
+    </div>
   )
 }
 

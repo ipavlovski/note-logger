@@ -252,7 +252,8 @@ export default function TreeMain() {
   if (!entries.data) return <div>Loading...</div>
 
   return (
-    <div style={{ margin: 16, overflowY: 'scroll', maxHeight: '74vh', }} ref={parentRef}>
+    <div style={{ margin: 16, overflowY: 'scroll', maxHeight: '94vh', overflowX: 'hidden' }}
+      ref={parentRef}>
       <LevelContext.Provider value={parentRef}>
         {entries.data.map((treeNode, ind) => <TreeView key={ind} treeRoot={treeNode} />)}
       </LevelContext.Provider>
