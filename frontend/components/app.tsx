@@ -10,7 +10,7 @@ import superjson from 'superjson'
 
 import type { AppRouter } from 'frontend/../trpc'
 import Omnibar from 'components/omnibar'
-import TreeView from 'components/tree-view'
+import Entries from 'components/entries'
 import TOC from 'components/toc'
 import Monaco from 'components/monaco'
 import Remark from 'components/remark'
@@ -68,6 +68,11 @@ const globalTheme: MantineThemeOverride = {
         opacity: 0.9
       },
     },
+
+    ':root': {
+      // scrollbarGutter: 'stable',
+    },
+    // scrollbar-gutter: stable both-edges;
 
     // remark markdown-render creates issues without this
     '*, *::before, *::after': {
@@ -169,37 +174,15 @@ const queryClient = new QueryClient({
 
 ////////////// ROUTER
 
-const router = createBrowserRouter([
-  {
-    path: '/',
-    element: <Root />,
-    children: [
-      {
-        index: true,
-        element:
-
-        <Flex>
-          <TOC />
-          <TreeView />
-        </Flex>
-
-        // <TreeView />,
-      },
-    ],
-  },
-])
 
 const useStyles = createStyles((theme) => ({
-  // toc: {
-  //   maxHeight: '92vh',
-
-  // },
   main: {
     height: '92vh',
+    paddingRight: 40,
     overflowX: 'hidden',
     overflowY: 'scroll',
     '&::-webkit-scrollbar': {
-      width: 8,
+      width: 10,
     },
     '&::-webkit-scrollbar-track': {
       backgroundColor: theme.colors.dark[7],
@@ -212,13 +195,12 @@ const useStyles = createStyles((theme) => ({
   },
   toc: {
     maxHeight: '92vh',
-    marginTop: 12,
     transform: 'scaleX(-1)',
     minWidth: 300 ,
     overflowX: 'hidden',
     overflowY: 'scroll',
     '&::-webkit-scrollbar': {
-      width: 8,
+      width: 10,
     },
     '&::-webkit-scrollbar-track': {
       backgroundColor: theme.colors.dark[7],
@@ -245,17 +227,17 @@ function Root() {
   return (
     <div>
       <Omnibar />
-      <Grid>
-        <Grid.Col span={4}>
+      <Grid m={0} p={0}>
+        <Grid.Col span={4} p={0}>
           <Box className={classes.toc} >
             <div style={{ transform: 'scaleX(-1)', }}>
               <TOC />
             </div>
           </Box>
         </Grid.Col>
-        <Grid.Col span={8}>
+        <Grid.Col span={8} p={0}>
           <div style={{ height: '20vh' }}>
-            <TreeView />
+            <Entries className={classes.main} />
           </div>
         </Grid.Col>
       </Grid>
@@ -272,7 +254,6 @@ export default function App() {
       <QueryClientProvider client={queryClient}>
         <MantineProvider withGlobalStyles withNormalizeCSS theme={globalTheme}>
           <NotificationsProvider position="top-right" autoClose={1600}>
-            {/* <RouterProvider router={router}/> */}
             <Root />
           </NotificationsProvider>
         </MantineProvider>

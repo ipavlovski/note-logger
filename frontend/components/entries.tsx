@@ -1,4 +1,4 @@
-import { createStyles } from '@mantine/core'
+import { createStyles, Selectors } from '@mantine/core'
 import { trpc, useActiveEntryStore } from 'components/app'
 import Remark from 'components/remark'
 import { Box, Flex, Skeleton, Text } from '@mantine/core'
@@ -8,7 +8,7 @@ import { useActiveStore } from 'components/app'
 // import type { TreeNode, Category, Entry } from 'components/data'
 
 import { TreeNode, Category, TreeEntry } from 'backend/query'
-import { createContext, useContext, useRef } from 'react'
+import { createContext, ReactNode, useContext, useRef } from 'react'
 
 //  ==============================
 //              STYLES
@@ -28,6 +28,10 @@ const skelWidth = 520
 const colNode = '#ffffff'
 const colHeader = '#ffffff'
 const colEntry = '#ffffff'
+
+const TreeContext = createContext<React.MutableRefObject<HTMLDivElement | null> | null>(null)
+
+type CssStylesNames = { [key in Selectors<typeof useStyles>]: string }
 
 
 const useStyles = createStyles((_, { depth }: {depth: number}, getRef) => ({
@@ -194,7 +198,7 @@ function Entry({ entry, depth, ind }: {entry: TreeEntry, depth: number, ind: num
   const setActive = useActiveStore((state) => state.setActive)
   // if (hovered) setActive(entry.treePath.map((v) => v.id), entry.id)
 
-  const parentRef = useContext(LevelContext)
+  const parentRef = useContext(TreeContext)
   const { ref, entry: ix } = useIntersection({ root: parentRef?.current })
 
   if (ix?.isIntersecting) {
@@ -241,22 +245,39 @@ function TreeView({ treeRoot: { depth, category, entries, children } }: {treeRoo
   )
 }
 
-export const LevelContext = createContext<React.MutableRefObject<HTMLDivElement | null> | null>(null)
 
-export default function TreeMain() {
+function InsersectionObserver({ children, className }: {children: ReactNode, className: string}) {
+  const parentRef = useRef<null | HTMLDivElement>(null)
+
+  return (
+    <div className={className} ref={parentRef}>
+      <TreeContext.Provider value={parentRef}>
+        {children}
+      </TreeContext.Provider>
+    </div>
+  )
+}
+
+function TreeItems() {
 
   const defaultQuery = 'all'
   const entries = trpc.getEntries.useQuery(defaultQuery)
-  const parentRef = useRef<null | HTMLDivElement>(null)
 
   if (!entries.data) return <div>Loading...</div>
 
   return (
-    <div style={{ margin: 16, overflowY: 'scroll', maxHeight: '94vh', overflowX: 'hidden' }}
-      ref={parentRef}>
-      <LevelContext.Provider value={parentRef}>
-        {entries.data.map((treeNode, ind) => <TreeView key={ind} treeRoot={treeNode} />)}
-      </LevelContext.Provider>
-    </div>
+    <>
+      {entries.data.map((treeNode, ind) => <TreeView key={ind} treeRoot={treeNode} />)}
+    </>
   )
+
+}
+
+export default function Entries({ className }: { className: string}) {
+  return (
+    <InsersectionObserver className={className}>
+      <TreeItems />
+    </InsersectionObserver>
+  )
+
 }
