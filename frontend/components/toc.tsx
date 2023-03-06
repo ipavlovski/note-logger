@@ -33,6 +33,7 @@ const useStyles = createStyles((_, { depth }: {depth: number}, getRef) => ({
     position: 'relative',
     margin: 0,
     paddingLeft: padOffset,
+    paddingTop: depth == 1 ? 16 : 0,
 
     // horizontal line
     '&:before': {
