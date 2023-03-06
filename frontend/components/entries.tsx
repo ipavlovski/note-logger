@@ -1,4 +1,4 @@
-import { createStyles, Selectors } from '@mantine/core'
+import { Center, createStyles, Selectors } from '@mantine/core'
 import { trpc, useActiveEntryStore } from 'components/app'
 import Remark from 'components/remark'
 import { Box, Flex, Skeleton, Text } from '@mantine/core'
@@ -9,6 +9,7 @@ import { useActiveStore } from 'components/app'
 
 import { TreeNode, Category, TreeEntry as ITreeEntry, TreeCategory } from 'backend/query'
 import { createContext, ReactNode, useContext, useRef } from 'react'
+import { IconHash } from '@tabler/icons-react'
 
 //  ==============================
 //              STYLES
@@ -241,13 +242,18 @@ function LinearEntry({ entry }: {entry: ITreeEntry }) {
 
 function LinearCategory({ category }: {category: TreeCategory}) {
   return (
-    <h3>{category.name}</h3>
+    <Center m={16}>
+      <h1>{category.name}</h1>
+    </Center>
   )
 }
 
 function LinearHeader({ entry }: {entry: ITreeEntry}) {
   return (
-    <Text truncate>{entry.title ?? 'untitled'}</Text>
+    <Flex align={'center'} m={16}>
+      <IconHash color={'#2BBC8A'} size={28}/>
+      <Text size={24} truncate>{entry.title ?? 'untitled'}</Text>
+    </Flex>
   )
 }
 
@@ -292,7 +298,7 @@ function linearizeTreeNode(treeNode: TreeNode, acc: LinearNodes, maxDepth: numbe
 }
 
 function LinearView({ treeRoot }: {treeRoot: TreeNode}) {
-  const MAX_DEPTH = 2
+  const MAX_DEPTH = 1
   const linearNodes = linearizeTreeNode(treeRoot, [], MAX_DEPTH)
 
   return (

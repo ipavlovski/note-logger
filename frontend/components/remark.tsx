@@ -15,7 +15,6 @@ function Header1Component({ node,children, className }: HeadingProps) {
 
   return (
     <div style={{ position: 'relative' }}>
-      <IconHash color={'#2BBC8A'} style={{ position: 'absolute', left: -40, top: 3 }} size={28}/>
       <Title order={1} transform='capitalize' size={28} mt={30} mb={4} >{children}</Title>
     </div>
   )
