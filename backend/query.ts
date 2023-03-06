@@ -250,4 +250,4 @@ async function queryEntries(query: QueryArgs, flags: DisplayFlags) {
   return outputRoots
 }
 
-export { queryEntries, DisplayFlags, QueryArgs, Category, TreeEntry, TreeNode }
+export { queryEntries, DisplayFlags, QueryArgs, Category, TreeEntry, TreeNode, TreeCategory }

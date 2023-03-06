@@ -7,7 +7,7 @@ import { useActiveStore } from 'components/app'
 // import { originalRoot } from 'components/data'
 // import type { TreeNode, Category, Entry } from 'components/data'
 
-import { TreeNode, Category, TreeEntry } from 'backend/query'
+import { TreeNode, Category, TreeEntry as ITreeEntry, TreeCategory } from 'backend/query'
 import { createContext, ReactNode, useContext, useRef } from 'react'
 
 //  ==============================
@@ -31,10 +31,10 @@ const colEntry = '#ffffff'
 
 const TreeContext = createContext<React.MutableRefObject<HTMLDivElement | null> | null>(null)
 
-type CssStylesNames = { [key in Selectors<typeof useStyles>]: string }
+// type CssStylesNames = { [key in Selectors<typeof useStyles>]: string }
 
 
-const useStyles = createStyles((_, { depth }: {depth: number}, getRef) => ({
+const useTreeStyles = createStyles((_, { depth }: {depth: number}, getRef) => ({
 
   treeNode: {
     position: 'relative',
@@ -190,14 +190,10 @@ const useStyles = createStyles((_, { depth }: {depth: number}, getRef) => ({
 }))
 
 
-function Entry({ entry, depth, ind }: {entry: TreeEntry, depth: number, ind: number}) {
+function TreeEntry({ entry, depth, ind }: {entry: ITreeEntry, depth: number, ind: number}) {
 
-  const { classes, cx } = useStyles({ depth })
-
-  // const { hovered, ref } = useHover()
+  const { classes, cx } = useTreeStyles({ depth })
   const setActive = useActiveStore((state) => state.setActive)
-  // if (hovered) setActive(entry.treePath.map((v) => v.id), entry.id)
-
   const parentRef = useContext(TreeContext)
   const { ref, entry: ix } = useIntersection({ root: parentRef?.current })
 
@@ -207,18 +203,58 @@ function Entry({ entry, depth, ind }: {entry: TreeEntry, depth: number, ind: num
   }
 
   return (
-    // <Box ref={ref} key={ind} className={classes.entry} >
     <Box key={ind} className={cx(classes.entry)} ref={ref} >
       <Text truncate className={classes.entryHeader}>{entry.title ?? ''}</Text>
-      {/* <Skeleton width={skelWidth} height={40} animate={false} /> */}
       <Remark markdown={entry.markdown} />
     </Box>
   )
 }
 
+
+const useLinearStyles = createStyles(() => ({
+  entry: {
+    marginTop: 14
+  },
+  header: {}
+}))
+
+function LinearEntry({ entry }: {entry: ITreeEntry }) {
+  // const { classes, cx } = useLinearStyles()
+
+  const setActive = useActiveStore((state) => state.setActive)
+  const parentRef = useContext(TreeContext)
+  const { ref, entry: ix } = useIntersection({ root: parentRef?.current })
+
+  if (ix?.isIntersecting) {
+    setActive(entry.treePath.map((v)=>v.id), entry.id)
+    console.log(`${entry.treePath.map((v)=>v.id).join()} id: ${entry.id} is intersecting!`)
+  }
+
+
+  return (
+    <Box ref={ref} >
+      <LinearHeader entry={entry}/>
+      <Remark markdown={entry.markdown} />
+    </Box>
+  )
+}
+
+function LinearCategory({ category }: {category: TreeCategory}) {
+  return (
+    <h3>{category.name}</h3>
+  )
+}
+
+function LinearHeader({ entry }: {entry: ITreeEntry}) {
+  return (
+    <Text truncate>{entry.title ?? 'untitled'}</Text>
+  )
+}
+
+
 function TreeView({ treeRoot: { depth, category, entries, children } }: {treeRoot: TreeNode}) {
 
-  const { classes, cx } = useStyles({ depth })
+  const { classes, cx } = useTreeStyles({ depth })
 
   return (
     <Box className={cx(classes.treeNode)} >
@@ -231,7 +267,7 @@ function TreeView({ treeRoot: { depth, category, entries, children } }: {treeRoo
 
       {/* entries */}
       {entries.length > 0 && entries.map((entry, ind) => (
-        <Entry key={ind} depth={depth} entry={entry} ind={ind} />
+        <TreeEntry key={ind} depth={depth} entry={entry} ind={ind} />
       ))}
 
       {/* child categories */}
@@ -246,6 +282,29 @@ function TreeView({ treeRoot: { depth, category, entries, children } }: {treeRoo
 }
 
 
+type LinearNodes = Array< (ITreeEntry & { type: 'entry'}) | (TreeCategory & { type: 'category'}) >
+function linearizeTreeNode(treeNode: TreeNode, acc: LinearNodes, maxDepth: number) {
+  const { depth, category, children, entries } = treeNode
+  depth <= maxDepth && acc.push({ ...category, type: 'category' })
+  entries.forEach((entry) => acc.push({ ...entry, type: 'entry' }))
+  if (children.length > 0) children.forEach((child) => linearizeTreeNode(child, acc, maxDepth))
+  return acc
+}
+
+function LinearView({ treeRoot }: {treeRoot: TreeNode}) {
+  const MAX_DEPTH = 2
+  const linearNodes = linearizeTreeNode(treeRoot, [], MAX_DEPTH)
+
+  return (
+    <>
+      {linearNodes.map((v) => v.type == 'entry' ?
+        <LinearEntry entry={v} /> :
+        <LinearCategory category={v} />
+      )}
+    </>
+  )
+}
+
 function InsersectionObserver({ children, className }: {children: ReactNode, className: string}) {
   const parentRef = useRef<null | HTMLDivElement>(null)
 
@@ -258,25 +317,25 @@ function InsersectionObserver({ children, className }: {children: ReactNode, cla
   )
 }
 
-function TreeItems() {
 
+/**
+ * Render all the entries.
+ * In the case the screen is mobile, TOC will dissappear and will show tree directly
+ * Otherwise when TOC is visible, hide the tree structure and show it linearized
+ */
+export default function Entries({ className }: { className: string}) {
   const defaultQuery = 'all'
   const entries = trpc.getEntries.useQuery(defaultQuery)
 
   if (!entries.data) return <div>Loading...</div>
+  const SHOW_TREE = false
 
-  return (
-    <>
-      {entries.data.map((treeNode, ind) => <TreeView key={ind} treeRoot={treeNode} />)}
-    </>
-  )
-
-}
-
-export default function Entries({ className }: { className: string}) {
   return (
     <InsersectionObserver className={className}>
-      <TreeItems />
+      {SHOW_TREE ?
+        entries.data.map((treeNode, ind) => <TreeView key={ind} treeRoot={treeNode} />) :
+        entries.data.map((treeNode, ind) => <LinearView key={ind} treeRoot={treeNode} />)
+      }
     </InsersectionObserver>
   )
 
