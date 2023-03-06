@@ -104,6 +104,33 @@ export const useFilterStore = create<FilterStore>((set) => ({
 }))
 
 
+interface ViewTogglesStore {
+  maxDepth: number
+  previewVisible: boolean
+  editorVisible: boolean
+  liveRenderVisible: boolean
+  actions: {
+    setMaxDepth: (maxDepth: number) => void
+    setPreviewVisible: (toggle: boolean) => void
+    setEditorVisible: (toggle: boolean) => void
+    setLiveRenderVisible: (toggle: boolean) => void
+  }
+}
+
+export const useViewTogglesStore = create<ViewTogglesStore>((set) => ({
+  maxDepth: 1,
+  previewVisible: false,
+  editorVisible: false,
+  liveRenderVisible: false,
+  actions: {
+    setMaxDepth: (maxDepth) => set(() => ({ maxDepth })),
+    setPreviewVisible: (bool) => set(() => ({ previewVisible: bool })),
+    setEditorVisible: (bool) => set(() => ({ editorVisible: bool })),
+    setLiveRenderVisible: (bool) => set(() => ({ liveRenderVisible: bool })),
+  }
+}))
+
+
 interface ActiveEntryStore {
   entryId: number | null
   markdown: string

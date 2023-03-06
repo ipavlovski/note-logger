@@ -1,5 +1,5 @@
 import { Center, createStyles, Selectors } from '@mantine/core'
-import { trpc, useActiveEntryStore } from 'components/app'
+import { trpc, useActiveEntryStore, useViewTogglesStore } from 'components/app'
 import Remark from 'components/remark'
 import { Box, Flex, Skeleton, Text } from '@mantine/core'
 import { useHover, useIntersection } from '@mantine/hooks'
@@ -298,14 +298,14 @@ function linearizeTreeNode(treeNode: TreeNode, acc: LinearNodes, maxDepth: numbe
 }
 
 function LinearView({ treeRoot }: {treeRoot: TreeNode}) {
-  const MAX_DEPTH = 1
-  const linearNodes = linearizeTreeNode(treeRoot, [], MAX_DEPTH)
+  const maxDepth = useViewTogglesStore((state) => state.maxDepth)
+  const linearNodes = linearizeTreeNode(treeRoot, [], maxDepth)
 
   return (
     <>
-      {linearNodes.map((v) => v.type == 'entry' ?
-        <LinearEntry entry={v} /> :
-        <LinearCategory category={v} />
+      {linearNodes.map((v, ind) => v.type == 'entry' ?
+        <LinearEntry key={ind} entry={v} /> :
+        <LinearCategory key={ind} category={v} />
       )}
     </>
   )
