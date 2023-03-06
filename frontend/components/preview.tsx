@@ -1,7 +1,7 @@
 import { Skeleton } from '@mantine/core'
 
-export default function Preview({ height, width }: {height: number, width: number}) {
+export default function Preview({ height }: {height: string | number}) {
   return (
-    <Skeleton animate={false} height={height} width={width}/>
+    <Skeleton animate={false} height={height} my={14} />
   )
 }

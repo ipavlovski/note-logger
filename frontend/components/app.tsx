@@ -119,8 +119,8 @@ interface ViewTogglesStore {
 
 export const useViewTogglesStore = create<ViewTogglesStore>((set) => ({
   maxDepth: 1,
+  editorVisible: true,
   previewVisible: false,
-  editorVisible: false,
   liveRenderVisible: false,
   actions: {
     setMaxDepth: (maxDepth) => set(() => ({ maxDepth })),
@@ -202,10 +202,12 @@ const queryClient = new QueryClient({
 ////////////// ROUTER
 
 
-const useStyles = createStyles((theme) => ({
-  main: {
-    height: '92vh',
-    paddingRight: 40,
+const tocStyles = createStyles((theme) => ({
+
+  toc: {
+    maxHeight: '92vh',
+    transform: 'scaleX(-1)',
+    minWidth: 300 ,
     overflowX: 'hidden',
     overflowY: 'scroll',
     '&::-webkit-scrollbar': {
@@ -220,10 +222,12 @@ const useStyles = createStyles((theme) => ({
       borderRadius: 12,
     },
   },
-  toc: {
-    maxHeight: '92vh',
-    transform: 'scaleX(-1)',
-    minWidth: 300 ,
+}))
+
+const mainStyles = createStyles((theme, { mainHeight }: {mainHeight: string | number}) => ({
+  main: {
+    height: mainHeight,
+    paddingRight: 40,
     overflowX: 'hidden',
     overflowY: 'scroll',
     '&::-webkit-scrollbar': {
@@ -249,10 +253,10 @@ function LiveRender() {
 
 
 function Root() {
-  const { classes, cx } = useStyles()
+  const { classes, cx } = tocStyles()
 
   return (
-    <div>
+    <>
       <Omnibar />
       <Grid m={0} p={0}>
         <Grid.Col span={4} p={0}>
@@ -263,12 +267,28 @@ function Root() {
           </Box>
         </Grid.Col>
         <Grid.Col span={8} p={0}>
-          <div style={{ height: '20vh' }}>
-            <Entries className={classes.main} />
-          </div>
+          <ToggleView />
         </Grid.Col>
       </Grid>
-    </div>
+    </>
+  )
+}
+
+function ToggleView() {
+  const editorVisible = useViewTogglesStore((state) => state.editorVisible)
+  const previewVisible = useViewTogglesStore((state) => state.previewVisible)
+  const liveRenderVisible = useViewTogglesStore((state) => state.liveRenderVisible)
+
+  const mainHeight = editorVisible && previewVisible ? '52vh' :
+    (editorVisible || previewVisible) ? '72vh' : '92vh'
+  const { classes, cx } = mainStyles({ mainHeight })
+
+  return (
+    <>
+      {editorVisible && <Monaco height={'20vh'}/>}
+      {previewVisible && <Preview height={'20vh'} />}
+      {liveRenderVisible ? <LiveRender /> : <Entries className={classes.main} />}
+    </>
   )
 }
 

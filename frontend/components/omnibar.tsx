@@ -63,9 +63,9 @@ function EditorToggle() {
 function RightSection() {
   return (
     <Flex>
-      <LiveRenderToggle />
-      <PreviewToggle />
       <EditorToggle />
+      <PreviewToggle />
+      <LiveRenderToggle />
     </Flex>
   )
 }

@@ -21,7 +21,7 @@ async function getClipboardItem() {
 }
 
 
-export default function Monaco() {
+export default function Monaco({height}: {height: number | string}) {
   const editorRef = useRef<null | editor.IStandaloneCodeEditor>(null)
   const markdown = useActiveEntryStore.getState().markdown
   const { setMarkdown, clearEntry } = useActiveEntryStore((state) => state.actions)
@@ -94,7 +94,7 @@ export default function Monaco() {
 
   return (
     <Editor
-      height="15vh"
+      height={height}
       defaultLanguage="markdown"
       defaultValue={markdown}
       theme="vs-dark"
