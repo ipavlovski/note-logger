@@ -3,35 +3,7 @@ import { randomUUID as uuidv4 } from 'node:crypto'
 import { writeFile, mkdir } from 'node:fs/promises'
 import { STORAGE_DIRECTORY } from 'backend/config'
 import { setTimeout, } from 'timers/promises'
-import { DisplayFlags, QueryArgs, queryEntries } from 'backend/query'
 const prisma = new PrismaClient()
-
-
-/**
- * INTERFACES
- */
-
-
-export async function getEntries(query: string) {
-  const displayFlags: DisplayFlags = {
-    dates: 'day',
-    shift: { end: 0, start: 0 },
-    sort: { categories: 'name-desc', entries: 'date' },
-    useUpdated: false,
-    virtual: { type: 'none' }
-  }
-
-  const queryArgs: QueryArgs = {
-    includeArchived: false
-  }
-
-  return await queryEntries(queryArgs, displayFlags)
-}
-
-
-/**
- * OTHER STUFF
- */
 
 
 export async function getAllTags() {

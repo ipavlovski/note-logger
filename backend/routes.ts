@@ -4,6 +4,7 @@ import { z } from 'zod'
 import superjson from 'superjson'
 
 import * as h from 'backend/handlers'
+import { queryEntries } from 'backend/query'
 
 // created for each request, return empty context
 export const createContext = ({ req, res, }: trpcExpress.CreateExpressContextOptions) => ({})
@@ -16,11 +17,31 @@ const t = initTRPC.context<Context>().create({
 export const appRouter = t.router({
   getEntries: t.procedure
     .input(
-      z.string()
+      z.object({
+        queryArgs: z.object({
+          includeArchived: z.boolean(),
+          tags: z.string().array()
+        }),
+        displayFlags: z.object({
+          dates: z.enum(['none', 'day', 'week', 'month']),
+          sort: z.object({
+            categories: z.enum(['name-asc', 'name-desc', 'order']),
+            entries: z.enum(['none', 'date', 'name', 'order'])
+          }),
+          shift: z.object({
+            start: z.number(),
+            end: z.number()
+          }),
+          virtual: z.discriminatedUnion('type', [
+            z.object({ type: z.literal('tag'), tags: z.string().array() }),
+            z.object({ type: z.literal('none') }),
+          ]),
+          useUpdated: z.boolean()
+        })
+      })
     )
-    .query(async (req) => {
-      console.log(`getEntries query: ${req.input}`)
-      return await h.getEntries(req.input)
+    .query(async ({ input: { queryArgs, displayFlags } }) => {
+      return await queryEntries(queryArgs, displayFlags)
     }),
 
   getTags: t.procedure

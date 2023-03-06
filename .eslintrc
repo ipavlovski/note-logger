@@ -2,13 +2,21 @@
   "root": true,
   "parser": "@typescript-eslint/parser",
   "plugins": [
+    "react",
     "@typescript-eslint"
   ],
   "extends": [
     "eslint:recommended",
+    "plugin:react/recommended",
+    "plugin:react/jsx-runtime",
     "plugin:@typescript-eslint/eslint-recommended",
     "plugin:@typescript-eslint/recommended"
   ],
+  "parserOptions": {
+    "ecmaFeatures": {
+      "jsx": true
+    }
+  },
   "rules": {
     "space-before-blocks": [1, "always"],
 
@@ -30,6 +38,7 @@
     "no-empty-function": "off",
     "@typescript-eslint/no-empty-function": "warn",
     "no-var": "warn",
-    "semi": ["error", "never", { "beforeStatementContinuationChars": "never"}]
+    "semi": ["error", "never", { "beforeStatementContinuationChars": "never"}],
+    "react/jsx-closing-tag-location": "warn"
   }
 }

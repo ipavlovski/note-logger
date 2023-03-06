@@ -39,7 +39,8 @@ interface DisplayFlags {
 }
 
 interface QueryArgs {
-  includeArchived: false
+  includeArchived: boolean
+  tags: string[]
 }
 
 type NestedEntries = Prisma.PromiseReturnType<typeof getNestedEntries>
@@ -47,8 +48,14 @@ type LinearEntry = Omit<NestedEntries[0], 'category' | 'categoryId'> & {categori
 type TreeEntry = LinearEntry & { treePath: Category[] }
 type TreeCategory = Category & { treePath: Category[] }
 
+
 async function getNestedEntries(query: QueryArgs) {
+  const { tags } = query
+
   return prisma.entry.findMany({
+    where: tags.length > 0 ? { AND:[
+      ... tags.map((tag) => ({ tags: { some: { name: tag } } } ))
+    ] } : undefined,
     include: {
       category: {
         include: {

@@ -1,6 +1,6 @@
 import { ActionIcon, Center, createStyles, Flex, MultiSelect, UnstyledButton } from '@mantine/core'
 import { IconFilter, IconSquareToggleHorizontal, IconTexture, IconWriting } from '@tabler/icons-react'
-import { trpc, useFilterStore, useViewTogglesStore } from 'components/app'
+import { trpc, useQueryStore, useViewTogglesStore } from 'components/app'
 
 
 const useStyles = createStyles(() => ({
@@ -71,30 +71,25 @@ function RightSection() {
 }
 
 export default function Omnibar() {
-  const selectedTags = useFilterStore((store) => store.tags)
-  const { setTags } = useFilterStore((store) => store.actions)
+  const selectedTags = useQueryStore((store) => store.queryArgs.tags)
+  const { setTags } = useQueryStore((store) => store.actions)
 
   const allTags = trpc.getTags.useQuery('')
-
-  // const { data: allTags } = useTagsQuery()
   if (! allTags.data) return null
 
   return (
     <Center>
       <MultiSelect
-        style={{ width: 640 }}
-        data={allTags.data.map(({ name }) => ({ value: name, label: `#${name}` }))}
-        searchable
-        radius={'lg'}
-        icon={<IconFilter size={24} stroke={2} />}
-        m={24}
+        style={{ width: 640 }} radius={'lg'} m={24}
         styles={(theme) => ({
           input: { padding: 2 },
           label: { color: theme.colors.cactus[0], fontSize: 14 } })
         }
-        value={selectedTags}
-        onChange={setTags}
+        searchable
         placeholder={'Choose tags...'}
+        data={allTags.data.map(({ name }) => ({ value: name, label: `#${name}` }))}
+        value={selectedTags} onChange={setTags}
+        icon={<IconFilter size={24} stroke={2} />}
         rightSection={<RightSection />}
         rightSectionWidth={100}
       />

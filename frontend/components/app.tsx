@@ -9,6 +9,7 @@ import superjson from 'superjson'
 
 
 import type { AppRouter } from 'frontend/../trpc'
+import type { DisplayFlags, QueryArgs, } from 'frontend/../backend/query'
 import Omnibar from 'components/omnibar'
 import Entries from 'components/entries'
 import TOC from 'components/toc'
@@ -85,23 +86,40 @@ const globalTheme: MantineThemeOverride = {
 
 ////////////// STORES
 
-interface FilterStore {
-  tags: string[]
+interface QueryStore {
+  queryArgs: QueryArgs
+  displayFlags: DisplayFlags
   actions: {
-    addTag: (tag: string) => void
-    removeTag: (tag: string) => void
     setTags: (tags: string[]) => void
   }
 }
 
-export const useFilterStore = create<FilterStore>((set) => ({
-  tags: [],
+export const useQueryStore = create<QueryStore>((set) => ({
+  queryArgs: {
+    includeArchived: false,
+    tags: []
+  },
+  displayFlags: {
+    dates: 'day',
+    shift: { end: 0, start: 0 },
+    sort: { categories: 'name-desc', entries: 'date' },
+    useUpdated: false,
+    virtual: { type: 'none' }
+  },
   actions: {
-    setTags: (tags) => set(() => ({ tags })),
-    addTag: (tag) => set((state) => ({ tags: [...state.tags, tag] })),
-    removeTag: (tag) => set((state) => ({ tags: state.tags.filter((t) => t != tag) })),
+    setTags: (tags) => set((state) => ({
+      ...state, queryArgs: { ...state.queryArgs, tags }
+    })),
   },
 }))
+
+
+export const useQueriedEntries = () => {
+  const queryArgs = useQueryStore((state) => state.queryArgs)
+  const displayFlags = useQueryStore((state) => state.displayFlags)
+  const { data: entries = [] } = trpc.getEntries.useQuery({ queryArgs, displayFlags })
+  return entries
+}
 
 
 interface ViewTogglesStore {

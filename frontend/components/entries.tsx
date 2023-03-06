@@ -1,5 +1,5 @@
 import { Center, createStyles, Selectors } from '@mantine/core'
-import { trpc, useActiveEntryStore, useViewTogglesStore } from 'components/app'
+import { trpc, useActiveEntryStore, useQueriedEntries, useViewTogglesStore } from 'components/app'
 import Remark from 'components/remark'
 import { Box, Flex, Skeleton, Text } from '@mantine/core'
 import { useHover, useIntersection } from '@mantine/hooks'
@@ -250,10 +250,13 @@ function LinearCategory({ category }: {category: TreeCategory}) {
 
 function LinearHeader({ entry }: {entry: ITreeEntry}) {
   return (
-    <Flex align={'center'} m={16}>
-      <IconHash color={'#2BBC8A'} size={28}/>
-      <Text size={24} truncate>{entry.title ?? 'untitled'}</Text>
-    </Flex>
+    <div style={{ backgroundColor: '#4e4e4eb4', borderRadius: 24 }}>
+      <Flex align={'center'} m={16}>
+        <IconHash color={'#2BBC8A'} size={28}/>
+        <Text size={24} truncate>{entry.title ?? 'untitled'}</Text>
+      </Flex>
+      <Text>{entry.tags.map((v) => v.name).join(', ')}</Text>
+    </div>
   )
 }
 
@@ -330,17 +333,17 @@ function InsersectionObserver({ children, className }: {children: ReactNode, cla
  * Otherwise when TOC is visible, hide the tree structure and show it linearized
  */
 export default function Entries({ className }: { className: string}) {
-  const defaultQuery = 'all'
-  const entries = trpc.getEntries.useQuery(defaultQuery)
+  // const defaultQuery = 'all'
+  const entries = useQueriedEntries()
 
-  if (!entries.data) return <div>Loading...</div>
+  // if (!entries) return <div>Loading...</div>
   const SHOW_TREE = false
 
   return (
     <InsersectionObserver className={className}>
       {SHOW_TREE ?
-        entries.data.map((treeNode, ind) => <TreeView key={ind} treeRoot={treeNode} />) :
-        entries.data.map((treeNode, ind) => <LinearView key={ind} treeRoot={treeNode} />)
+        entries.map((treeNode, ind) => <TreeView key={ind} treeRoot={treeNode} />) :
+        entries.map((treeNode, ind) => <LinearView key={ind} treeRoot={treeNode} />)
       }
     </InsersectionObserver>
   )

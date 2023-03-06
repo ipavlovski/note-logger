@@ -1,5 +1,5 @@
 import { Box, Container, createStyles, Text } from '@mantine/core'
-import { useActiveStore } from 'components/app'
+import { useActiveStore, useQueriedEntries } from 'components/app'
 import { TreeNode, Category, TreeEntry } from 'backend/query'
 import { trpc, useActiveEntryStore } from 'components/app'
 
@@ -278,15 +278,16 @@ function TreeView({ treeRoot: { depth, category, entries, children } }: {treeRoo
 export default function TOC() {
 
   const { selectedChain, selectedChild } = useActiveStore((state) => state)
+  const entries = useQueriedEntries()
 
-  const defaultQuery = 'all'
-  const entries = trpc.getEntries.useQuery(defaultQuery)
+  // const defaultQuery = 'all'
+  // const entries = trpc.getEntries.useQuery(defaultQuery)
 
-  if (!entries.data) return <div>Loading...</div>
+  // if (!entries.data) return <div>Loading...</div>
 
   return (
     <Container size={400}>
-      {entries.data.map((treeNode, ind) => <TreeView key={ind} treeRoot={treeNode} />)}
+      {entries.map((treeNode, ind) => <TreeView key={ind} treeRoot={treeNode} />)}
     </Container>
 
   )
