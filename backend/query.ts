@@ -29,7 +29,10 @@ interface TreeNode {
 
 interface DisplayFlags {
   dates: 'none' | 'day' | 'week' | 'month'
-  sort: { categories: 'name' | 'order', entries: 'none' | 'date' | 'name' | 'order' }
+  sort: {
+    categories: 'name-asc' | 'name-desc' | 'order'
+    entries: 'none' | 'date' | 'name' | 'order'
+  }
   shift: { start: number, end: number }
   virtual: { type: 'tag', tags: string[] } | { type: 'none' }
   useUpdated: boolean
@@ -186,9 +189,14 @@ function treeSort(treeRoots: TreeNode[], flags: DisplayFlags) {
 
   // sort categories
   switch(categorySort) {
-    case 'name':
+    case 'name-asc':
       treeRoots.sort(({ category: { name: a } }, { category: { name: b } }) => {
         return a == b ? 0 : a > b ? 1 : -1
+      })
+      break
+    case 'name-desc':
+      treeRoots.sort(({ category: { name: a } }, { category: { name: b } }) => {
+        return a == b ? 0 : a > b ? -1 : 1
       })
       break
     case 'order':

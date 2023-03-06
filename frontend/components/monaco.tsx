@@ -21,7 +21,7 @@ async function getClipboardItem() {
 }
 
 
-export default function Monaco({height}: {height: number | string}) {
+export default function Monaco({ height }: {height: number | string}) {
   const editorRef = useRef<null | editor.IStandaloneCodeEditor>(null)
   const markdown = useActiveEntryStore.getState().markdown
   const { setMarkdown, clearEntry } = useActiveEntryStore((state) => state.actions)
@@ -84,6 +84,10 @@ export default function Monaco({height}: {height: number | string}) {
       console.log('escape')
 
       const content = editor.getValue()
+      if (content.length <= 3) {
+        console.log('Too small to send POST request')
+        return
+      }
       createOrUpdateEntry.mutate({ markdown: content, id: useActiveEntryStore.getState().entryId })
       clearEntry()
       editor.setValue('')

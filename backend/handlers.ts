@@ -16,7 +16,7 @@ export async function getEntries(query: string) {
   const displayFlags: DisplayFlags = {
     dates: 'day',
     shift: { end: 0, start: 0 },
-    sort: { categories: 'name', entries: 'date' },
+    sort: { categories: 'name-desc', entries: 'date' },
     useUpdated: false,
     virtual: { type: 'none' }
   }
