@@ -39,6 +39,8 @@
     "@typescript-eslint/no-empty-function": "warn",
     "no-var": "warn",
     "semi": ["error", "never", { "beforeStatementContinuationChars": "never"}],
-    "react/jsx-closing-tag-location": "warn"
+    "react/jsx-closing-tag-location": "warn",
+    "react/no-children-prop": "warn"
+
   }
 }

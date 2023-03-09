@@ -1,50 +1,38 @@
 import { showNotification } from '@mantine/notifications'
-import Editor from '@monaco-editor/react'
+import Editor, { Monaco } from '@monaco-editor/react'
 import type { editor } from 'monaco-editor'
-import { ClipboardEvent, useRef } from 'react'
+import { useRef } from 'react'
 import { Observable, timer } from 'rxjs'
 import { debounce } from 'rxjs/operators'
 
 import { SERVER_URL, trpc, useActiveEntryStore } from 'components/app'
-// import { useUpdateContentText, useUploadImage } from 'frontend/api'
 
 
-async function getClipboardItem() {
-  const result = await navigator.permissions.query({ name: 'clipboard-write' as PermissionName })
-
-  if (result.state == 'granted' || result.state == 'prompt') {
-    const [data] = await navigator.clipboard.read()
-    return data
-  } else {
-    throw new Error('Failed to get clipboard permissions')
-  }
-}
-
-
-export default function Monaco({ height }: {height: number | string}) {
+export default function MonacoEditor({ height }: {height: number | string}) {
   const editorRef = useRef<null | editor.IStandaloneCodeEditor>(null)
   const markdown = useActiveEntryStore.getState().markdown
   const { setMarkdown, clearEntry } = useActiveEntryStore((state) => state.actions)
   const createOrUpdateEntry = trpc.createOrUpdateEntry.useMutation()
+  const uploadBase64File = trpc.uploadBase64File.useMutation()
 
-  const handleMonacoPaste = async (e: ClipboardEvent<HTMLInputElement>) => {
+  const handleMonacoPaste = async (e: globalThis.ClipboardEvent) => {
+
     try {
-      const data = await getClipboardItem()
+      const text = e.clipboardData?.getData('Text') || ''
+      const indNewLine = text.indexOf('\n')
+      const firstLine = text.substring(0, indNewLine)
+      const restLines = text.substring(indNewLine + 1)
+      const isBase64 = /^data:.*:base64/.test(firstLine)
 
-      // if (data.types.includes('image/png')) {
-      //   const blob = await data.getType('image/png')
-      //   const formData = new FormData()
-      //   formData.append('image', blob, 'tmp-filename')
-      //   const { path } = await uploadImage.mutateAsync(formData)
-      //   path && editorRef.current!.trigger('keyboard', 'type', {
-      //     text: `![](${SERVER_URL}/${path})`
-      //   })
-      //   e.stopPropagation()
-      //   e.preventDefault()
-      // }
+      if (isBase64) {
+        e.stopPropagation()
+        e.preventDefault()
 
-      console.log('Handle image paste!')
-
+        const { filename } = await uploadBase64File.mutateAsync({ base64: restLines })
+        filename && editorRef.current!.trigger('keyboard', 'type', {
+          text: `![](${SERVER_URL}/${filename})`
+        })
+      }
 
     } catch (err) {
       const msg = err instanceof Error ? err.message : 'Unknown error'
@@ -55,11 +43,9 @@ export default function Monaco({ height }: {height: number | string}) {
   // this function has to be  here
   function handleEditorChange(value: string | undefined, event: editor.IModelContentChangedEvent) {}
 
-  function handleEditorDidMount(editor: editor.IStandaloneCodeEditor, monaco: any) {
-    // here is the editor instance, you can store it in `useRef` for further usage
+  function handleEditorDidMount(editor: editor.IStandaloneCodeEditor, monaco: Monaco) {
     editorRef.current = editor
-    // @ts-ignore
-    editor.getDomNode()!.addEventListener('paste', handleMonacoPaste)
+    editor.getContainerDomNode().addEventListener('paste', handleMonacoPaste, true)
 
     new Observable((observer) => {
       editor.getModel()!.onDidChangeContent((event) => {

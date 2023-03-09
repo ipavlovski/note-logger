@@ -1,5 +1,5 @@
 import cors from 'cors'
-import express, { json } from 'express'
+import express, { json, urlencoded } from 'express'
 import { readFileSync } from 'fs'
 import { createServer as createSecureServer, ServerOptions } from 'https'
 import morgan from 'morgan'
@@ -12,7 +12,8 @@ import { STORAGE_DIRECTORY } from 'backend/config'
 const app = express()
 
 // middlware
-app.use(json())
+app.use(json({ limit: '50mb' }))
+app.use(urlencoded({ limit: '50mb', extended: true }))
 app.use(cors())
 
 // logging stuff
