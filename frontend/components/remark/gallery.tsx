@@ -20,7 +20,14 @@ function extractNodeImages(nodes: ElementContent[]) {
 }
 
 
-// export default function GalleryDirective({ images }: { images: {src: string, alt: string}[] }) {
+/**
+ * ```
+ * :::gallery
+ * ![some desc text](https://localhost:3002/1678374705703.png)
+ * ![](https://localhost:3002/1678374715256.png)
+ * :::
+ * ```
+ */
 export default function GalleryDirective({ nodes }: {nodes: ElementContent[]}) {
 
   const [initSlide, setInitSlide] = useState(0)

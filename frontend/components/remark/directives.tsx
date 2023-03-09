@@ -5,6 +5,43 @@ import { ReactMarkdownProps } from 'react-markdown/lib/ast-to-react'
 import { z } from 'zod'
 import { SERVER_URL } from 'components/app'
 import GalleryDirective from 'components/remark/gallery'
+import { PropsWithChildren } from 'react'
+
+/**
+ * ```
+ * :::callout{color="success"}
+ * Great success!
+ * :::
+ * ```
+ */
+function CalloutDirective({ color, children }:
+PropsWithChildren<{ color: 'notice' | 'success' | 'warning' | 'error' }>) {
+
+  let backgroundColor = '#40639a7c'
+  switch (color) {
+    case 'notice':
+      backgroundColor = '#2a57a07c'
+      break
+    case 'success':
+      backgroundColor = '#50b8187c'
+      break
+    case 'warning':
+      backgroundColor = '#a0902a7c'
+      break
+    case 'error':
+      backgroundColor = '#a0382a7c'
+      break
+    default:
+      color satisfies never
+      break
+  }
+
+  return (
+    <div style={{ backgroundColor }}>
+      {children}
+    </div>
+  )
+}
 
 
 function VideoDirective({ filename }: {filename: string}) {
@@ -25,9 +62,12 @@ const directiveParser = z.discriminatedUnion('name', [
 
   z.object({ name: z.literal('video'), filename: z.string() }),
 
-  z.object({ name: z.literal('gallery'), type: z.string() }),
+  z.object({ name: z.literal('gallery') }),
 
-  z.object({ name: z.literal('callout'), type: z.string() }),
+  z.object({
+    name: z.literal('callout'),
+    color: z.enum(['notice', 'success', 'warning', 'error'])
+  }),
 
   z.object({ name: z.literal('error'), type: z.string() }),
 
@@ -38,7 +78,6 @@ const directiveParser = z.discriminatedUnion('name', [
 
 
 /**
- * #### USAGE:
  * ```
  * :::note{title="Welcome" tmp2="asdf" #adsf .loool.asdf}
  * - item1
@@ -53,7 +92,7 @@ export function DirectivesComponent({ children, node }: ReactMarkdownProps) {
 
   switch(name) {
     case 'callout':
-      return <h3>directives callout</h3>
+      return <CalloutDirective color={props.color}>{children}</CalloutDirective>
 
     case 'youtube':
       return <h3>directives youtube</h3>
@@ -68,7 +107,7 @@ export function DirectivesComponent({ children, node }: ReactMarkdownProps) {
       return <VideoDirective filename={props.filename}/>
 
     case 'error':
-      return <h3>directives error</h3>
+      return <h3>Error parsing directive.</h3>
 
     default:
       name satisfies never
