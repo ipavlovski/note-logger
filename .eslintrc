@@ -41,7 +41,8 @@
     "semi": ["error", "never", { "beforeStatementContinuationChars": "never"}],
     "react/jsx-closing-tag-location": "warn",
     "react/no-children-prop": "warn",
-    "prefer-const": "warn"
+    "prefer-const": "warn",
+    "react/display-name": "off"
 
   }
 }
