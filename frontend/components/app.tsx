@@ -11,7 +11,7 @@ import Entries from 'components/entries'
 import Monaco from 'components/monaco'
 import Omnibar from 'components/omnibar'
 import Preview from 'components/preview'
-import Remark from 'components/remark'
+import Remark from 'components/remark/remark'
 import TOC from 'components/toc'
 import type { DisplayFlags, QueryArgs } from 'frontend/../backend/query'
 import type { AppRouter } from 'frontend/../trpc'
@@ -138,7 +138,7 @@ export const useViewTogglesStore = create<ViewTogglesStore>((set) => ({
   maxDepth: 1,
   editorVisible: true,
   previewVisible: false,
-  liveRenderVisible: false,
+  liveRenderVisible: true,
   actions: {
     setMaxDepth: (maxDepth) => set(() => ({ maxDepth })),
     setPreviewVisible: (bool) => set(() => ({ previewVisible: bool })),

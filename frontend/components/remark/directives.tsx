@@ -4,13 +4,13 @@ import { visit } from 'unist-util-visit'
 import { ReactMarkdownProps } from 'react-markdown/lib/ast-to-react'
 import { z } from 'zod'
 import { SERVER_URL } from 'components/app'
+import GalleryDirective from 'components/remark/gallery'
 
 
 function VideoDirective({ filename }: {filename: string}) {
 
   return (
     <video width="500" height="auto" autoPlay loop controls>
-      {/* <source src="https://localhost:3010/1678311631737.mp4" type="video/mp4" /> */}
       <source src={`${SERVER_URL}/${filename}`} type="video/mp4" />
     </video>
   )
@@ -59,7 +59,7 @@ export function DirectivesComponent({ children, node }: ReactMarkdownProps) {
       return <h3>directives youtube</h3>
 
     case 'gallery':
-      return <h3>directives gallery</h3>
+      return <GalleryDirective nodes={node.children}/>
 
     case 'pdf':
       return <h3>directives pdf</h3>

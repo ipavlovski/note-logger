@@ -1,7 +1,7 @@
 import { Box, Center, createStyles, Flex, Skeleton, Text } from '@mantine/core'
 import { useIntersection } from '@mantine/hooks'
 import { useActiveStore, useQueriedEntries, useViewTogglesStore } from 'components/app'
-import Remark from 'components/remark'
+import Remark from 'components/remark/remark'
 
 import { IconHash } from '@tabler/icons-react'
 import { TreeCategory, TreeEntry as ITreeEntry, TreeNode } from 'backend/query'
