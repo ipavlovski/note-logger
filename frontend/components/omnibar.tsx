@@ -1,5 +1,7 @@
-import { ActionIcon, Center, createStyles, Flex, MultiSelect, UnstyledButton } from '@mantine/core'
-import { IconFilter, IconSquareToggleHorizontal, IconTexture, IconWriting } from '@tabler/icons-react'
+import { ActionIcon, Center, createStyles, Flex, MultiSelect } from '@mantine/core'
+import {
+  IconFilter, IconSquareToggleHorizontal, IconTexture, IconWriting
+} from '@tabler/icons-react'
 import { trpc, useQueryStore, useViewTogglesStore } from 'components/app'
 
 

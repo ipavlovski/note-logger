@@ -32,8 +32,11 @@ function Header2Component({ node,children, className }: HeadingProps) {
 }
 
 function Header3Component({ node, children, className }: HeadingProps) {
-  return <Title order={3} transform='uppercase' size={18} mt={20} mb={4}
-    style={{ fontFamily: 'Inter' }} weight={800}>{children}</Title>
+  return (
+    <Title order={3} transform='uppercase' size={18} mt={20} mb={4}
+      style={{ fontFamily: 'Inter' }} weight={800}>{children}
+    </Title>
+  )
 
 
 }
@@ -88,7 +91,6 @@ export default function Remark({ markdown }: { markdown: string }) {
   const md = markdown == '' ? 'Empty element' : markdown
   return (
     <ReactMarkdown
-      children={md}
       remarkPlugins={[remarkGfm]}
       components={{
         code: CustomCodeComponent,
@@ -101,7 +103,8 @@ export default function Remark({ markdown }: { markdown: string }) {
         img: ImageComponent,
         blockquote: BlockquoteComponent,
         table: TableComponent
-      }}
-    />
+      }}>
+      {md}
+    </ReactMarkdown>
   )
 }

@@ -1,4 +1,4 @@
-import { Box, Container, createStyles, Text } from '@mantine/core'
+import { Box, Container, createStyles, Text, getStylesRef } from '@mantine/core'
 import { useActiveStore, useQueriedEntries } from 'components/app'
 import { TreeNode, Category, TreeEntry } from 'backend/query'
 import { trpc, useActiveEntryStore } from 'components/app'
@@ -28,7 +28,7 @@ const fontSize = 14
 const hlHeader = '#7cce73'
 const hlMain = '#46ad3a'
 
-const useStyles = createStyles((_, { depth }: {depth: number}, getRef) => ({
+const useStyles = createStyles((_, { depth }: {depth: number}) => ({
   treeNode: {
     position: 'relative',
     margin: 0,
@@ -63,14 +63,14 @@ const useStyles = createStyles((_, { depth }: {depth: number}, getRef) => ({
     },
 
     // highlight side of all previous siblings
-    [`&:has(~ .${getRef('hl')})::after`]: {
+    [`&:has(~ .${getStylesRef('hl')})::after`]: {
       borderLeft: `${borderPx} solid ${hlMain}`,
       transition: 'border 0.25s ease',
 
     },
 
     // highlight bottoms
-    [`&.${getRef('hl')}:before`]: {
+    [`&.${getStylesRef('hl')}:before`]: {
       borderBottom: `${borderPx} solid ${hlMain}`,
       zIndex: 3,
       transition: 'border 0.25s ease',
@@ -102,7 +102,7 @@ const useStyles = createStyles((_, { depth }: {depth: number}, getRef) => ({
       display: 'none'
     },
 
-    [`&.${getRef('hl')}`]: {
+    [`&.${getStylesRef('hl')}`]: {
       color: `${hlHeader}`
     },
 
@@ -119,14 +119,14 @@ const useStyles = createStyles((_, { depth }: {depth: number}, getRef) => ({
     },
 
     // highlight active circles in the chain
-    [`&.${getRef('hl')}:after`]: {
+    [`&.${getStylesRef('hl')}:after`]: {
       backgroundColor: `${hlMain}`,
       transition: 'border 0.25s ease',
 
     },
 
     // highlight lines going down
-    [`&.${getRef('hl')}:before`]: {
+    [`&.${getStylesRef('hl')}:before`]: {
       borderLeft: `${borderPx} solid ${hlMain}`,
       transition: 'border 0.25s ease',
     }
@@ -158,23 +158,23 @@ const useStyles = createStyles((_, { depth }: {depth: number}, getRef) => ({
     },
 
     // entry is a child of a highligted treeNode
-    [`.${getRef('hl')} > &:after`]: {
+    [`.${getStylesRef('hl')} > &:after`]: {
       borderLeft: `${borderPx} solid ${hlMain}`,
       transition: 'border 0.25s ease',
     },
 
     // highlight bottom line of of active entry
-    [`&:has(.${getRef('hlEntry')}):before`]: {
+    [`&:has(.${getStylesRef('hlEntry')}):before`]: {
       borderBottom: `${borderPx} solid ${hlMain}`,
       zIndex: 3,
       transition: 'border 0.25s ease',
     },
 
     // in the 'hl-entry' node, highlight only the lines left-of
-    [`&:has(> .${getRef('hlEntry')}):after`]: {
+    [`&:has(> .${getStylesRef('hlEntry')}):after`]: {
       borderLeft: '2px solid white',
     },
-    [`&:has(> .${getRef('hlEntry')}) ~ &:after`]: {
+    [`&:has(> .${getStylesRef('hlEntry')}) ~ &:after`]: {
       borderLeft: '2px solid white',
     },
 
@@ -204,7 +204,7 @@ const useStyles = createStyles((_, { depth }: {depth: number}, getRef) => ({
     },
 
     // highlight active entry circle
-    [`&.${getRef('hlEntry')}:before`]: {
+    [`&.${getStylesRef('hlEntry')}:before`]: {
       border: `${borderPx} ${hlMain} solid`,
       transition: 'border 0.25s ease',
     },
@@ -217,11 +217,11 @@ const useStyles = createStyles((_, { depth }: {depth: number}, getRef) => ({
 
 
   hl: {
-    ref: getRef('hl'),
+    ref: getStylesRef('hl'),
   },
 
   hlEntry: {
-    ref: getRef('hlEntry'),
+    ref: getStylesRef('hlEntry'),
     color: `${hlMain}`,
     transition: 'color 0.25s ease',
   }

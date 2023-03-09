@@ -1,21 +1,20 @@
-import { Box, Container, createStyles, Flex, Grid, MantineProvider, MantineThemeOverride } from '@mantine/core'
-import { NotificationsProvider } from '@mantine/notifications'
+import { Box, createStyles, Grid, MantineProvider, MantineThemeOverride } from '@mantine/core'
+import { Notifications } from '@mantine/notifications'
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
-import { createBrowserRouter, Outlet, RouterProvider } from 'react-router-dom'
 import { httpBatchLink } from '@trpc/client'
 import { createTRPCReact } from '@trpc/react-query'
-import { create } from 'zustand'
 import superjson from 'superjson'
+import { create } from 'zustand'
 
 
-import type { AppRouter } from 'frontend/../trpc'
-import type { DisplayFlags, QueryArgs, } from 'frontend/../backend/query'
-import Omnibar from 'components/omnibar'
 import Entries from 'components/entries'
-import TOC from 'components/toc'
 import Monaco from 'components/monaco'
-import Remark from 'components/remark'
+import Omnibar from 'components/omnibar'
 import Preview from 'components/preview'
+import Remark from 'components/remark'
+import TOC from 'components/toc'
+import type { DisplayFlags, QueryArgs } from 'frontend/../backend/query'
+import type { AppRouter } from 'frontend/../trpc'
 
 export const SERVER_URL = `https://localhost:${import.meta.env.VITE_SERVER_PORT}`
 export const ORIGIN_URL = `https://localhost:${import.meta.env.VITE_PORT}`
@@ -318,9 +317,8 @@ export default function App() {
     <trpc.Provider client={trpcClient} queryClient={queryClient}>
       <QueryClientProvider client={queryClient}>
         <MantineProvider withGlobalStyles withNormalizeCSS theme={globalTheme}>
-          <NotificationsProvider position="top-right" autoClose={1600}>
-            <Root />
-          </NotificationsProvider>
+          <Notifications />
+          <Root />
         </MantineProvider>
       </QueryClientProvider>
     </trpc.Provider>
