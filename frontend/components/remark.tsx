@@ -1,12 +1,13 @@
 import { Anchor, Blockquote, Modal, Table, Title } from '@mantine/core'
 import { useDisclosure } from '@mantine/hooks'
-import { IconHash } from '@tabler/icons-react'
 import CustomCodeComponent from 'components/code'
+import { DirectivesComponent, directivesHandler } from 'components/directives'
 import { useRef } from 'react'
 import ReactMarkdown from 'react-markdown'
 import { HeadingProps } from 'react-markdown/lib/ast-to-react'
 import { PrismAsyncLight as SyntaxHighlighter } from 'react-syntax-highlighter'
 import typescript from 'react-syntax-highlighter/dist/esm/languages/prism/typescript'
+import remarkDirective from 'remark-directive'
 import remarkGfm from 'remark-gfm'
 
 SyntaxHighlighter.registerLanguage('typescript', typescript)
@@ -91,7 +92,7 @@ export default function Remark({ markdown }: { markdown: string }) {
   const md = markdown == '' ? 'Empty element' : markdown
   return (
     <ReactMarkdown
-      remarkPlugins={[remarkGfm]}
+      remarkPlugins={[remarkGfm, remarkDirective, directivesHandler]}
       components={{
         code: CustomCodeComponent,
         h1: Header1Component,
@@ -102,7 +103,8 @@ export default function Remark({ markdown }: { markdown: string }) {
         h6: GenericHeaderComponent,
         img: ImageComponent,
         blockquote: BlockquoteComponent,
-        table: TableComponent
+        table: TableComponent,
+        section: DirectivesComponent
       }}>
       {md}
     </ReactMarkdown>
