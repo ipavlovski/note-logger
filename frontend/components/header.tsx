@@ -4,33 +4,49 @@ import {
 import { getHotkeyHandler, useDisclosure } from '@mantine/hooks'
 import { IconEdit, IconHash } from '@tabler/icons-react'
 import { TreeEntry } from 'backend/query'
-import { useState } from 'react'
+import { MouseEventHandler, useState } from 'react'
 
-import { trpc, useQueryStore, useViewTogglesStore } from 'components/app'
-
-
-// style={{
-//   borderRadius: 10,
-//   padding: '6px 0px',
-//   margin: '50px 0 20px',
-// }}
+import { trpc } from 'components/app'
 
 
 const useStyles = createStyles((theme) => ({
-  subHeadline: {
-    color: '#2BBC8A',
-    fontSize: 21
+  input: {
+    color: theme.colors.cactus[0],
+    fontSize: 21,
+    backgroundColor: 'transparent'
   },
+  titleText: {
+    color: theme.colors.cactus[0],
+    fontSize: 27,
+    fontWeight: 'bold',
+    display: 'inline-block'
+  },
+  titleRoot: {
+    display: 'inline-block',
+  },
+  titleDropdown: {
+    background: 'none',
+    border: 'none' }
 }))
 
 
+function HoverActionIcon({ clickHandler }: {clickHandler: MouseEventHandler<HTMLButtonElement>}) {
+  return (
+    <ActionIcon
+      onClick={clickHandler} size={32} radius="xl" variant="transparent" color='cactus.0'
+    >
+      <IconEdit size={26} stroke={1.5}/>
+    </ActionIcon>
+  )
+}
+
 function EntryTitle({ title: initTitle, entryId }: { title: string, entryId: number }) {
-  const { classes } = useStyles()
+  const { classes: { input, titleRoot, titleDropdown, titleText } } = useStyles()
   const [title, setTitle] = useState(initTitle)
   const [isEditing, { open: startEdit, close: stopEdit }] = useDisclosure(false)
   const updateEntryAnnotations = trpc.updateEntryAnnotations.useMutation()
 
-  const handleSubmit = async () => {
+  const updateTitle = async () => {
     stopEdit()
     updateEntryAnnotations.mutate({ entryId, title })
   }
@@ -38,38 +54,22 @@ function EntryTitle({ title: initTitle, entryId }: { title: string, entryId: num
   return (
     <HoverCard
       disabled={isEditing} shadow="sm" position='right' openDelay={300}
-      styles={{ dropdown: { background: 'none', border: 'none' } }}
+      classNames={{ dropdown: titleDropdown }}
     >
 
       <HoverCard.Target>
         {isEditing ?
-          <TextInput
-            autoFocus
-            variant='default'
-            classNames={{ input: classes.subHeadline }}
-            styles={{
-              input: {
-                backgroundColor: 'transparent'
-              },
-              root: {
-                display: 'inline-block',
-              }
-            }}
+          <TextInput autoFocus variant='default' classNames={{ input: input, root: titleRoot }}
             value={title} onChange={(event) => setTitle(event.currentTarget.value)}
-            onKeyDown={getHotkeyHandler([['Escape', handleSubmit]])}
+            onKeyDown={getHotkeyHandler([['Escape', updateTitle]])}
           /> :
-          <Text
-            truncate
-            style={{ display: 'inline-block' }} color='cactus.0' size={27} weight={'bold'}>
+          <Text truncate className={titleText} >
             {title}
           </Text>}
       </HoverCard.Target>
 
       <HoverCard.Dropdown>
-        <ActionIcon onClick={startEdit}
-          size={32} radius="xl" variant="transparent" color='cactus.0'>
-          <IconEdit size={26} stroke={1.5}/>
-        </ActionIcon>
+        <HoverActionIcon clickHandler={startEdit}/>
       </HoverCard.Dropdown>
 
     </HoverCard>
@@ -78,7 +78,7 @@ function EntryTitle({ title: initTitle, entryId }: { title: string, entryId: num
 
 
 function EntryTags({ tags, entryId }: {tags: string[], entryId: number }) {
-  const { classes: { subHeadline } } = useStyles()
+  const { classes: { input } } = useStyles()
   const [isEditing, { open: startEdit, close: stopEdit }] = useDisclosure(false)
   const [entryTags, setEntryTags] = useState<string[]>(tags)
 
@@ -109,7 +109,7 @@ function EntryTags({ tags, entryId }: {tags: string[], entryId: number }) {
             transitionProps={{ duration: 150, transition: 'pop-top-left', timingFunction: 'ease', }}
             // style={{ flexGrow: 1 }}
             classNames={{
-              input: subHeadline
+              input: input
             }}
             styles={{
               input: {
@@ -155,14 +155,22 @@ function EntryTags({ tags, entryId }: {tags: string[], entryId: number }) {
   )
 }
 
+function EntryCategory({ categories, entryId }:
+{ categories: TreeEntry['treePath'], entryId: number}) {
+
+  return (
+    <UnstyledButton mt={5} mr={8}>
+      <IconHash color={'#2BBC8A'} size={24} />
+    </UnstyledButton>
+  )
+}
+
 
 export default function LinearHeader({ entry }: {entry: TreeEntry}) {
   return (
     <div >
       <Flex align={'center'} mt={24}>
-        <UnstyledButton mt={5} mr={8}>
-          <IconHash color={'#2BBC8A'} size={24} />
-        </UnstyledButton>
+        <EntryCategory categories={entry.treePath} entryId={entry.id} />
         <EntryTitle title={entry.title ?? 'untitled'} entryId={entry.id} />
       </Flex>
       <EntryTags tags={entry.tags.map(({ name }) => name)} entryId={entry.id}/>
