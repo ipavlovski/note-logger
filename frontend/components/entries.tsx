@@ -1,4 +1,4 @@
-import { Box, Center, createStyles, Flex, Skeleton, Text } from '@mantine/core'
+import { Box, Center, createStyles, Flex, px, rem, Skeleton, Text } from '@mantine/core'
 import { useIntersection } from '@mantine/hooks'
 import { useActiveStore, useQueriedEntries, useViewTogglesStore } from 'components/app'
 import Remark from 'components/remark/remark'
@@ -6,6 +6,7 @@ import Remark from 'components/remark/remark'
 import { IconHash } from '@tabler/icons-react'
 import { TreeCategory, TreeEntry as ITreeEntry, TreeNode } from 'backend/query'
 import { createContext, ReactNode, useContext, useRef } from 'react'
+import LinearHeader from 'components/header'
 
 //  ==============================
 //              STYLES
@@ -31,7 +32,7 @@ const TreeContext = createContext<React.MutableRefObject<HTMLDivElement | null> 
 // type CssStylesNames = { [key in Selectors<typeof useStyles>]: string }
 
 
-const useTreeStyles = createStyles((_, { depth }: {depth: number}, getRef) => ({
+const useTreeStyles = createStyles((_, { depth }: {depth: number}) => ({
 
   treeNode: {
     position: 'relative',
@@ -208,13 +209,6 @@ function TreeEntry({ entry, depth, ind }: {entry: ITreeEntry, depth: number, ind
 }
 
 
-const useLinearStyles = createStyles(() => ({
-  entry: {
-    marginTop: 14
-  },
-  header: {}
-}))
-
 function LinearEntry({ entry }: {entry: ITreeEntry }) {
   // const { classes, cx } = useLinearStyles()
 
@@ -238,21 +232,9 @@ function LinearEntry({ entry }: {entry: ITreeEntry }) {
 
 function LinearCategory({ category }: {category: TreeCategory}) {
   return (
-    <Center m={16}>
-      <h1>{category.name}</h1>
+    <Center mt={100}>
+      <Text underline>{category.name}</Text>
     </Center>
-  )
-}
-
-function LinearHeader({ entry }: {entry: ITreeEntry}) {
-  return (
-    <div style={{ backgroundColor: '#4e4e4eb4', borderRadius: 24 }}>
-      <Flex align={'center'} m={16}>
-        <IconHash color={'#2BBC8A'} size={28}/>
-        <Text size={24} truncate>{entry.title ?? 'untitled'}</Text>
-      </Flex>
-      <Text>{entry.tags.map((v) => v.name).join(', ')}</Text>
-    </div>
   )
 }
 

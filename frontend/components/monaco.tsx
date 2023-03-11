@@ -12,7 +12,13 @@ export default function MonacoEditor({ height }: {height: number | string}) {
   const editorRef = useRef<null | editor.IStandaloneCodeEditor>(null)
   const markdown = useActiveEntryStore.getState().markdown
   const { setMarkdown, clearEntry } = useActiveEntryStore((state) => state.actions)
-  const createOrUpdateEntry = trpc.createOrUpdateEntry.useMutation()
+
+  const utils = trpc.useContext()
+  const createOrUpdateEntry = trpc.createOrUpdateEntry.useMutation({
+    onSuccess: () => {
+      utils.getEntries.invalidate()
+    }
+  })
   const uploadBase64File = trpc.uploadBase64File.useMutation()
 
   const handleMonacoPaste = async (e: globalThis.ClipboardEvent) => {

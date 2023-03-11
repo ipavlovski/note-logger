@@ -42,18 +42,22 @@ export const appRouter = t.router({
     return await queryEntries(queryArgs, displayFlags)
   }),
 
+  /**
+   * @param tagQuery 'seeds' the query search
+   */
   getTags: t.procedure.input(
     z.string()
-  ).query(async (req) => {
-    console.log(`getTags query: ${req.input}`)
-    return await h.getAllTags()
+  ).query(async ({ input: tagQuery }) => {
+    return await h.getAllTags(tagQuery)
   }),
 
+  /**
+   * @param tagName is the name of tag to be created
+   */
   createTag: t.procedure.input(
     z.string().min(3)
-  ).mutation(async (req) => {
-    console.log(`createTag mutation: ${req.input}`)
-    return await h.createNewTag(req.input)
+  ).mutation(async ({ input: tagName }) => {
+    return await h.createNewTag(tagName)
   }),
 
   createOrUpdateEntry: t.procedure.input(
@@ -61,6 +65,20 @@ export const appRouter = t.router({
   ).mutation(async (req) => {
     console.log(`createEntry mutation: ${req.input}`)
     return await h.createOrUpdateEntry(req.input)
+  }),
+
+  /**
+   * @param annotations An object with `{tags, categories, title}`
+   */
+  updateEntryAnnotations: t.procedure.input(
+    z.object({
+      entryId: z.number(),
+      tags: z.string().array().optional(),
+      category: z.object({ id: z.number(), name: z.string() }).optional(),
+      title: z.string().min(1).optional(),
+    })
+  ).mutation(async ({ input: { entryId: id, ...annotations } }) => {
+    return await h.updateEntryAnnotations(id, annotations)
   }),
 
   uploadBase64File: t.procedure.input(

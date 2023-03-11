@@ -2,8 +2,7 @@
   "root": true,
   "parser": "@typescript-eslint/parser",
   "plugins": [
-    "react",
-    "@typescript-eslint"
+    "react", "@typescript-eslint"
   ],
   "extends": [
     "eslint:recommended",
@@ -13,36 +12,32 @@
     "plugin:@typescript-eslint/recommended"
   ],
   "parserOptions": {
-    "ecmaFeatures": {
-      "jsx": true
-    }
+    "ecmaFeatures": { "jsx": true }
   },
   "rules": {
-    "space-before-blocks": [1, "always"],
-
-    "quotes": [ 1, "single" ],
-    "object-curly-spacing": [1, "always"],
-    "no-unused-vars": "off",
-    "no-trailing-spaces": ["warn"],
-    "no-multiple-empty-lines": ["warn", { "max": 2, "maxEOF": 0, "maxBOF": 0 }],
-    "no-multi-spaces": [1, { "exceptions": { "Property": false } }],
-    "max-len": [1, {"code": 100,  "ignoreUrls": true }],
-    "indent": "off",
-    "@typescript-eslint/indent": ["warn", 2],
-    "func-call-spacing": [1, "never"],
-    "array-bracket-spacing": [1, "never"],
-    "@typescript-eslint/no-unused-vars": "off",
-    "@typescript-eslint/no-explicit-any": "warn",
     "@typescript-eslint/ban-ts-comment": "warn",
-    "arrow-parens": ["warn", "always"],
-    "no-empty-function": "off",
+    "@typescript-eslint/indent": ["warn", 2],
     "@typescript-eslint/no-empty-function": "warn",
+    "@typescript-eslint/no-explicit-any": "warn",
+    "@typescript-eslint/no-unused-vars": "off",
+    "array-bracket-spacing": [1, "never"],
+    "arrow-parens": ["warn", "always"],
+    "func-call-spacing": [1, "never"],
+    "indent": "off",
+    "max-len": [1, {"code": 100,  "ignoreUrls": true }],
+    "no-empty-function": "off",
+    "no-multi-spaces": [1, { "exceptions": { "Property": false } }],
+    "no-multiple-empty-lines": ["warn", { "max": 2, "maxEOF": 0, "maxBOF": 0 }],
+    "no-trailing-spaces": ["warn"],
+    "no-unused-vars": "off",
     "no-var": "warn",
-    "semi": ["error", "never", { "beforeStatementContinuationChars": "never"}],
+    "object-curly-spacing": [1, "always"],
+    "prefer-const": "warn",
+    "quotes": [ 1, "single" ],
+    "react/display-name": "off",
     "react/jsx-closing-tag-location": "warn",
     "react/no-children-prop": "warn",
-    "prefer-const": "warn",
-    "react/display-name": "off"
-
+    "semi": ["error", "never", { "beforeStatementContinuationChars": "never"}],
+    "space-before-blocks": [1, "always"],
   }
 }

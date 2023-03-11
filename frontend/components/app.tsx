@@ -136,9 +136,9 @@ interface ViewTogglesStore {
 
 export const useViewTogglesStore = create<ViewTogglesStore>((set) => ({
   maxDepth: 1,
-  editorVisible: true,
+  editorVisible: false,
   previewVisible: false,
-  liveRenderVisible: true,
+  liveRenderVisible: false,
   actions: {
     setMaxDepth: (maxDepth) => set(() => ({ maxDepth })),
     setPreviewVisible: (bool) => set(() => ({ previewVisible: bool })),
