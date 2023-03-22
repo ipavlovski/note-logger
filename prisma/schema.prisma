@@ -7,51 +7,52 @@ datasource db {
     url      = "file:./dev.db"
 }
 
+model Node {
+    id        Int      @id @default(autoincrement())
+    name      String
+    url       String?
+    icon      String?
+    thumbnail String?
+    createdAt DateTime @default(now())
+    metadata  String   @default("{}")
+
+    parents  Node[] @relation("NodeChain")
+    children Node[] @relation("NodeChain")
+
+    categories Category[]
+    tags       Tag[]
+    entries    Entry[]
+}
+
 model Entry {
     id       Int    @id @default(autoincrement())
     markdown String
 
     createdAt DateTime  @default(now())
     updatedAt DateTime?
-    title     String?
-    metadata  String    @default("{}")
     order     Int       @default(0)
     archived  Boolean   @default(false)
 
-    category   Category? @relation(fields: [categoryId], references: [id])
-    categoryId Int       @default(0)
-    tags       Tag[]
-    files      File[]
+    Node   Node @relation(fields: [nodeId], references: [id])
+    nodeId Int
 }
 
 model Category {
-    id    Int     @id @default(autoincrement())
-    name  String
-    url   String?
-    order Int     @default(0)
+    id   Int    @id @default(autoincrement())
+    name String
 
-    entry Entry[]
+    nodes Node[]
 
-    pid      Int?
-    parent   Category?  @relation("CategoryChain", fields: [pid], references: [id])
-    children Category[] @relation("CategoryChain")
+    parentId Int?      @unique
+    parent   Category? @relation("CategoryChain", fields: [parentId], references: [id])
+    child    Category? @relation("CategoryChain")
 
-    icon   File? @relation(fields: [iconId], references: [id])
-    iconId Int?
-
-    @@unique([pid, name], name: "unique_name_per_siblings")
+    @@unique([parentId, name], name: "unique_name_per_siblings")
 }
 
 model Tag {
-    id   Int     @id @default(autoincrement())
-    name String  @unique
-    post Entry[]
+    id   Int    @id @default(autoincrement())
+    name String @unique
+    node Node[]
 }
 
-model File {
-    id         Int        @id @default(autoincrement())
-    path       String     @unique
-    metadata   String     @default("{}")
-    entries    Entry[]
-    categories Category[]
-}
