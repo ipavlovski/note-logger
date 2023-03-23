@@ -3,8 +3,12 @@ import { DateTime } from 'luxon'
 
 const prisma = new PrismaClient()
 
-export async function getColumnNodes(parentNodeId: number | null, categoryId: number) {
-  return prisma.node.findMany()
+export async function getQueriedNodes(parentId: number | null, categoryId: number) {
+  const results = await prisma.node.findMany({ where: {
+    parents: parentId != null ? { some: { id: parentId } } : { none: {} },
+    categories: { some: { id: categoryId } },
+  } })
+  return results
 }
 
 export async function getChainNames() {

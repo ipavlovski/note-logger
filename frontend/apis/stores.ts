@@ -2,60 +2,52 @@ import { create } from 'zustand'
 
 import { setSelectionCache } from 'frontend/apis/utils'
 
-type MillerSelection = {
-  firstId: number | null,
-  secondId: number | null,
-  thirdId: number | null
-}
-
 interface MillerStore {
   chainName: string
-  selection: MillerSelection
+  selection: [number | null, number | null, number | null]
+  selectAction: [(nodeId: number) => void, (nodeId: number) => void, (nodeId: number) => void]
   actions: {
-    selectFirst: (nodeId: number) => void
-    selectSecond: (nodeId: number) => void
-    selectThird: (nodeId: number) => void
-    setChain: (chainName: string) => void
+    setChainName: (chainName: string) => void
   }
 }
 
-
 export const useMillerStore = create<MillerStore>((set) => ({
-  selection: { firstId: null, secondId: null, thirdId: null },
+  selection: [null, null, null],
   chainName: 'daily-log',
+  selectAction: [
+    (nodeId) => set((state) => {
+      const [firstId, secondId, thirdId] = state.selection
+
+      if (thirdId != null && secondId != null)
+        setSelectionCache({ type: '2-3', key: secondId, value: thirdId })
+      if (firstId != null && secondId != null)
+        setSelectionCache({ type: '1-2', key: firstId, value: secondId })
+
+      return { selection: [nodeId, null, null] }
+    }),
+
+    (nodeId) => set((state) => {
+      const [firstId, secondId, thirdId] = state.selection
+
+      if (thirdId != null && secondId != null)
+        setSelectionCache({ type: '2-3', key: secondId, value: thirdId })
+      if (firstId != null && secondId != null)
+        setSelectionCache({ type: '1-2', key: firstId, value: secondId })
+
+      return { selection: [firstId, nodeId, null] }
+    }),
+
+    (nodeId) => set((state) => {
+      const [firstId, secondId, thirdId] = state.selection
+
+      if (thirdId != null && secondId != null)
+        setSelectionCache({ type: '2-3', key: secondId, value: thirdId })
+
+      return { selection: [firstId, secondId, nodeId,] }
+    }),
+
+  ],
   actions: {
-    selectFirst: (nodeId) => set((state) => {
-      const { firstId, secondId, thirdId } = state.selection
-
-      if (thirdId != null && secondId != null)
-        setSelectionCache({ type: '2-3', key: secondId, value: thirdId })
-      if (firstId != null && secondId != null)
-        setSelectionCache({ type: '1-2', key: firstId, value: secondId })
-
-      return { selection: { firstId: nodeId, secondId: null, thirdId: null, } }
-    }),
-
-    selectSecond: (nodeId) => set((state) => {
-      const { firstId, secondId, thirdId } = state.selection
-
-      if (thirdId != null && secondId != null)
-        setSelectionCache({ type: '2-3', key: secondId, value: thirdId })
-      if (firstId != null && secondId != null)
-        setSelectionCache({ type: '1-2', key: firstId, value: secondId })
-
-      return { selection: { firstId, secondId: nodeId, thirdId: null, } }
-    }),
-
-    selectThird: (nodeId) => set((state) => {
-      const { firstId, secondId, thirdId } = state.selection
-
-      if (thirdId != null && secondId != null)
-        setSelectionCache({ type: '2-3', key: secondId, value: thirdId })
-
-      return { selection: { firstId, secondId, thirdId: nodeId, } }
-    }),
-
-    setChain: (chainName) => set((state) => ({ chainName }))
-
+    setChainName: (chainName) => set((state) => ({ chainName }))
   }
 }))

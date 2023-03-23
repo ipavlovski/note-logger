@@ -50,16 +50,16 @@ export const useCategoryChain = () => {
 }
 
 
-export const useQueriedNodes = (columnIndex: 1 | 2 | 3) => {
+export const useQueriedNodes = (columnIndex: 0 | 1 | 2) => {
   const categoryChain= useCategoryChain()
-  const categoryId = categoryChain[columnIndex]?.id
+  const categoryId = categoryChain[columnIndex+1]?.id
 
-  const { firstId, secondId } = useMillerStore((store) => store.selection)
-  const parentId = columnIndex == 3 ? secondId : columnIndex == 2 ? firstId : null
+  const selection = useMillerStore((store) => store.selection)
+  const parentId = columnIndex == 0 ? null : selection[columnIndex - 1]
 
   const { data: nodes = [] } = trpc.getQueriedNodes.useQuery(
     { parentId, categoryId: categoryId!, columnIndex },
-    { enabled: !! categoryId && (!! parentId || columnIndex == 1) },
+    { enabled: !! categoryId && (!! parentId || columnIndex == 0) },
   )
 
   return nodes
@@ -71,7 +71,7 @@ export const useQueryCache = () => {
 
   const getNodes = (columnIndex: number) => {
     return queryClient.getQueryData<Node[]>(
-      [['getQueriedNodes'], { type: 'query', input: { columnIndex }}]
+      [['getQueriedNodes'], { type: 'query', input: { columnIndex } }]
     )
   }
 

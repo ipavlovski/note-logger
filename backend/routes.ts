@@ -21,7 +21,7 @@ export const appRouter = t.router({
       columnIndex: z.number()
     })
   ).query(async ({ input: { parentId, categoryId } }) => {
-    return await h.getColumnNodes(parentId, categoryId)
+    return await h.getQueriedNodes(parentId, categoryId)
   }),
 
   getChainNames: t.procedure.query(async () => {
