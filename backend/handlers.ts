@@ -36,9 +36,9 @@ export async function getCategoryChain(name: string) {
 
   const output: CategoryChain = Array.from({ length: 4 })
   for (const ind in output) {
-    console.log(`element ind: ${ind}`)
     output[ind] = { id: recursiveMatch.id, name: recursiveMatch.name }
-    if (recursiveMatch.child != null) recursiveMatch = recursiveMatch.child
+    if (recursiveMatch.child == null) break
+    recursiveMatch = recursiveMatch.child
   }
   return output
 }

@@ -1,17 +1,21 @@
-import { Container, createStyles, Grid, Select } from '@mantine/core'
+import { ActionIcon, Container, createStyles, Grid, Select } from '@mantine/core'
 import { useMillerStore } from 'frontend/apis/stores'
 import { Button , Flex, MultiSelect } from '@mantine/core'
 import { useState } from 'react'
 import { useCategoryChain, useChainNames,
   useCreateCategoryChain, useQueriedNodes } from 'frontend/apis/queries'
+import { IconPlus } from '@tabler/icons-react'
+
 
 const useStyles = createStyles(() => ({
   column: {
     overflowY: 'scroll',
-    height: 900,
+    height: 300,
     '&::-webkit-scrollbar': {
       display: 'none'
     },
+    borderLeft: '1px solid white',
+    paddingLeft: 16
   },
   item: {
 
@@ -29,10 +33,36 @@ function Column({ index }: { index: 0 | 1 | 2}) {
   const selectAction = useMillerStore((state) => state.selectAction[index])
   const selected = useMillerStore((state) => state.selection[index])
 
+  const createNewColumn = () => {
+    console.log('new column!!!')
+  }
+
+  const addNewItem = () => {
+    console.log(`adding new item: ${chain[index+1]}`)
+  }
+
   return (
     <>
-      <h3>{chain[index+1]}</h3>
-      <div className={column}>
+
+      <div>
+
+        {(chain[index] != null && chain[index+1] == null) &&
+        <ActionIcon variant={'gradient'} radius={'xl'} size={'sm'}>
+          <IconPlus size="0.9rem" onClick={createNewColumn} />
+        </ActionIcon>}
+
+        {chain[index+1] != null &&
+        <Flex align={'center'} gap={12}>
+          <h3>{chain[index+1]}</h3>
+          <ActionIcon variant={'gradient'} radius={'xl'} size={'sm'}>
+            <IconPlus size="0.9rem" onClick={addNewItem} />
+          </ActionIcon>
+
+        </Flex>}
+
+      </div>
+
+      <div className={cx(chain[index+1] != null && column)}>
         {nodes.map((node) => (
           <p className={cx(item, node.id == selected && active)}
             key={ node.id}
@@ -79,7 +109,7 @@ export default function MillerColumns() {
       <CategorySelector />
       <Grid>
 
-        <Grid.Col span={3}>
+        <Grid.Col span={3} >
           <Column index={0} />
         </Grid.Col>
 
