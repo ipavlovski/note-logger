@@ -19,10 +19,16 @@ const useStyles = createStyles(() => ({
     paddingLeft: 16
   },
   item: {
-
+    color: '#ffffff',
+    '&:hover': {
+      color: '#cd7c7c'
+    }
   },
   active: {
-    color: 'green'
+    color: 'green',
+    '&:hover': {
+      color: '#1dd132'
+    }
   },
   button: {
     backgroundColor: '#343A40',
@@ -187,8 +193,9 @@ function Column({ index }: { index: 0 | 1 | 2}) {
     console.log('new column!!!')
   }
 
-  const addNewItem = () => {
-    console.log(`adding new item: ${chain[index+1]?.name}`)
+  const removeSelection = () => {
+    console.log(`remove selection: ${chain[index+1]?.name}`)
+    selectAction(null)
   }
 
   return (
@@ -212,11 +219,19 @@ function Column({ index }: { index: 0 | 1 | 2}) {
 
       </div>
 
-      <div className={cx(chain[index+1] != null && column)}>
+      <div
+        className={cx(chain[index+1] != null && column)}
+        onClick={() => removeSelection()}
+      >
         {nodes.map((node) => (
           <p className={cx(item, node.id == selected && active)}
             key={ node.id}
-            onClick={() => selectAction(node.id)}>{node.name}
+            onClick={(e) => {
+              selectAction(node.id)
+              e.stopPropagation()
+            }}
+          >
+            {node.name}
           </p>
         ))}
       </div>

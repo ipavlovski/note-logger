@@ -5,7 +5,11 @@ import { setSelectionCache } from 'frontend/apis/utils'
 interface MillerStore {
   chainName: string
   selection: [number | null, number | null, number | null]
-  selectAction: [(nodeId: number) => void, (nodeId: number) => void, (nodeId: number) => void]
+  selectAction: [
+    (nodeId: number| null) => void,
+    (nodeId: number | null) => void,
+    (nodeId: number | null) => void
+  ]
   actions: {
     setChainName: (chainName: string) => void
   }
