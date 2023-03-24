@@ -51,3 +51,14 @@ export async function createCategoryChain(name: string) {
     data: { name }
   })
 }
+
+export async function createNewNode({ parentId, categoryId, name }:
+{ parentId: number | null; categoryId: number | null; name: string }) {
+  await prisma.node.create({
+    data: {
+      name,
+      categories: categoryId ? { connect: { id: categoryId } } : undefined,
+      parents: parentId ? { connect: { id: parentId } } : undefined
+    }
+  })
+}

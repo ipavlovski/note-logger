@@ -43,6 +43,11 @@ export const useCreateCategoryChain = () => {
   return trpc.createCategoryChain.useMutation()
 }
 
+export const useCreateNewNode = () => {
+  return trpc.createNewNode.useMutation()
+}
+
+
 export const useCategoryChain = () => {
   const chainName = useMillerStore((store) => store.chainName)
   const { data: chain = [] } = trpc.getCategoryChain.useQuery(chainName)
@@ -50,12 +55,18 @@ export const useCategoryChain = () => {
 }
 
 
+export const useParentId = (columnIndex: 0 | 1 | 2) => {
+  const selection = useMillerStore((store) => store.selection)
+  const parentId = columnIndex == 0 ? null : selection[columnIndex - 1]
+
+  return parentId
+}
+
+
 export const useQueriedNodes = (columnIndex: 0 | 1 | 2) => {
   const categoryChain= useCategoryChain()
   const categoryId = categoryChain[columnIndex+1]?.id
-
-  const selection = useMillerStore((store) => store.selection)
-  const parentId = columnIndex == 0 ? null : selection[columnIndex - 1]
+  const parentId = useParentId(columnIndex)
 
   const { data: nodes = [] } = trpc.getQueriedNodes.useQuery(
     { parentId, categoryId: categoryId!, columnIndex },
