@@ -6,7 +6,7 @@ import { Node } from '@prisma/client'
 
 import type { AppRouter } from 'frontend/../trpc'
 import { SERVER_URL } from 'frontend/apis/utils'
-import { useMillerStore } from 'frontend/apis/stores'
+import { useMillerStore, useParentId } from 'frontend/apis/stores'
 
 
 ////////////// TRPC / RQ
@@ -55,13 +55,6 @@ export const useCategoryChain = () => {
 }
 
 
-export const useParentId = (columnIndex: 0 | 1 | 2) => {
-  const selection = useMillerStore((store) => store.selection)
-  const parentId = columnIndex == 0 ? null : selection[columnIndex - 1]
-
-  return parentId
-}
-
 
 export const useQueriedNodes = (columnIndex: 0 | 1 | 2) => {
   const categoryChain= useCategoryChain()
@@ -80,9 +73,10 @@ export const useQueriedNodes = (columnIndex: 0 | 1 | 2) => {
 export const useQueryCache = () => {
   const queryClient = useQueryClient()
 
-  const getNodes = (columnIndex: number) => {
+  const getNodes = ({ categoryId, columnIndex, parentId }:
+  {columnIndex?: number, categoryId?: number, parentId?: number| null}) => {
     return queryClient.getQueryData<Node[]>(
-      [['getQueriedNodes'], { type: 'query', input: { columnIndex } }]
+      [['getQueriedNodes'], { type: 'query', input: { columnIndex, categoryId, parentId } }]
     )
   }
 

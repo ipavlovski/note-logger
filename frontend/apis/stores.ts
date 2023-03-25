@@ -55,3 +55,10 @@ export const useMillerStore = create<MillerStore>((set) => ({
     setChainName: (chainName) => set((state) => ({ chainName }))
   }
 }))
+
+export const useParentId = (columnIndex: 0 | 1 | 2) => {
+  const selection = useMillerStore((store) => store.selection)
+  const parentId = columnIndex == 0 ? null : selection[columnIndex - 1]
+
+  return parentId
+}

@@ -1,11 +1,15 @@
-import { ActionIcon, Container, createStyles, Flex, Grid, Popover, Select, Textarea, UnstyledButton } from '@mantine/core'
-import { getHotkeyHandler, useHotkeys } from '@mantine/hooks'
-import { IconCheck, IconLink, IconPhoto, IconPlus, IconUserCircle } from '@tabler/icons-react'
 import {
-  useCategoryChain, useChainNames, useCreateCategoryChain, useCreateNewNode, useParentId, useQueriedNodes
+  ActionIcon, Container, createStyles, Flex, Grid, Popover, Select, Textarea, UnstyledButton
+} from '@mantine/core'
+import { getHotkeyHandler } from '@mantine/hooks'
+import { IconCheck, IconLink, IconPhoto, IconPlus, IconUserCircle } from '@tabler/icons-react'
+import { ClipboardEvent, useState } from 'react'
+
+import { useArrowShortcuts } from 'frontend/apis/miller-navigation'
+import {
+  useCategoryChain, useChainNames, useCreateCategoryChain, useCreateNewNode, useQueriedNodes
 } from 'frontend/apis/queries'
-import { useMillerStore } from 'frontend/apis/stores'
-import { useState, ClipboardEvent } from 'react'
+import { useMillerStore, useParentId } from 'frontend/apis/stores'
 
 
 const useStyles = createStyles(() => ({
@@ -266,7 +270,7 @@ function CategorySelector() {
 }
 
 export default function MillerColumns() {
-  // useArrowShortcuts()
+  useArrowShortcuts()
 
   return (
 
