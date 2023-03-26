@@ -1,9 +1,8 @@
-import { ActionIcon, createStyles, Flex, HoverCard, Popover, Textarea, UnstyledButton, Text, Avatar,
-  Image, AspectRatio
-} from '@mantine/core'
+import { ActionIcon, AspectRatio, Avatar, createStyles, Flex, HoverCard, Image, Popover, Text,
+  Textarea, UnstyledButton } from '@mantine/core'
 import { getHotkeyHandler, useDisclosure } from '@mantine/hooks'
 import { IconCheck, IconLink, IconPhoto, IconPlus, IconUserCircle } from '@tabler/icons-react'
-import { ClipboardEvent, useState } from 'react'
+import { useState } from 'react'
 
 import { useCreateNewNode } from 'frontend/apis/queries'
 

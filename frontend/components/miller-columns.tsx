@@ -1,5 +1,6 @@
-import { ActionIcon, Container, createStyles, Flex, Grid, Select } from '@mantine/core'
-import { IconPlus } from '@tabler/icons-react'
+import { ActionIcon, Avatar, Container, createStyles, Flex, Grid, Group, Select,
+  Text, Image } from '@mantine/core'
+import { IconPlus, IconUserCircle } from '@tabler/icons-react'
 
 import CreateNodeButton from 'components/create-node-button'
 import { useArrowShortcuts } from 'frontend/apis/miller-navigation'
@@ -7,7 +8,8 @@ import {
   useCategoryChain, useChainNames, useCreateCategoryChain, useQueriedNodes
 } from 'frontend/apis/queries'
 import { useMillerStore, useParentId } from 'frontend/apis/stores'
-
+import { SERVER_URL } from 'frontend/apis/utils'
+import { Node } from '@prisma/client'
 
 const useStyles = createStyles(() => ({
   column: {
@@ -33,6 +35,40 @@ const useStyles = createStyles(() => ({
   },
 }))
 
+export const getImageUrl = (src: string | null, dir: 'icons' | 'thumbnails' | 'capture') =>
+  src && `${SERVER_URL}/${dir}/${src}`
+
+// export const getCaptureUrl = (capture: string) => capture.endsWith('.mp4') ?
+//   `${SERVER_URL}/capture/${capture}`.replace('.mp4', '.gif') : `${SERVER_URL}/capture/${capture}`
+
+
+function ColumnItem({ node, className, onClick }:
+{ node: Node, className: string, onClick: React.MouseEventHandler }) {
+  return (
+    <Group align={'center'} mt={16} spacing={2}>
+
+      <Flex align={'center'} gap={12}>
+        <Avatar src={getImageUrl(node?.icon, 'icons')} radius="xl" m={4} >
+          <IconUserCircle size="1.5rem" />
+        </Avatar>
+
+        <Text truncate
+          className={className}
+          onClick={onClick}>
+          {node.name}
+        </Text>
+
+      </Flex>
+
+      <Image
+        radius='sm'
+        src={getImageUrl(node?.thumbnail, 'thumbnails')}
+      />
+
+    </Group>
+  )
+}
+
 
 function Column({ index }: { index: 0 | 1 | 2}) {
   const { classes: { active, column, item }, cx } = useStyles()
@@ -53,7 +89,7 @@ function Column({ index }: { index: 0 | 1 | 2}) {
 
   return (
     <>
-
+      {/* HEADER */}
       <div>
         {(chain[index] != null && chain[index+1] == null) &&
         <ActionIcon variant={'gradient'} radius={'xl'} size={'sm'}>
@@ -67,25 +103,25 @@ function Column({ index }: { index: 0 | 1 | 2}) {
           {(parentId || index == 0) &&
           <CreateNodeButton categoryId={chain[index+1]!.id} parentId={parentId}/>
           }
-
         </Flex>}
 
       </div>
 
+      {/* NODES */}
       <div
         className={cx(chain[index+1] != null && column)}
         onClick={() => removeSelection()}
       >
         {nodes.map((node) => (
-          <p className={cx(item, node.id == selected && active)}
+          <ColumnItem
+            className={cx(item, node.id == selected && active)}
             key={ node.id}
             onClick={(e) => {
               selectAction(node.id)
               e.stopPropagation()
             }}
-          >
-            {node.name}
-          </p>
+            node={node}
+          />
         ))}
       </div>
     </>
