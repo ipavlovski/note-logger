@@ -4,7 +4,7 @@ import { getHotkeyHandler, useDisclosure } from '@mantine/hooks'
 import { IconCheck, IconLink, IconPhoto, IconPlus, IconUserCircle } from '@tabler/icons-react'
 import { useState } from 'react'
 
-import { useCreateNewNode } from 'frontend/apis/queries'
+import { trpc, useCreateNewNode } from 'frontend/apis/queries'
 
 
 const useStyles = createStyles(() => ({
@@ -201,7 +201,7 @@ function ThumbnailPreview({ thumbnail }: {thumbnail: string | null}) {
 export default function CreateNodeButton({ parentId, categoryId }:
 { parentId: number | null, categoryId: number }) {
 
-  const { classes: { button } } = useStyles()
+  const utils = trpc.useContext()
 
   const createNewNode = useCreateNewNode()
   const [opened, { open, toggle, close }] = useDisclosure(false)
@@ -214,14 +214,22 @@ export default function CreateNodeButton({ parentId, categoryId }:
 
   const submitHandler = async () => {
     // create new node
-    createNewNode.mutate({ parentId, categoryId, name, url, icon, thumbnail })
+    await createNewNode.mutateAsync({ parentId, categoryId, name, url, icon, thumbnail }, {
+      onSuccess: () => {
+        // invalidate results
+        utils.getQueriedNodes.invalidate()
 
-    // clear the fields
-    setName('')
-    setUrl(null)
-    setIcon(null)
-    setThumbnail(null)
-    close()
+        // clear the fields
+        setName('')
+        setUrl(null)
+        setIcon(null)
+        setThumbnail(null)
+
+        // close the menu
+        close()
+      }
+    })
+
 
   }
 
