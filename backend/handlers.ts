@@ -1,6 +1,11 @@
 import { PrismaClient, Category } from '@prisma/client'
-import { DateTime } from 'luxon'
+import { exec } from 'node:child_process'
+import { rename, rm, writeFile } from 'node:fs/promises'
+import { promisify } from 'node:util'
 
+import { STORAGE_DIRECTORY } from 'backend/config'
+
+const execute = promisify(exec)
 const prisma = new PrismaClient()
 
 export async function getQueriedNodes(parentId: number | null, categoryId: number) {
@@ -52,13 +57,62 @@ export async function createCategoryChain(name: string) {
   })
 }
 
-export async function createNewNode({ parentId, categoryId, name }:
-{ parentId: number | null; categoryId: number | null; name: string }) {
+
+async function saveCapturedMedia(src: string, path: 'icons' | 'thumbnails' | 'capture') {
+  const basename = `${Date.now()}`
+  let filename: string | null = null
+  const dir = `${STORAGE_DIRECTORY}/${path}`
+
+  try {
+    const base64 = src.replace(/^data:(.*,)?/, '')
+    const buffer = Buffer.from(base64, 'base64')
+    await writeFile(`${dir}/${basename}.unknown`, buffer)
+
+    const { stdout } = await execute(`file -Lib ${dir}/${basename}.unknown`)
+    const [mime] = stdout.split(';', 1)
+    console.log(stdout)
+
+    switch (mime) {
+      case 'image/png':
+        filename = `${basename}.png`
+        break
+      case 'video/mp4':
+        filename = `${basename}.mp4`
+        break
+      default:
+        console.log('No handler available')
+        break
+    }
+    if (! filename) throw new Error('Failed to get matchign mimes.')
+    rename(`${dir}/${basename}.unknown`, `${dir}/${filename}`)
+
+    if (filename.endsWith('.mp4'))
+      await execute(`ffmpeg -i ${dir}/${filename} ${dir}/${filename.replace('.mp4', '.gif')}`)
+
+  } catch {
+    console.log('Error during file-type identification')
+    await rm(`${dir}/${basename}.unknown`, { force: true })
+  }
+
+  return filename
+
+}
+
+export async function createNewNode({ parentId, categoryId, name, url, icon, thumbnail }:
+{ parentId: number | null, categoryId: number | null, name: string,
+  url: string | null, icon: string | null, thumbnail: string | null }) {
+
+  const iconPath = icon && await saveCapturedMedia(icon, 'icons')
+  const thumbnailPath = thumbnail && await saveCapturedMedia(thumbnail, 'thumbnails')
+
   await prisma.node.create({
     data: {
       name,
       categories: categoryId ? { connect: { id: categoryId } } : undefined,
-      parents: parentId ? { connect: { id: parentId } } : undefined
+      parents: parentId ? { connect: { id: parentId } } : undefined,
+      url: url || undefined,
+      icon: iconPath || undefined,
+      thumbnail: thumbnailPath || undefined
     }
   })
 }

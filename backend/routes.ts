@@ -42,9 +42,12 @@ export const appRouter = t.router({
 
   createNewNode: t.procedure.input(
     z.object({
-      name: z.string(),
+      parentId: z.number().nullable(),
       categoryId: z.number().nullable(),
-      parentId: z.number().nullable()
+      name: z.string(),
+      url: z.string().nullable(),
+      icon: z.string().nullable(),
+      thumbnail: z.string().nullable(),
     })
   ).mutation(async ({ input }) => {
     return await h.createNewNode(input)
