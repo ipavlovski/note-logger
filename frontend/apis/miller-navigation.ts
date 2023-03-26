@@ -2,7 +2,6 @@ import { useHotkeys } from '@mantine/hooks'
 
 import { useCategoryChain, useQueryCache } from 'frontend/apis/queries'
 import { useMillerStore, useParentId } from 'frontend/apis/stores'
-import { getSelectionCache } from 'frontend/apis/utils'
 
 
 const getPrevIndex = <T,>(arr: Array<T & { id: number }> | undefined, id: number | null) => {
@@ -15,6 +14,32 @@ const getNextIndex = <T,>(arr: Array<T & { id: number }> | undefined, id: number
   if (id == null || arr == null) return null
   const ind = arr.findIndex((elt) => elt.id == id)
   return ind != null && ind != -1 && ind + 1 < arr.length ? ind + 1 : null
+}
+
+
+type SelectionCacheItem = { type: '1-2' | '2-3', key: number, value: number }
+const selectionCache: SelectionCacheItem[] = []
+
+export function setSelectionCache(item: SelectionCacheItem) {
+  const CACHE_MAX_ITEMS = 500
+  selectionCache.length + 1 <= CACHE_MAX_ITEMS ?
+    selectionCache.unshift(item) :
+    (selectionCache.pop(), selectionCache.unshift(item))
+}
+
+export function getSelectionCache({ type, key }:
+{ type: SelectionCacheItem['type'], key: SelectionCacheItem['key'] | null}) {
+  if (key == null) return undefined
+  return selectionCache.find((item) => item.type == type && item.key == key)
+}
+
+
+const scrollMap = new Map<string,() => any>()
+export function setScrollElement(columnIndex: number, nodeId: number, ref: () => any) {
+  scrollMap.set(`${columnIndex}-${nodeId}`, ref)
+}
+export function getScrollElement(columnIndex: number, nodeId: number) {
+  return scrollMap.get(`${columnIndex}-${nodeId}`)
 }
 
 
@@ -72,7 +97,12 @@ export const useArrowShortcuts = () => {
       if (columnIndex == 1) {
         const secondColumnNodes = queryCache.getNodes({ categoryId, columnIndex, parentId })
         const ind = getPrevIndex(secondColumnNodes, secondId)
-        ind != null && secondColumnNodes != null && selectSecond(secondColumnNodes[ind].id)
+        // ind != null && secondColumnNodes != null && selectSecond(secondColumnNodes[ind].id)
+        if (ind != null && secondColumnNodes != null) {
+          selectSecond(secondColumnNodes[ind].id)
+          const scroll = getScrollElement(columnIndex, secondColumnNodes[ind].id)
+          scroll && scroll()
+        }
       }
 
       if (columnIndex == 2) {
@@ -94,7 +124,12 @@ export const useArrowShortcuts = () => {
       if (columnIndex == 1) {
         const secondColumnNodes = queryCache.getNodes({ categoryId, columnIndex, parentId })
         const ind = getNextIndex(secondColumnNodes, secondId)
-        ind != null && secondColumnNodes != null && selectSecond(secondColumnNodes[ind].id)
+        // ind != null && secondColumnNodes != null && selectSecond(secondColumnNodes[ind].id)
+        if (ind != null && secondColumnNodes != null) {
+          selectSecond(secondColumnNodes[ind].id)
+          const scroll = getScrollElement(columnIndex, secondColumnNodes[ind].id)
+          scroll && scroll()
+        }
       }
 
       if (columnIndex == 2) {

@@ -1,6 +1,6 @@
 import { create } from 'zustand'
 
-import { setSelectionCache } from 'frontend/apis/utils'
+import { setSelectionCache } from 'frontend/apis/miller-navigation'
 
 interface MillerStore {
   chainName: string
