@@ -76,6 +76,9 @@ async function saveCapturedMedia(src: string, path: 'icons' | 'thumbnails' | 'ca
       case 'image/png':
         filename = `${basename}.png`
         break
+      case 'image/jpeg':
+        filename = `${basename}.jpeg`
+        break
       case 'video/mp4':
         filename = `${basename}.mp4`
         break
