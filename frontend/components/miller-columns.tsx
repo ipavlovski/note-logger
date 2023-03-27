@@ -1,7 +1,10 @@
-import { ActionIcon, Avatar, Container, createStyles, Flex, Grid, Group, Select,
-  Text, Image } from '@mantine/core'
+import {
+  ActionIcon, Avatar, Container, createStyles, Flex, Grid, Group, Image, Select,
+  Text
+} from '@mantine/core'
 import { IconPlus, IconUserCircle } from '@tabler/icons-react'
 
+import { Node } from '@prisma/client'
 import CreateNodeButton from 'components/create-node-button'
 import { setScrollElement, useArrowShortcuts } from 'frontend/apis/miller-navigation'
 import {
@@ -9,9 +12,7 @@ import {
 } from 'frontend/apis/queries'
 import { useMillerStore, useParentId } from 'frontend/apis/stores'
 import { SERVER_URL } from 'frontend/apis/utils'
-import { Node } from '@prisma/client'
-import { useScrollIntoView } from '@mantine/hooks'
-import { RefObject, useRef } from 'react'
+import { RefObject, useEffect, useRef, useState } from 'react'
 
 const useStyles = createStyles(() => ({
   column: {
@@ -41,24 +42,26 @@ const useStyles = createStyles(() => ({
 export const getImageUrl = (src: string | null, dir: 'icons' | 'thumbnails' | 'capture') =>
   src && `${SERVER_URL}/${dir}/${src}`
 
-// export const getCaptureUrl = (capture: string) => capture.endsWith('.mp4') ?
-//   `${SERVER_URL}/capture/${capture}`.replace('.mp4', '.gif') : `${SERVER_URL}/capture/${capture}`
+function useIntersectionObserver(ref: RefObject<Element>, root: RefObject<Element>):
+IntersectionObserverEntry | undefined {
 
+  const [entry, setEntry] = useState<IntersectionObserverEntry>()
 
-// https://stackoverflow.com/questions/26423335/elements-coordinates-relative-to-its-parent
-// Note that if the top or left coordinates are negative,
-// it means that the child escapes its parent in that direction.
-// Same if the bottom or right coordinates are positive.
-function isElementVisible(child: RefObject<HTMLDivElement>, parent: RefObject<HTMLDivElement>) {
-  const parentPos = parent.current!.getBoundingClientRect()
-  const childPos = child.current!.getBoundingClientRect()
-  const relativePos = {
-    top: childPos.top - parentPos.top,
-    right: childPos.right - parentPos.right,
-    bottom: childPos.bottom - parentPos.bottom,
-    left: childPos.left - parentPos.left
+  const updateEntry = ([entry]: IntersectionObserverEntry[]): void => {
+    setEntry(entry)
   }
-  return relativePos.top > 0
+
+  useEffect(() => {
+    const node = ref?.current
+    if (!node || !root) return
+
+    const observer = new IntersectionObserver(updateEntry, { root: root.current })
+    observer.observe(node)
+    return () => observer.disconnect()
+
+  }, [ref?.current, root?.current])
+
+  return entry
 }
 
 
@@ -66,11 +69,13 @@ function ColumnItem({ node, className, onClick, index, parent }:
 { node: Node, className: string, onClick: React.MouseEventHandler, index: number,
   parent: RefObject<HTMLDivElement> }) {
 
-  // const { scrollIntoView, targetRef } = useScrollIntoView<HTMLDivElement>({ offset: 60, })
   const ref = useRef<HTMLDivElement>(null)
+
+  const entry = useIntersectionObserver(ref, parent)
+  const isVisible = !!entry?.isIntersecting
+
   const executeScroll = () => {
-    // console.log(isElementVisible(ref, parent))
-    ref.current?.scrollIntoView({ behavior: 'smooth' })
+    !isVisible && ref.current?.scrollIntoView({ behavior: 'smooth' })
   }
   setScrollElement(index, node.id, executeScroll)
 
