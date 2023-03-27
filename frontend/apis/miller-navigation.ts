@@ -55,34 +55,64 @@ export const useArrowShortcuts = () => {
 
   useHotkeys([
     ['ArrowLeft', () => {
-      if (columnIndex == 2) secondId != null && selectSecond(secondId)
-      if (columnIndex == 1) firstId != null && selectFirst(firstId)
+      if (columnIndex == 1 && firstId != null) {
+        selectFirst(firstId)
+        const scroll = getScrollElement(0, firstId)
+        scroll && scroll()
+      }
+
+      if (columnIndex == 2 && secondId != null) {
+        selectSecond(secondId)
+        const scroll = getScrollElement(1, secondId)
+        scroll && scroll()
+      }
+
     }],
 
     ['ArrowRight',() => {
 
       if (columnIndex == 0) {
-        const cachedId = getSelectionCache( { type: '1-2', key: firstId })
-        if (cachedId != null) selectSecond(cachedId.value)
+        // get the cached value (if there is one)
+        let secondId: number | undefined = getSelectionCache( { type: '1-2', key: firstId })?.value
 
-        if (cachedId == null) {
+        // if there is no cached value, select the 'first node' in the list
+        if (secondId == null) {
           const secondColumnNodes = queryCache.getNodes({
             categoryId: chain[2]?.id, columnIndex: 1, parentId: firstId
           })
-          if (secondColumnNodes && secondColumnNodes[0]?.id) selectSecond(secondColumnNodes[0].id)
+          secondId = secondColumnNodes && secondColumnNodes[0]?.id
         }
+
+        // if there was no first node in the list, will not do anything
+        // if there was a cached value OR a first node, then will select it and scroll to it
+        if (secondId != null) {
+          selectSecond(secondId)
+          const scroll = getScrollElement(1, secondId)
+          scroll && scroll()
+        }
+
       }
 
       if (columnIndex == 1) {
-        const cachedId = getSelectionCache( { type: '2-3', key: secondId })
-        if (cachedId != null) selectThird(cachedId.value)
+        // get the cached value (if there is one)
+        let thirdId: number | undefined = getSelectionCache( { type: '2-3', key: secondId })?.value
 
-        if (cachedId == null) {
+        // if there is no cached value, select the 'first node' in the list
+        if (thirdId == null) {
           const thirdColumnNodes = queryCache.getNodes({
             categoryId: chain[3]?.id, columnIndex: 2, parentId: secondId
           })
-          if (thirdColumnNodes && thirdColumnNodes[0]?.id) selectThird(thirdColumnNodes[0].id)
+          thirdId = thirdColumnNodes && thirdColumnNodes[0]?.id
         }
+
+        // if there was no first node in the list, will not do anything
+        // if there was a cached value OR a first node, then will select it and scroll to it
+        if (thirdId != null) {
+          selectThird(thirdId)
+          const scroll = getScrollElement(2, thirdId)
+          scroll && scroll()
+        }
+
       }
     }],
 
