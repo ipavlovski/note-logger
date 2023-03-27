@@ -91,13 +91,18 @@ export const useArrowShortcuts = () => {
       if (columnIndex == 0) {
         const firstColumnNodes = queryCache.getNodes({ categoryId, columnIndex, parentId })
         const ind = getPrevIndex(firstColumnNodes, firstId)
-        ind != null && firstColumnNodes != null && selectFirst(firstColumnNodes[ind].id)
+
+        if (ind != null && firstColumnNodes != null) {
+          selectFirst(firstColumnNodes[ind].id)
+          const scroll = getScrollElement(columnIndex, firstColumnNodes[ind].id)
+          scroll && scroll()
+        }
       }
 
       if (columnIndex == 1) {
         const secondColumnNodes = queryCache.getNodes({ categoryId, columnIndex, parentId })
         const ind = getPrevIndex(secondColumnNodes, secondId)
-        // ind != null && secondColumnNodes != null && selectSecond(secondColumnNodes[ind].id)
+
         if (ind != null && secondColumnNodes != null) {
           selectSecond(secondColumnNodes[ind].id)
           const scroll = getScrollElement(columnIndex, secondColumnNodes[ind].id)
@@ -110,6 +115,11 @@ export const useArrowShortcuts = () => {
         const ind = getPrevIndex(thirdColumnNodes, thirdId)
         ind != null && thirdColumnNodes != null && selectThird(thirdColumnNodes[ind].id)
 
+        if (ind != null && thirdColumnNodes != null) {
+          selectThird(thirdColumnNodes[ind].id)
+          const scroll = getScrollElement(columnIndex, thirdColumnNodes[ind].id)
+          scroll && scroll()
+        }
       }
     }],
 
@@ -118,13 +128,18 @@ export const useArrowShortcuts = () => {
       if (columnIndex == 0) {
         const firstColumnNodes = queryCache.getNodes({ categoryId, columnIndex, parentId })
         const ind = getNextIndex(firstColumnNodes, firstId)
-        ind != null && firstColumnNodes != null && selectFirst(firstColumnNodes[ind].id)
+
+        if (ind != null && firstColumnNodes != null) {
+          selectFirst(firstColumnNodes[ind].id)
+          const scroll = getScrollElement(columnIndex, firstColumnNodes[ind].id)
+          scroll && scroll()
+        }
       }
 
       if (columnIndex == 1) {
         const secondColumnNodes = queryCache.getNodes({ categoryId, columnIndex, parentId })
         const ind = getNextIndex(secondColumnNodes, secondId)
-        // ind != null && secondColumnNodes != null && selectSecond(secondColumnNodes[ind].id)
+
         if (ind != null && secondColumnNodes != null) {
           selectSecond(secondColumnNodes[ind].id)
           const scroll = getScrollElement(columnIndex, secondColumnNodes[ind].id)
@@ -135,7 +150,12 @@ export const useArrowShortcuts = () => {
       if (columnIndex == 2) {
         const thirdColumnNodes = queryCache.getNodes({ categoryId, columnIndex, parentId })
         const ind = getNextIndex(thirdColumnNodes, thirdId)
-        ind != null && thirdColumnNodes != null && selectThird(thirdColumnNodes[ind].id)
+
+        if (ind != null && thirdColumnNodes != null) {
+          selectThird(thirdColumnNodes[ind].id)
+          const scroll = getScrollElement(columnIndex, thirdColumnNodes[ind].id)
+          scroll && scroll()
+        }
       }
     }],
   ])
