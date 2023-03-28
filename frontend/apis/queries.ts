@@ -82,6 +82,12 @@ export const useUpdateEntry = () => {
 }
 
 
+export const useCaptureMedia = () => {
+  return trpc.captureMedia.useMutation()
+}
+
+
+
 export const useQueriedNodes = (columnIndex: 0 | 1 | 2) => {
   const categoryChain= useCategoryChain()
   const categoryId = categoryChain[columnIndex+1]?.id

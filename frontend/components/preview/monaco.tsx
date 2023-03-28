@@ -5,43 +5,10 @@ import { useRef } from 'react'
 import { Observable, timer } from 'rxjs'
 import { debounce } from 'rxjs/operators'
 
-import { useCreateEntry, useUpdateEntry } from 'frontend/apis/queries'
-import { create } from 'zustand'
-import { useMillerStore } from 'frontend/apis/stores'
-
-
-interface ActiveEntryStore {
-  entryId: number | null
-  markdown: string
-  actions: {
-    setMarkdown: (markdown: string) => void
-    setEntry: (entryId: number | null, markdown: string) => void
-    clearEntry: () => void
-  }
-}
-
-const getLocalEntry = () => {
-  const entry = localStorage.getItem('entry')
-  return entry ?
-    JSON.parse(entry) as { entryId: number | null, markdown: string} :
-    { entryId: null, markdown: '' }
-}
-
-const setLocalEntry = (entryId: number | null, markdown: string) => {
-  localStorage.setItem('entry', JSON.stringify({ entryId, markdown }))
-  return { entryId, markdown }
-}
-
-
-export const useActiveEntryStore = create<ActiveEntryStore>((set) => ({
-  entryId: getLocalEntry().entryId,
-  markdown: getLocalEntry().markdown,
-  actions: {
-    setMarkdown: (markdown) => set((state) => setLocalEntry(state.entryId, markdown)),
-    clearEntry: () => set(() => setLocalEntry(null, '')),
-    setEntry: (entryId, markdown) => set(() => setLocalEntry(entryId, markdown))
-  },
-}))
+import ClipboardHandler from 'frontend/apis/clipboard'
+import { useCaptureMedia, useCreateEntry, useUpdateEntry } from 'frontend/apis/queries'
+import { useActiveEntryStore, useMillerStore } from 'frontend/apis/stores'
+import { SERVER_URL } from 'frontend/apis/utils'
 
 
 export default function MonacoEditor({ height }: {height: number | string}) {
@@ -51,44 +18,37 @@ export default function MonacoEditor({ height }: {height: number | string}) {
 
   const createEntry = useCreateEntry()
   const updateEntry = useUpdateEntry()
-  // const activeNode = useCachedActiveNode()
-  // const queryCache = useQueryCache()
-
-
-  // const uploadBase64File = trpc.uploadBase64File.useMutation()
+  const captureMedia = useCaptureMedia()
 
   const handleMonacoPaste = async (e: globalThis.ClipboardEvent) => {
 
     try {
+      const clipboard = await ClipboardHandler.create()
+      const base64 = await clipboard.getImage() || await clipboard.getVideo()
 
-      // const clipboardText = e.clipboardData?.getData('Text') || ''
-      // const indNewLine = clipboardText.indexOf('\n')
-      // const firstLine = clipboardText.substring(0, indNewLine)
-      // const restLines = clipboardText.substring(indNewLine + 1)
-      // const isBase64 = /^data:.*:base64/.test(firstLine)
+      if (base64) {
+        e.stopPropagation()
+        e.preventDefault()
 
-      // if (isBase64) {
-      //   e.stopPropagation()
-      //   e.preventDefault()
+        const filename = await captureMedia.mutateAsync(base64)
+        if (! filename) throw new Error('Failed to get proper filename back')
 
-      //   const { filename } = await uploadBase64File.mutateAsync({ base64: restLines })
-      //   if (! filename) throw new Error('Failed to get proper filename back')
+        const extension = filename.split('.').pop()
+        let text = ''
+        switch (extension) {
+          case 'mp4':
+            text = `::video{filename="capture/${filename}"}`
+            break
+          case 'png':
+          case 'jpeg':
+            text = `![](${SERVER_URL}/capture/${filename})`
+            break
+          default:
+            throw new Error(`Unknown extension: ${extension}`)
+        }
 
-      //   const extension = filename.split('.').pop()
-      //   let text = ''
-      //   switch (extension) {
-      //     case 'mp4':
-      //       text = `::video{filename="${filename}"}`
-      //       break
-      //     case 'png':
-      //       text = `![](${SERVER_URL}/${filename})`
-      //       break
-      //     default:
-      //       throw new Error(`Unknown extension: ${extension}`)
-      //   }
-
-      //   filename && editorRef.current!.trigger('keyboard', 'type', { text })
-      // }
+        filename && editorRef.current!.trigger('keyboard', 'type', { text })
+      }
 
     } catch (err) {
       const msg = err instanceof Error ? err.message : 'Unknown error'

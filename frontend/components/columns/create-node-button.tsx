@@ -5,6 +5,7 @@ import { IconCheck, IconLink, IconPhoto, IconPlus, IconUserCircle } from '@table
 import { useState } from 'react'
 
 import { trpc, useCreateNewNode } from 'frontend/apis/queries'
+import ClipboardHandler, { blobToBase64 } from 'frontend/apis/clipboard'
 
 type ReactSetter<T> = React.Dispatch<React.SetStateAction<T | null>>
 
@@ -30,64 +31,6 @@ const useStyles = createStyles(() => ({
 }))
 
 
-const getClipboardContents = async () => {
-  const query = await navigator.permissions.query({ name: 'clipboard-read' as PermissionName })
-  if (query.state == 'granted' || query.state == 'prompt') {
-    const items = await navigator.clipboard.read()
-    return items[0]
-  }
-  return null
-}
-
-const blobToBase64 = async (blob: Blob) => {
-  return new Promise<string | null>((resolve, reject) => {
-    const reader = new FileReader()
-    reader.onloadend = () => resolve(reader.result as string)
-    reader.onerror = (err) => {
-      console.log(err)
-      reject(null)
-    }
-    reader.readAsDataURL(blob)
-  })
-}
-
-
-const getClipboardImage = async (clipboardItem: ClipboardItem | null) => {
-  if (clipboardItem != null && clipboardItem.types.includes('image/png')) {
-    const blob = await clipboardItem.getType('image/png')
-    return await blobToBase64(blob)
-  }
-  return null
-}
-
-const getClipboardVideo = async (clipboardItem: ClipboardItem | null) => {
-  if (clipboardItem != null && clipboardItem.types.includes('text/plain')) {
-    const blob = await clipboardItem.getType('text/plain')
-    const text = await blob.text()
-
-    const ind = text.indexOf('\n')
-    const firstLine = text.substring(0, ind)
-    const restLines = text.substring(ind + 1)
-
-    const isBase64 = /^data:.*:base64/.test(firstLine)
-    if (isBase64) return `data:video/mp4;base64,${restLines}`
-  }
-  return null
-}
-
-
-const getClipboardURL = async (clipboardItem: ClipboardItem | null) => {
-  if (clipboardItem != null && clipboardItem.types.includes('text/plain')) {
-    const blob = await clipboardItem.getType('text/plain')
-    const text = await blob.text()
-
-    const isURL = /^(http|https):\/\/[^ "]+$/.test(text)
-    if (isURL) return text
-  }
-  return null
-}
-
-
 function UrlButton({ url, setUrl }: {url: string | null, setUrl: ReactSetter<string>}) {
   const { classes: { button, active }, cx } = useStyles()
 
@@ -100,9 +43,9 @@ function UrlButton({ url, setUrl }: {url: string | null, setUrl: ReactSetter<str
           onPaste={() => console.log('LOL!')}
           onKeyDown={getHotkeyHandler([
             ['ctrl+v', async () => {
-              const clipboard = await getClipboardContents()
+              const clipboard = await ClipboardHandler.create()
 
-              const url = await getClipboardURL(clipboard)
+              const url = await clipboard.getURL()
               if (url) setUrl(url)
             }],
             ['delete', () => setUrl(null)]
@@ -133,15 +76,15 @@ function IconButton({ icon, setIcon }: {icon: string | null, setIcon: ReactSette
       onPaste={() => console.log('LOL!')}
       onKeyDown={getHotkeyHandler([
         ['ctrl+v', async () => {
-          const clipboard = await getClipboardContents()
+          const clipboard = await ClipboardHandler.create()
 
-          const image = await getClipboardImage(clipboard)
+          const image = await clipboard.getImage()
           if (image) {
             setIcon(image)
             return
           }
 
-          const url = await getClipboardURL(clipboard)
+          const url = await clipboard.getURL()
           if (url) {
             try {
               const blob = await fetch(url).then((res) => res.blob())
@@ -177,9 +120,9 @@ function ThumbnailButton({ thumbnail, setThumbnail }:
       onPaste={() => console.log('LOL!')}
       onKeyDown={getHotkeyHandler([
         ['ctrl+v', async () => {
-          const clipboard = await getClipboardContents()
+          const clipboard = await ClipboardHandler.create()
 
-          const url = await getClipboardURL(clipboard)
+          const url = await clipboard.getURL()
           if (url) {
             try {
               const blob = await fetch(url).then((res) => res.blob())
@@ -194,13 +137,13 @@ function ThumbnailButton({ thumbnail, setThumbnail }:
             return
           }
 
-          const image = await getClipboardImage(clipboard)
+          const image = await clipboard.getImage()
           if (image) {
             setThumbnail(image)
             return
           }
 
-          const video = await getClipboardVideo(clipboard)
+          const video = await clipboard.getVideo()
           if (video) {
             setThumbnail(video)
             return

@@ -62,3 +62,37 @@ export const useParentId = (columnIndex: 0 | 1 | 2) => {
 
   return parentId
 }
+
+
+interface ActiveEntryStore {
+  entryId: number | null
+  markdown: string
+  actions: {
+    setMarkdown: (markdown: string) => void
+    setEntry: (entryId: number | null, markdown: string) => void
+    clearEntry: () => void
+  }
+}
+
+const getLocalEntry = () => {
+  const entry = localStorage.getItem('entry')
+  return entry ?
+    JSON.parse(entry) as { entryId: number | null, markdown: string} :
+    { entryId: null, markdown: '' }
+}
+
+const setLocalEntry = (entryId: number | null, markdown: string) => {
+  localStorage.setItem('entry', JSON.stringify({ entryId, markdown }))
+  return { entryId, markdown }
+}
+
+
+export const useActiveEntryStore = create<ActiveEntryStore>((set) => ({
+  entryId: getLocalEntry().entryId,
+  markdown: getLocalEntry().markdown,
+  actions: {
+    setMarkdown: (markdown) => set((state) => setLocalEntry(state.entryId, markdown)),
+    clearEntry: () => set(() => setLocalEntry(null, '')),
+    setEntry: (entryId, markdown) => set(() => setLocalEntry(entryId, markdown))
+  },
+}))

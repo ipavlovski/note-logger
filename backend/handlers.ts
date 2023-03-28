@@ -140,7 +140,7 @@ export async function getActiveNode(nodeId: number) {
 }
 
 export async function createEntry( nodeId: number, markdown: string) {
-  return prisma.entry.create({ data: { nodeId, markdown }})
+  return prisma.entry.create({ data: { nodeId, markdown } })
 }
 
 export async function updateEntry(entryId: number, markdown: string) {
@@ -148,3 +148,7 @@ export async function updateEntry(entryId: number, markdown: string) {
 }
 
 
+export async function captureMedia(base64: string) {
+  const capturePath = await saveCapturedMedia(base64, 'capture')
+  return capturePath
+}

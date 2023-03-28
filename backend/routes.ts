@@ -8,10 +8,7 @@ import * as h from 'backend/handlers'
 // created for each request, return empty context
 export const createContext = ({ req, res, }: trpcExpress.CreateExpressContextOptions) => ({})
 type Context = inferAsyncReturnType<typeof createContext>;
-const t = initTRPC.context<Context>().create({
-  transformer: superjson,
-})
-
+const t = initTRPC.context<Context>().create({ transformer: superjson, })
 
 export const appRouter = t.router({
   getQueriedNodes: t.procedure.input(
@@ -82,6 +79,12 @@ export const appRouter = t.router({
     })
   ).mutation(async ({ input }) => {
     return await h.createNewNode(input)
+  }),
+
+  captureMedia: t.procedure.input(
+    z.string()
+  ).mutation(async ({ input: base64 }) => {
+    return await h.captureMedia(base64)
   }),
 
 
