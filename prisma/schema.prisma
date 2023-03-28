@@ -46,8 +46,6 @@ model Category {
     parentId Int?      @unique
     parent   Category? @relation("CategoryChain", fields: [parentId], references: [id])
     child    Category? @relation("CategoryChain")
-
-    @@unique([parentId, name], name: "unique_name_per_siblings")
 }
 
 model Tag {

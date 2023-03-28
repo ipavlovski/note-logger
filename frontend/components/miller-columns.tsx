@@ -1,23 +1,19 @@
-import {
-  ActionIcon, Avatar, Container, createStyles, Flex, Grid, Group, Image, Select,
-  Text
-} from '@mantine/core'
-import { IconPlus, IconUserCircle } from '@tabler/icons-react'
-
+import { Avatar, createStyles, Flex, Grid, Group, Image, Text } from '@mantine/core'
+import { IconUserCircle } from '@tabler/icons-react'
+import { RefObject, useEffect, useRef, useState } from 'react'
 import { Node } from '@prisma/client'
+
 import CreateNodeButton from 'components/create-node-button'
 import { setScrollElement, useArrowShortcuts } from 'frontend/apis/miller-navigation'
-import {
-  useCategoryChain, useChainNames, useCreateCategoryChain, useQueriedNodes
-} from 'frontend/apis/queries'
+import { useCategoryChain, useQueriedNodes } from 'frontend/apis/queries'
 import { useMillerStore, useParentId } from 'frontend/apis/stores'
 import { SERVER_URL } from 'frontend/apis/utils'
-import { RefObject, useEffect, useRef, useState } from 'react'
+import { CategorySelector, NewColumnButton } from 'components/category-chain'
 
 const useStyles = createStyles(() => ({
   column: {
     overflowY: 'scroll',
-    height: 300,
+    height: 600,
     '&::-webkit-scrollbar': {
       display: 'none'
     },
@@ -115,9 +111,6 @@ function Column({ index }: { index: 0 | 1 | 2}) {
 
   const parentRef = useRef<HTMLDivElement>(null)
 
-  const createNewColumn = () => {
-    console.log('new column!!!')
-  }
 
   const removeSelection = () => {
     console.log(`remove selection: ${chain[index+1]?.name}`)
@@ -128,10 +121,7 @@ function Column({ index }: { index: 0 | 1 | 2}) {
     <>
       {/* HEADER */}
       <div>
-        {(chain[index] != null && chain[index+1] == null) &&
-        <ActionIcon variant={'gradient'} radius={'xl'} size={'sm'}>
-          <IconPlus size="0.9rem" onClick={createNewColumn} />
-        </ActionIcon>}
+        {(chain[index] != null && chain[index+1] == null) && <NewColumnButton index={index}/>}
 
         {chain[index+1] != null &&
         <Flex align={'center'} gap={12}>
@@ -168,30 +158,6 @@ function Column({ index }: { index: 0 | 1 | 2}) {
   )
 }
 
-
-function CategorySelector() {
-  const chainName = useMillerStore((state) => state.chainName)
-  const { setChainName } = useMillerStore((state) => state.actions)
-  const chainNames = useChainNames()
-  const createCategoryChain = useCreateCategoryChain()
-
-  return (
-    <Container size='xs'>
-      <Select
-        radius="lg"
-        searchable creatable
-        label="List of chains:" placeholder="Choose a chain..."
-        data={chainNames.map((chain) => chain.name)}
-        value={chainName} onChange={setChainName}
-        getCreateLabel={(query) => `+ Create chain '${query}'...`}
-        onCreate={(chainName) => {
-          createCategoryChain.mutate(chainName)
-          return chainName
-        }}
-      />
-    </Container>
-  )
-}
 
 export default function MillerColumns() {
   useArrowShortcuts()

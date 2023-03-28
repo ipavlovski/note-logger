@@ -43,10 +43,13 @@ export const useCreateCategoryChain = () => {
   return trpc.createCategoryChain.useMutation()
 }
 
+export const useCreateCategoryColumn = () => {
+  return trpc.createCategoryColumn.useMutation()
+}
+
 export const useCreateNewNode = () => {
   return trpc.createNewNode.useMutation()
 }
-
 
 export const useCategoryChain = () => {
   const chainName = useMillerStore((store) => store.chainName)

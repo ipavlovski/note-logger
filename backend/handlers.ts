@@ -119,3 +119,11 @@ export async function createNewNode({ parentId, categoryId, name, url, icon, thu
     }
   })
 }
+
+export async function createCategoryColumn(name: string, parentId: number) {
+  return prisma.category.create({
+    data: {
+      name, parentId
+    }
+  })
+}

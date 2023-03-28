@@ -40,6 +40,16 @@ export const appRouter = t.router({
     return await h.createCategoryChain(chainName)
   }),
 
+
+  createCategoryColumn: t.procedure.input(
+    z.object({
+      name: z.string(),
+      parentId: z.number()
+    })
+  ).mutation(async ({ input: { name, parentId } }) => {
+    return await h.createCategoryColumn(name, parentId)
+  }),
+
   createNewNode: t.procedure.input(
     z.object({
       parentId: z.number().nullable(),
