@@ -1,7 +1,5 @@
-import {
-  ActionIcon, Container, Flex, Select
-} from '@mantine/core'
-import { IconPlus } from '@tabler/icons-react'
+import { ActionIcon, Container, Flex, Select } from '@mantine/core'
+import { IconColumnInsertRight } from '@tabler/icons-react'
 
 import { Popover, Textarea } from '@mantine/core'
 import { IconCheck } from '@tabler/icons-react'
@@ -31,29 +29,30 @@ export function NewColumnButton({ index }: {index: 0 | 1 | 2}) {
   }
 
   return (
-    <Popover width={400} position="bottom" withArrow shadow="md" >
-      <Popover.Target>
-        <ActionIcon variant={'gradient'} radius={'xl'} size={'sm'}>
-          <IconPlus size="0.9rem" />
-        </ActionIcon>
-      </Popover.Target>
 
-      <Popover.Dropdown p={8}>
-        <Flex align="center">
-          {/* title input */}
-          <Textarea autosize size={'sm'}
-            value={name} onChange={(e) => setName(e.currentTarget.value)}
-            placeholder="Add title" style={{ width: 340 }} />
-
-          {/* submit button */}
-          <ActionIcon color="lime" size="lg" radius="xl" variant="filled" m={10}
-            disabled={name == ''}
-            onClick={createNewColumn} >
-            <IconCheck size="1.25rem" />
+    <div style={{ paddingTop: 14 }}>
+      <Popover width={400} position="bottom" withArrow shadow="md" >
+        <Popover.Target>
+          <ActionIcon variant={'gradient'} radius={'xl'} size={'xl'}>
+            <IconColumnInsertRight />
           </ActionIcon>
-        </Flex>
-      </Popover.Dropdown>
-    </Popover>
+        </Popover.Target>
+        <Popover.Dropdown p={8}>
+          <Flex align="center">
+            {/* title input */}
+            <Textarea autosize size={'sm'}
+              value={name} onChange={(e) => setName(e.currentTarget.value)}
+              placeholder="Add title" style={{ width: 340 }} />
+            {/* submit button */}
+            <ActionIcon color="lime" size="lg" radius="xl" variant="filled" m={10}
+              disabled={name == ''}
+              onClick={createNewColumn} >
+              <IconCheck size="1.25rem" />
+            </ActionIcon>
+          </Flex>
+        </Popover.Dropdown>
+      </Popover>
+    </div>
   )
 }
 

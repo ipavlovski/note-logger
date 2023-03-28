@@ -1,14 +1,14 @@
 import { Avatar, createStyles, Flex, Grid, Group, Image, Text } from '@mantine/core'
+import { Node } from '@prisma/client'
 import { IconUserCircle } from '@tabler/icons-react'
 import { RefObject, useEffect, useRef, useState } from 'react'
-import { Node } from '@prisma/client'
 
-import CreateNodeButton from 'components/create-node-button'
+import { NewColumnButton } from 'components/columns/category-chain'
+import CreateNodeButton from 'components/columns/create-node-button'
 import { setScrollElement, useArrowShortcuts } from 'frontend/apis/miller-navigation'
 import { useCategoryChain, useQueriedNodes } from 'frontend/apis/queries'
 import { useMillerStore, useParentId } from 'frontend/apis/stores'
 import { SERVER_URL } from 'frontend/apis/utils'
-import { CategorySelector, NewColumnButton } from 'components/category-chain'
 
 const useStyles = createStyles(() => ({
   column: {
@@ -117,10 +117,7 @@ function Column({ index }: { index: 0 | 1 | 2}) {
   const parentRef = useRef<HTMLDivElement>(null)
 
 
-  const removeSelection = () => {
-    console.log(`remove selection: ${chain[index+1]?.name}`)
-    selectAction(null)
-  }
+  const removeSelection = () => selectAction(null)
 
   return (
     <>
@@ -168,25 +165,21 @@ export default function MillerColumns() {
   useArrowShortcuts()
 
   return (
+    <Grid>
 
-    <>
-      <CategorySelector />
-      <Grid>
+      <Grid.Col span={3} >
+        <Column index={0} />
+      </Grid.Col>
 
-        <Grid.Col span={3} >
-          <Column index={0} />
-        </Grid.Col>
+      <Grid.Col span={4}>
+        <Column index={1} />
+      </Grid.Col>
 
-        <Grid.Col span={4}>
-          <Column index={1} />
-        </Grid.Col>
+      <Grid.Col span={5}>
+        <Column index={2} />
+      </Grid.Col>
 
-        <Grid.Col span={5}>
-          <Column index={2} />
-        </Grid.Col>
-
-      </Grid>
-    </>
+    </Grid>
 
   )
 }

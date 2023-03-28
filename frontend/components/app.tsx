@@ -2,8 +2,9 @@ import { Container, MantineProvider, MantineThemeOverride } from '@mantine/core'
 import { Notifications } from '@mantine/notifications'
 import { QueryClientProvider } from '@tanstack/react-query'
 import { ReactQueryDevtools } from '@tanstack/react-query-devtools'
+import { CategorySelector } from 'components/columns/category-chain'
 
-import MillerColumns from 'components/miller-columns'
+import MillerColumns from 'components/columns/miller-columns'
 import { queryClient, trpc, trpcClient } from 'frontend/apis/queries'
 
 
@@ -22,6 +23,7 @@ function Root() {
   return (
     <>
       <Container pt={16} size={'lg'}>
+        <CategorySelector />
         <MillerColumns />
       </Container>
     </>
