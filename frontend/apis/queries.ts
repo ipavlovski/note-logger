@@ -57,6 +57,29 @@ export const useCategoryChain = () => {
   return chain
 }
 
+export const useActiveNode = (nodeId: number | null) => {
+  const { data: node } = trpc.getActiveNode.useQuery(nodeId!, { enabled: !!nodeId })
+  return node
+}
+
+
+export const useCreateEntry = () => {
+  const utils = trpc.useContext()
+  return trpc.createEntry.useMutation({
+    onSuccess: () => {
+      utils.getActiveNode.invalidate()
+    }
+  })
+}
+
+export const useUpdateEntry = () => {
+  const utils = trpc.useContext()
+  return trpc.updateEntry.useMutation({
+    onSuccess: () => {
+      utils.getActiveNode.invalidate()
+    }
+  })
+}
 
 
 export const useQueriedNodes = (columnIndex: 0 | 1 | 2) => {
@@ -85,3 +108,9 @@ export const useQueryCache = () => {
 
   return { getNodes }
 }
+
+// export const useCachedActiveNode = () => {
+//   const queryClient = useQueryClient()
+
+//   return queryClient.getQueryData([['useActiveNode'], { type: 'query'}])
+// }

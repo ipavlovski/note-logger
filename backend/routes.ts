@@ -50,6 +50,27 @@ export const appRouter = t.router({
     return await h.createCategoryColumn(name, parentId)
   }),
 
+
+  getActiveNode: t.procedure.input(
+    z.number()
+  ).query(async ({ input: nodeId }) => {
+    return await h.getActiveNode(nodeId)
+  }),
+
+
+  createEntry: t.procedure.input(
+    z.object({ nodeId: z.number(), markdown: z.string().min(3) })
+  ).mutation(async ({ input: { nodeId, markdown } }) => {
+    return await h.createEntry(nodeId, markdown)
+  }),
+
+
+  updateEntry: t.procedure.input(
+    z.object({ entryId: z.number(), markdown: z.string().min(3) })
+  ).mutation(async ({ input: { entryId, markdown } }) => {
+    return await h.updateEntry(entryId, markdown)
+  }),
+
   createNewNode: t.procedure.input(
     z.object({
       parentId: z.number().nullable(),

@@ -127,3 +127,24 @@ export async function createCategoryColumn(name: string, parentId: number) {
     }
   })
 }
+
+export async function getActiveNode(nodeId: number) {
+  return prisma.node.findFirstOrThrow({
+    where: { id: nodeId },
+    include: {
+      tags: true,
+      entries: true,
+      categories: true,
+    }
+  })
+}
+
+export async function createEntry( nodeId: number, markdown: string) {
+  return prisma.entry.create({ data: { nodeId, markdown }})
+}
+
+export async function updateEntry(entryId: number, markdown: string) {
+  return prisma.entry.update({ where: { id: entryId }, data: { markdown } })
+}
+
+
