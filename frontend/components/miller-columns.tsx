@@ -79,7 +79,12 @@ function ColumnItem({ node, className, onClick, index, parent }:
     <Group align={'center'} mt={16} spacing={2}>
 
       <Flex align={'center'} gap={12}>
-        <Avatar src={getImageUrl(node?.icon, 'icons')} radius="xl" m={4} >
+        <Avatar
+          radius="xl" m={4}
+          src={getImageUrl(node?.icon, 'icons')}
+          component="a"
+          href={node?.url || undefined}
+        >
           <IconUserCircle size="1.5rem" />
         </Avatar>
 
