@@ -108,9 +108,3 @@ export const useQueryCache = () => {
 
   return { getNodes }
 }
-
-// export const useCachedActiveNode = () => {
-//   const queryClient = useQueryClient()
-
-//   return queryClient.getQueryData([['useActiveNode'], { type: 'query'}])
-// }

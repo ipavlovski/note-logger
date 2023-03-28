@@ -7,6 +7,7 @@ import { debounce } from 'rxjs/operators'
 
 import { useCreateEntry, useUpdateEntry } from 'frontend/apis/queries'
 import { create } from 'zustand'
+import { useMillerStore } from 'frontend/apis/stores'
 
 
 interface ActiveEntryStore {
@@ -127,8 +128,10 @@ export default function MonacoEditor({ height }: {height: number | string}) {
       }
 
       const entryId = useActiveEntryStore.getState().entryId
-      const nodeId = undefined
 
+      const [firstId, secondId, thirdId] = useMillerStore.getState().selection
+      const nodeId = firstId && secondId && thirdId ? thirdId :
+        firstId && secondId ? secondId : firstId ? firstId : null
 
       entryId != null ? updateEntry.mutate({ entryId, markdown: content }, {
         onSuccess: () => {
